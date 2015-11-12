@@ -1,0 +1,24 @@
+{
+  "name": "flux-parasolid-util",
+  "version": "0.0.1",
+  "description": "A module that takes parasolid data and produces Three.js objects",
+  "main": "build/index.min.js",
+  "jsnext:main": "index.js",
+  "scripts": {
+    "test": "npm run lint;",
+    "lint": "eslint index.js src/**;",
+    "build": "npm test; rollup -f=cjs -o=./build/index.js -i=./index.js; uglifyjs ./build/index.js -c -o ./build/index.min.js",
+    "clean": "rm build/*"
+  },
+  "author": "Flux Factory Inc.",
+  "license": "ISC",
+  "dependencies": {
+    "three.js": "^0.73.0"
+  },
+  "devDependencies": {
+    "eslint": "^1.9.0",
+    "rollup": "^0.20.5",
+    "tape": "^4.2.2",
+    "uglify-js": "^2.5.0"
+  }
+}
