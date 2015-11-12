@@ -17,7 +17,7 @@ test( 'flux-parasolidUtil', function ( t ) {
         input = fixtures[ key ].input;
         obj = createObject( input );
 
-        if ( input.result ) {
+        if ( fixtures[ key ].result ) {
             t.ok( obj.mesh, 'createObject should create a mesh for parasolid data of ' + key  );
             t.equal( obj.mesh.type, fixtures[ key ].result.type, 'createObject should create a mesh of type ' +
                                                                  fixtures[ key ].result.type + ' for data ' + key ); 

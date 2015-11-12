@@ -5,8 +5,9 @@
   "main": "build/index.common.min.js",
   "jsnext:main": "index.js",
   "scripts": {
-    "test": "npm run lint; npm run build-test; tape ./build/test_suite.js;",
-    "build-test": "rollup -f=cjs -o=./build/test_tmp.js -i=./test/test.js && echo \"global.self = {};\" > ./build/header.js && cat ./build/header.js ./build/test_tmp.js > ./build/test_suite.js; rm ./build/header.js ./build/test_tmp.js;",
+    "test": "npm run run-test --silent",
+    "run-test": "npm run lint; npm run build-test; tape ./build/test_suite.js;",
+    "build-test": "rollup -f=cjs -e=tape,three.js -o=./build/test_tmp.js -i=./test/test.js && echo \"global.self = {};\" > ./build/header.js && cat ./build/header.js ./build/test_tmp.js > ./build/test_suite.js; rm ./build/header.js ./build/test_tmp.js;",
     "lint": "eslint index.js src/**;",
     "build": "npm run build-common; npm run build-amd;",
     "build-common": "rollup -f=cjs -e=three.js -o=./build/index.common.js -i=./index.js; uglifyjs ./build/index.common.js -c -o ./build/index.common.min.js",
