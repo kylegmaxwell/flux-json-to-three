@@ -5,11 +5,12 @@
   "main": "build/index.common.min.js",
   "jsnext:main": "index.js",
   "scripts": {
-    "test": "npm run lint;",
+    "test": "npm run lint; npm run build-test; tape ./build/test_suite.js;",
+    "build-test": "rollup -f=cjs -o=./build/test_tmp.js -i=./test/test.js && echo \"global.self = {};\" > ./build/header.js && cat ./build/header.js ./build/test_tmp.js > ./build/test_suite.js; rm ./build/header.js ./build/test_tmp.js;",
     "lint": "eslint index.js src/**;",
     "build": "npm run build-common; npm run build-amd;",
-    "build-common": "npm test; rollup -f=cjs -o=./build/index.common.js -i=./index.js; uglifyjs ./build/index.common.js -c -o ./build/index.common.min.js",
-    "build-amd": "npm test; rollup -f=amd -o=./build/index.amd.js -i=./index.js; uglifyjs ./build/index.amd.js -c -o ./build/index.amd.min.js",
+    "build-common": "rollup -f=cjs -e=three.js -o=./build/index.common.js -i=./index.js; uglifyjs ./build/index.common.js -c -o ./build/index.common.min.js",
+    "build-amd": "rollup -f=amd -e=three.js -o=./build/index.amd.js -i=./index.js; uglifyjs ./build/index.amd.js -c -o ./build/index.amd.min.js",
     "clean": "rm build/*"
   },
   "author": "Flux Factory Inc.",
