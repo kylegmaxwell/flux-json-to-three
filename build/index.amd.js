@@ -1,4 +1,4 @@
-define(['three.js'], function (three_js) { 'use strict';
+define(['three'], function (three) { 'use strict';
 
     /**
      * The VectorManager class. It is an ObjectPool
@@ -27,7 +27,7 @@ define(['three.js'], function (three_js) { 'use strict';
 
         if ( this._vectorCount < this._vectorData.length ) result = this._vectorData[ this._vectorCount ];
         else {
-            result = new three_js.Vector3();
+            result = new three.Vector3();
             this._vectorData.push( result );
         }
 
@@ -65,7 +65,7 @@ define(['three.js'], function (three_js) { 'use strict';
 
     var HALF_PI = Math.PI * 0.5;
     var TOLERANCE = 0.000001;
-    var DEFAULT_ROTATION = new three_js.Vector3( HALF_PI, HALF_PI, 0 );
+    var DEFAULT_ROTATION = new three.Vector3( HALF_PI, HALF_PI, 0 );
     var PLANE_DEFAULTS = {
             WIDTH: 10000,
             HEIGHT: 10000,
@@ -126,10 +126,10 @@ define(['three.js'], function (three_js) { 'use strict';
      */
     function cone ( data, material ) {
         var geometry, mesh;
-        
-        geometry = new three_js.CylinderGeometry( 0, data.radius, data.height, 32 );
-        mesh = new three_js.Mesh( geometry, material );
-        moveGeometry( mesh, new three_js.Vector3( 0, data.height * 0.5, 0 ) );
+
+        geometry = new three.CylinderGeometry( 0, data.radius, data.height, 32 );
+        mesh = new three.Mesh( geometry, material );
+        moveGeometry( mesh, new three.Vector3( 0, data.height * 0.5, 0 ) );
         rotateGeometry( mesh, DEFAULT_ROTATION );
 
         return mesh;
@@ -150,9 +150,9 @@ define(['three.js'], function (three_js) { 'use strict';
     function cylinder ( data, material ) {
         var geometry, mesh;
 
-        geometry = new three_js.CylinderGeometry( data.radius, data.radius, data.height, 32 );
-        mesh = new three_js.Mesh( geometry, material );
-        moveGeometry( mesh, new three_js.Vector3( 0, data.height * 0.5, 0 ) );
+        geometry = new three.CylinderGeometry( data.radius, data.radius, data.height, 32 );
+        mesh = new three.Mesh( geometry, material );
+        moveGeometry( mesh, new three.Vector3( 0, data.height * 0.5, 0 ) );
         rotateGeometry( mesh, DEFAULT_ROTATION );
 
         return mesh;
@@ -173,8 +173,8 @@ define(['three.js'], function (three_js) { 'use strict';
     function sphere ( data, material ) {
         var geometry, mesh;
 
-        geometry = new three_js.SphereBufferGeometry( data.radius, 12, 8 );
-        mesh = new three_js.Mesh( geometry, material );
+        geometry = new three.SphereBufferGeometry( data.radius, 12, 8 );
+        mesh = new three.Mesh( geometry, material );
         rotateGeometry( mesh, DEFAULT_ROTATION );
 
         return mesh;
@@ -193,8 +193,8 @@ define(['three.js'], function (three_js) { 'use strict';
      * @param { ThreeJS.Material } material The material to give the mesh
      */
     function torus ( data, material ) {
-        var geometry = new three_js.TorusGeometry( data.major_radius, data.minor_radius, 24, 24 );
-        return new three_js.Mesh( geometry, material );
+        var geometry = new three.TorusGeometry( data.major_radius, data.minor_radius, 24, 24 );
+        return new three.Mesh( geometry, material );
     }
 
 
@@ -210,8 +210,8 @@ define(['three.js'], function (three_js) { 'use strict';
      * @param { ThreeJS.Material } material The material to give the mesh
      */
     function block ( data, material ) {
-        var geometry = new three_js.BoxGeometry( data.dimensions[ 0 ], data.dimensions[ 1 ], data.dimensions[ 2 ] );
-        return new three_js.Mesh( geometry, material );
+        var geometry = new three.BoxGeometry( data.dimensions[ 0 ], data.dimensions[ 1 ], data.dimensions[ 2 ] );
+        return new three.Mesh( geometry, material );
     }
 
 
@@ -227,8 +227,8 @@ define(['three.js'], function (three_js) { 'use strict';
      * @param { ThreeJS.Material } material The material to give the mesh
      */
     function circle ( data, material ) {
-        var geometry = new three_js.CircleGeometry( data.radius, 32 );
-        return new three_js.Mesh( geometry, material );
+        var geometry = new three.CircleGeometry( data.radius, 32 );
+        return new three.Mesh( geometry, material );
     }
 
 
@@ -244,8 +244,8 @@ define(['three.js'], function (three_js) { 'use strict';
      * @param { ThreeJS.Material } material The material to give the mesh
      */
     function rectangle ( data, material ) {
-        var geometry = new three_js.PlaneBufferGeometry( data.dimensions[ 0 ], data.dimensions[ 1 ] );
-        return new three_js.Mesh( geometry, material );
+        var geometry = new three.PlaneBufferGeometry( data.dimensions[ 0 ], data.dimensions[ 1 ] );
+        return new three.Mesh( geometry, material );
     }
 
 
@@ -261,9 +261,9 @@ define(['three.js'], function (three_js) { 'use strict';
      * @param { ThreeJS.Material } material The material to give the mesh
      */
     function plane ( data, material ) {
-        var geometry = new three_js.PlaneBufferGeometry( PLANE_DEFAULTS.WIDTH, PLANE_DEFAULTS.HEIGHT,
+        var geometry = new three.PlaneBufferGeometry( PLANE_DEFAULTS.WIDTH, PLANE_DEFAULTS.HEIGHT,
                                                 PLANE_DEFAULTS.WIDTH_SEGMENTS, PLANE_DEFAULTS.HEIGHT_SEGMENTS );
-        return new three_js.Mesh( geometry, material );
+        return new three.Mesh( geometry, material );
     }
 
 
@@ -280,11 +280,11 @@ define(['three.js'], function (three_js) { 'use strict';
      */
     function point ( data, material ) {
         var positions = new Float32Array( data.point ),
-            geometry = new three_js.BufferGeometry();
+            geometry = new three.BufferGeometry();
 
-        geometry.addAttribute( 'position', new three_js.BufferAttribute( positions, 3 ) );
+        geometry.addAttribute( 'position', new three.BufferAttribute( positions, 3 ) );
         geometry.computeBoundingBox();
-        return new three_js.Points( geometry, material );
+        return new three.Points( geometry, material );
     }
 
 
@@ -300,13 +300,13 @@ define(['three.js'], function (three_js) { 'use strict';
      * @param { ThreeJS.Material } material The material to give the mesh
      */
     function vector ( data ) {
-        var dir = new three_js.Vector3( data.coords[ 0 ], data.coords[ 1 ], data.coords[ 2 ] ),
-            origin = new three_js.Vector3( 0, 0, 0 );
+        var dir = new three.Vector3( data.coords[ 0 ], data.coords[ 1 ], data.coords[ 2 ] ),
+            origin = new three.Vector3( 0, 0, 0 );
 
         if ( dir.length() > 0 ) dir.normalize();
         else throw new Error( 'Vector primitive has length zero' );
 
-        return new three_js.ArrowHelper( dir, origin, dir.length() );
+        return new three.ArrowHelper( dir, origin, dir.length() );
     }
 
 
@@ -322,12 +322,12 @@ define(['three.js'], function (three_js) { 'use strict';
      * @param { ThreeJS.Material } material The material to give the mesh
      */
     function line ( data, material ) {
-        var geometry = new three_js.BufferGeometry(),
+        var geometry = new three.BufferGeometry(),
             vertices = new Float32Array( data.start.concat( data.end ) );
 
-        geometry.addAttribute( 'position', new three_js.BufferAttribute( vertices, 3 ) );
+        geometry.addAttribute( 'position', new three.BufferAttribute( vertices, 3 ) );
 
-        return new three_js.Line( geometry, material );
+        return new three.Line( geometry, material );
     }
 
 
@@ -344,7 +344,7 @@ define(['three.js'], function (three_js) { 'use strict';
 
      */
     function polycurve ( data, material ) {
-        var mesh = new three_js.Object3d(),
+        var mesh = new three.Object3d(),
             i, len;
 
         for ( i = 0, len = data.curves.length ; i < len ; i++ )
@@ -367,17 +367,17 @@ define(['three.js'], function (three_js) { 'use strict';
      */
     function curve ( data, material ) {
         var nurbsControlPoints = _createControlPoints( data ),
-            geometry = new three_js.Geometry();
+            geometry = new three.Geometry();
 
         if ( data.knots.length !== nurbsControlPoints.length + data.degree + 1 )
             throw new Error( 'Number of uKnots in a NURBS curve should equal degree + N + 1, where N is the number ' +
                              'of control points' );
 
         geometry.vertices = data.degree > 1 ?
-            new three_js.NURBSCurve( data.degree, data.knots, nurbsControlPoints )
+            new three.NURBSCurve( data.degree, data.knots, nurbsControlPoints )
                 .getPoints( nurbsControlPoints.length * data.degree * 4 ) : nurbsControlPoints;
 
-        return new three_js.Line( geometry, material );
+        return new three.Line( geometry, material );
     }
 
 
@@ -403,7 +403,7 @@ define(['three.js'], function (three_js) { 'use strict';
         for ( ; i < len ; i++ ) {
             currentControlPoint = controlPoints[ i ];
             result.push(
-                new three_js.Vector4(
+                new three.Vector4(
                     currentControlPoint[ 0 ],
                     currentControlPoint[ 1 ],
                     currentControlPoint[ 2 ],
@@ -476,12 +476,12 @@ define(['three.js'], function (three_js) { 'use strict';
         }
 
         // Create geometry and material
-        geometry = new three_js.BufferGeometry();
-        geometry.addAttribute( 'position', new three_js.BufferAttribute( vertices, 3 ) );
+        geometry = new three.BufferGeometry();
+        geometry.addAttribute( 'position', new three.BufferAttribute( vertices, 3 ) );
 
         vec.clear();
 
-        return new three_js.Line(geometry, material);
+        return new three.Line(geometry, material);
     }
 
 
@@ -612,12 +612,12 @@ define(['three.js'], function (three_js) { 'use strict';
 
      */
     function mesh ( data, material ) {
-        var geometry = new three_js.Geometry(),
+        var geometry = new three.Geometry(),
             face;
 
         for ( var i = 0, len = data.vertices.length ; i < len ; i++ )
             geometry.vertices.push(
-                new three_js.Vector3( data.vertices[ i ][ 0 ], data.vertices[ i ][ 1 ], data.vertices[ i ][ 2 ] )
+                new three.Vector3( data.vertices[ i ][ 0 ], data.vertices[ i ][ 1 ], data.vertices[ i ][ 2 ] )
             );
 
         for ( i = 0, len = data.faces.length ; i < len ; i++ ) {
@@ -626,15 +626,15 @@ define(['three.js'], function (three_js) { 'use strict';
 
             if ( face.length === 3 )
                 geometry.faces.push(
-                    new three_js.Face3( face[ 0 ], face[ 1 ], face[ 2 ] )
+                    new three.Face3( face[ 0 ], face[ 1 ], face[ 2 ] )
                 );
 
             else if ( face.length === 4 ) {
                 geometry.faces.push(
-                    new three_js.Face3( face[ 0 ], face[ 1 ], face[ 2 ] )
+                    new three.Face3( face[ 0 ], face[ 1 ], face[ 2 ] )
                 );
                 geometry.faces.push(
-                    new three_js.Face3( face[ 0 ], face[ 2 ], face[ 3 ] )
+                    new three.Face3( face[ 0 ], face[ 2 ], face[ 3 ] )
                 );
             }
 
@@ -643,7 +643,7 @@ define(['three.js'], function (three_js) { 'use strict';
         geometry.computeBoundingSphere();
         geometry.computeFaceNormals();
 
-        return new three_js.Mesh( geometry, material );
+        return new three.Mesh( geometry, material );
     }
 
 
@@ -662,7 +662,7 @@ define(['three.js'], function (three_js) { 'use strict';
     function polygonSet ( data, material ) {
 
         /*eslint-disable no-console */
-        console.warn( 'polygonSet has not been implmenented\n\nReceived Data: ' + JSON.stringify( data ) + 
+        console.warn( 'polygonSet has not been implmenented\n\nReceived Data: ' + JSON.stringify( data ) +
                       '\n\nand material: ' + JSON.stringify( material ) );
         /*eslint-enable no-console */
 
@@ -699,18 +699,18 @@ define(['three.js'], function (three_js) { 'use strict';
 
      */
     function polyline ( data, material ) {
-        
-        var geometry = new three_js.Geometry(),
+
+        var geometry = new three.Geometry(),
             point;
 
         for ( var i = 0, len = data.points.length ; i < len ; i++ ) {
             point = data.points[ i ];
             geometry.vertices.push(
-                new three_js.Vector3( point[ 0 ], point[ 1 ], point[ 2 ] )
+                new three.Vector3( point[ 0 ], point[ 1 ], point[ 2 ] )
             );
         }
 
-        return new three_js.Mesh( geometry, material );
+        return new three.Mesh( geometry, material );
     }
 
 
@@ -748,7 +748,7 @@ define(['three.js'], function (three_js) { 'use strict';
                 point = controlPointRow[ j ];
 
                 arr.push(
-                    new three_js.Vector4(
+                    new three.Vector4(
                         point[ 0 ],
                         point[ 1 ],
                         point[ 2 ],
@@ -770,15 +770,15 @@ define(['three.js'], function (three_js) { 'use strict';
                              ', where N is the number of control points along V direction' );
 
         //
-        var nurbsSurface = new three_js.NURBSSurface( data.vDegree, data.uDegree, data.vKnots, data.uKnots, nsControlPoints );
+        var nurbsSurface = new three.NURBSSurface( data.vDegree, data.uDegree, data.vKnots, data.uKnots, nsControlPoints );
 
-        var geometry = new three_js.ParametricGeometry(function ( u, v ) {
+        var geometry = new three.ParametricGeometry(function ( u, v ) {
             return nurbsSurface.getPoint( u, v );
         }, data.vDegree * nsControlPoints.length * 4, data.uDegree * nsControlPoints[ 0 ].length * 4 );
 
         geometry.computeFaceNormals();
 
-        return new three_js.Mesh( geometry, material );
+        return new three.Mesh( geometry, material );
     }
 
 
@@ -796,7 +796,7 @@ define(['three.js'], function (three_js) { 'use strict';
      *
      */
     function polysurface ( data, material ) {
-        var mesh = new three_js.Object3D();
+        var mesh = new three.Object3D();
 
         for ( var i = 0, len = data.surfaces.length ; i < len ; i++ )
             mesh.add( surface( data.surfaces[ i ], material ) );
@@ -816,7 +816,7 @@ define(['three.js'], function (three_js) { 'use strict';
      * @param { Object } data     Parasolid data
      */
     function text ( data ) {
-        return new three_js.TextHelper( data.text, {
+        return new three.TextHelper( data.text, {
             size: data.size,
             resolution: data.resolution,
             color: data.color,
@@ -898,7 +898,7 @@ define(['three.js'], function (three_js) { 'use strict';
 
             if ( axis )
                 mesh.lookAt( mesh.position.clone().add(
-                    new three_js.Vector3(
+                    new three.Vector3(
                         axis[ 0 ],
                         axis[ 1 ],
                         axis[ 2 ]
@@ -918,7 +918,7 @@ define(['three.js'], function (three_js) { 'use strict';
             return mesh;
 
         }
-        
+
         throw new Error( 'Unsupported geometry type: ' + data.primitive )
 
     }
@@ -942,7 +942,7 @@ define(['three.js'], function (three_js) { 'use strict';
         if ( data.attributes ) return data.attributes.materialProperties;
         else if ( data.materialProperties ) return data.materialProperties;
         else return {
-            side: three_js.DoubleSide
+            side: three.DoubleSide
         };
     }
 
@@ -966,11 +966,11 @@ define(['three.js'], function (three_js) { 'use strict';
      */
     function _createMaterial ( type, materialProperties ) {
 
-        if ( materialProperties && !materialProperties.side ) materialProperties.side = three_js.DoubleSide;
+        if ( materialProperties && !materialProperties.side ) materialProperties.side = three.DoubleSide;
 
-        if ( type === PHONG ) return new three_js.MeshPhongMaterial( materialProperties );
-        else if ( type === POINT ) return new three_js.PointsMaterial( materialProperties );
-        else if ( type === LINE ) return new three_js.LineBasicMaterial( materialProperties );
+        if ( type === PHONG ) return new three.MeshPhongMaterial( materialProperties );
+        else if ( type === POINT ) return new three.PointsMaterial( materialProperties );
+        else if ( type === LINE ) return new three.LineBasicMaterial( materialProperties );
 
     }
 
@@ -982,7 +982,7 @@ define(['three.js'], function (three_js) { 'use strict';
      *
      * @function _resolveLegacyNames
      * @private
-     * 
+     *
      * @return { String } the current name
      *
      * @param { String } name a name that may be legacy
@@ -1045,10 +1045,10 @@ define(['three.js'], function (three_js) { 'use strict';
      * Creates THREE scene and geometries from parasolid output.
      * The method is called recursively for each array and entities
      * map
-     * 
+     *
      * @function createObject
      * @return { Object } An object with a ThreeJS scene graph as .mesh and a set of invalid primitives
-     * 
+     *
      * @param { Object }  data        Parasolid Data from the flux json representation
      * @param { Boolean } mergeModels Whether or not to merge resulting geometries where possible
      *                                defaults to true
@@ -1108,7 +1108,7 @@ define(['three.js'], function (three_js) { 'use strict';
             results = createObject( data.Entities[ key ] );
 
             if ( results.mesh ) {
-                if ( !root.mesh ) root.mesh = new three_js.Object3D();
+                if ( !root.mesh ) root.mesh = new three.Object3D();
 
                 root.mesh.add( results.mesh );
             }
@@ -1174,7 +1174,7 @@ define(['three.js'], function (three_js) { 'use strict';
      */
     function _mergeModels ( mesh, root ) {
 
-        if ( !root.mesh ) root.mesh = new three_js.Object3D();
+        if ( !root.mesh ) root.mesh = new three.Object3D();
 
         var children = root.mesh.children,
             i = 0,
@@ -1204,7 +1204,7 @@ define(['three.js'], function (three_js) { 'use strict';
      * @param { ThreeJS.Object3D } object The object to check
      */
     function _objectDoesntHaveBufferGeometry ( object ) {
-        return object.geometry && !( object.geometry instanceof three_js.BufferGeometry );
+        return object.geometry && !( object.geometry instanceof three.BufferGeometry );
     }
 
 
@@ -1240,7 +1240,7 @@ define(['three.js'], function (three_js) { 'use strict';
      * @param { ThreeJS.Object3D } object Object to upgrade
      */
     function _upgradeGeometryToBuffer ( object ) {
-        object.geometry = new three_js.BufferGeometry().fromGeometry( object.geometry );
+        object.geometry = new three.BufferGeometry().fromGeometry( object.geometry );
     }
 
     return createObject;

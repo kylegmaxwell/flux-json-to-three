@@ -4,6 +4,7 @@
   "description": "A module that takes parasolid data and produces Three.js objects",
   "main": "build/index.common.min.js",
   "jsnext:main": "index.js",
+  "repository": "git@bitbucket.org:vannevartech/flux-json-to-three.git",
   "scripts": {
     "test": "npm run run-test --silent",
     "run-test": "npm run lint; npm run build-test; tape ./build/test_suite.js;",
@@ -17,7 +18,7 @@
   "author": "Flux Factory Inc.",
   "license": "ISC",
   "dependencies": {
-    "three.js": "^0.73.0"
+    "three.js": "^0.72.0"
   },
   "devDependencies": {
     "eslint": "^1.9.0",

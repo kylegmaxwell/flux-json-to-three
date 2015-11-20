@@ -13,7 +13,7 @@ import {
     MeshPhongMaterial,
     PointsMaterial,
     LineBasicMaterial
-} from 'three.js';
+} from 'three';
 import * as primitiveHelpers from './primitives.js';
 
 
@@ -92,7 +92,7 @@ export default function createPrimitive ( data ) {
         return mesh;
 
     }
-    
+
     throw new Error( 'Unsupported geometry type: ' + data.primitive )
 
 }
@@ -156,7 +156,7 @@ function _createMaterial ( type, materialProperties ) {
  *
  * @function _resolveLegacyNames
  * @private
- * 
+ *
  * @return { String } the current name
  *
  * @param { String } name a name that may be legacy

@@ -1,6 +1,9 @@
+global.self = {};
 'use strict';
 
-var three = require('three');
+var test = require('tape');
+test = 'default' in test ? test['default'] : test;
+var three_js = require('three.js');
 
 /**
  * The VectorManager class. It is an ObjectPool
@@ -29,7 +32,7 @@ VectorManager.prototype.alloc = function alloc () {
 
     if ( this._vectorCount < this._vectorData.length ) result = this._vectorData[ this._vectorCount ];
     else {
-        result = new three.Vector3();
+        result = new three_js.Vector3();
         this._vectorData.push( result );
     }
 
@@ -67,7 +70,7 @@ VectorManager.prototype.clone = function clone ( v ) {
 
 var HALF_PI = Math.PI * 0.5;
 var TOLERANCE = 0.000001;
-var DEFAULT_ROTATION = new three.Vector3( HALF_PI, HALF_PI, 0 );
+var DEFAULT_ROTATION = new three_js.Vector3( HALF_PI, HALF_PI, 0 );
 var PLANE_DEFAULTS = {
         WIDTH: 10000,
         HEIGHT: 10000,
@@ -126,12 +129,12 @@ function rotateGeometry ( object, vector ) {
  * @param { Object }           data     Parasolid data
  * @param { THREEJS.Material } material The material to give the mesh
  */
-function cone ( data, material ) {
+function cone$1 ( data, material ) {
     var geometry, mesh;
-
-    geometry = new three.CylinderGeometry( 0, data.radius, data.height, 32 );
-    mesh = new three.Mesh( geometry, material );
-    moveGeometry( mesh, new three.Vector3( 0, data.height * 0.5, 0 ) );
+    
+    geometry = new three_js.CylinderGeometry( 0, data.radius, data.height, 32 );
+    mesh = new three_js.Mesh( geometry, material );
+    moveGeometry( mesh, new three_js.Vector3( 0, data.height * 0.5, 0 ) );
     rotateGeometry( mesh, DEFAULT_ROTATION );
 
     return mesh;
@@ -149,12 +152,12 @@ function cone ( data, material ) {
  * @param { Object }           data     Parasolid data
  * @param { ThreeJS.Material } material The material to give the mesh
  */
-function cylinder ( data, material ) {
+function cylinder$1 ( data, material ) {
     var geometry, mesh;
 
-    geometry = new three.CylinderGeometry( data.radius, data.radius, data.height, 32 );
-    mesh = new three.Mesh( geometry, material );
-    moveGeometry( mesh, new three.Vector3( 0, data.height * 0.5, 0 ) );
+    geometry = new three_js.CylinderGeometry( data.radius, data.radius, data.height, 32 );
+    mesh = new three_js.Mesh( geometry, material );
+    moveGeometry( mesh, new three_js.Vector3( 0, data.height * 0.5, 0 ) );
     rotateGeometry( mesh, DEFAULT_ROTATION );
 
     return mesh;
@@ -172,11 +175,11 @@ function cylinder ( data, material ) {
  * @param { Object }           data     Parasolid data
  * @param { ThreeJS.Material } material The material to give the mesh
  */
-function sphere ( data, material ) {
+function sphere$1 ( data, material ) {
     var geometry, mesh;
 
-    geometry = new three.SphereBufferGeometry( data.radius, 12, 8 );
-    mesh = new three.Mesh( geometry, material );
+    geometry = new three_js.SphereBufferGeometry( data.radius, 12, 8 );
+    mesh = new three_js.Mesh( geometry, material );
     rotateGeometry( mesh, DEFAULT_ROTATION );
 
     return mesh;
@@ -194,9 +197,9 @@ function sphere ( data, material ) {
  * @param { Object }           data     Parasolid data
  * @param { ThreeJS.Material } material The material to give the mesh
  */
-function torus ( data, material ) {
-    var geometry = new three.TorusGeometry( data.major_radius, data.minor_radius, 24, 24 );
-    return new three.Mesh( geometry, material );
+function torus$1 ( data, material ) {
+    var geometry = new three_js.TorusGeometry( data.major_radius, data.minor_radius, 24, 24 );
+    return new three_js.Mesh( geometry, material );
 }
 
 
@@ -211,9 +214,9 @@ function torus ( data, material ) {
  * @param { Object }           data     Parasolid data
  * @param { ThreeJS.Material } material The material to give the mesh
  */
-function block ( data, material ) {
-    var geometry = new three.BoxGeometry( data.dimensions[ 0 ], data.dimensions[ 1 ], data.dimensions[ 2 ] );
-    return new three.Mesh( geometry, material );
+function block$1 ( data, material ) {
+    var geometry = new three_js.BoxGeometry( data.dimensions[ 0 ], data.dimensions[ 1 ], data.dimensions[ 2 ] );
+    return new three_js.Mesh( geometry, material );
 }
 
 
@@ -228,9 +231,9 @@ function block ( data, material ) {
  * @param { Object }           data     Parasolid data
  * @param { ThreeJS.Material } material The material to give the mesh
  */
-function circle ( data, material ) {
-    var geometry = new three.CircleGeometry( data.radius, 32 );
-    return new three.Mesh( geometry, material );
+function circle$1 ( data, material ) {
+    var geometry = new three_js.CircleGeometry( data.radius, 32 );
+    return new three_js.Mesh( geometry, material );
 }
 
 
@@ -245,9 +248,9 @@ function circle ( data, material ) {
  * @param { Object }           data     Parasolid data
  * @param { ThreeJS.Material } material The material to give the mesh
  */
-function rectangle ( data, material ) {
-    var geometry = new three.PlaneBufferGeometry( data.dimensions[ 0 ], data.dimensions[ 1 ] );
-    return new three.Mesh( geometry, material );
+function rectangle$1 ( data, material ) {
+    var geometry = new three_js.PlaneBufferGeometry( data.dimensions[ 0 ], data.dimensions[ 1 ] );
+    return new three_js.Mesh( geometry, material );
 }
 
 
@@ -262,10 +265,10 @@ function rectangle ( data, material ) {
  * @param { Object }           data     Parasolid data
  * @param { ThreeJS.Material } material The material to give the mesh
  */
-function plane ( data, material ) {
-    var geometry = new three.PlaneBufferGeometry( PLANE_DEFAULTS.WIDTH, PLANE_DEFAULTS.HEIGHT,
+function plane$1 ( data, material ) {
+    var geometry = new three_js.PlaneBufferGeometry( PLANE_DEFAULTS.WIDTH, PLANE_DEFAULTS.HEIGHT,
                                             PLANE_DEFAULTS.WIDTH_SEGMENTS, PLANE_DEFAULTS.HEIGHT_SEGMENTS );
-    return new three.Mesh( geometry, material );
+    return new three_js.Mesh( geometry, material );
 }
 
 
@@ -280,13 +283,13 @@ function plane ( data, material ) {
  * @param { Object }           data     Parasolid data
  * @param { ThreeJS.Material } material The material to give the mesh
  */
-function point ( data, material ) {
+function point$1 ( data, material ) {
     var positions = new Float32Array( data.point ),
-        geometry = new three.BufferGeometry();
+        geometry = new three_js.BufferGeometry();
 
-    geometry.addAttribute( 'position', new three.BufferAttribute( positions, 3 ) );
+    geometry.addAttribute( 'position', new three_js.BufferAttribute( positions, 3 ) );
     geometry.computeBoundingBox();
-    return new three.Points( geometry, material );
+    return new three_js.Points( geometry, material );
 }
 
 
@@ -301,14 +304,14 @@ function point ( data, material ) {
  * @param { Object }           data     Parasolid data
  * @param { ThreeJS.Material } material The material to give the mesh
  */
-function vector ( data ) {
-    var dir = new three.Vector3( data.coords[ 0 ], data.coords[ 1 ], data.coords[ 2 ] ),
-        origin = new three.Vector3( 0, 0, 0 );
+function vector$1 ( data ) {
+    var dir = new three_js.Vector3( data.coords[ 0 ], data.coords[ 1 ], data.coords[ 2 ] ),
+        origin = new three_js.Vector3( 0, 0, 0 );
 
     if ( dir.length() > 0 ) dir.normalize();
     else throw new Error( 'Vector primitive has length zero' );
 
-    return new three.ArrowHelper( dir, origin, dir.length() );
+    return new three_js.ArrowHelper( dir, origin, dir.length() );
 }
 
 
@@ -323,13 +326,13 @@ function vector ( data ) {
  * @param { Object }           data     Parasolid data
  * @param { ThreeJS.Material } material The material to give the mesh
  */
-function line ( data, material ) {
-    var geometry = new three.BufferGeometry(),
+function line$1 ( data, material ) {
+    var geometry = new three_js.BufferGeometry(),
         vertices = new Float32Array( data.start.concat( data.end ) );
 
-    geometry.addAttribute( 'position', new three.BufferAttribute( vertices, 3 ) );
+    geometry.addAttribute( 'position', new three_js.BufferAttribute( vertices, 3 ) );
 
-    return new three.Line( geometry, material );
+    return new three_js.Line( geometry, material );
 }
 
 
@@ -345,12 +348,12 @@ function line ( data, material ) {
  * @param { ThreeJS.Material } material The material to give the mesh
 
  */
-function polycurve ( data, material ) {
-    var mesh = new three.Object3d(),
+function polycurve$1 ( data, material ) {
+    var mesh = new three_js.Object3d(),
         i, len;
 
     for ( i = 0, len = data.curves.length ; i < len ; i++ )
-        mesh.add( curve( data.curves[ i ], material ) );
+        mesh.add( curve$1( data.curves[ i ], material ) );
 
     return mesh;
 }
@@ -367,19 +370,19 @@ function polycurve ( data, material ) {
  * @param { Object }           data     Parasolid data
  * @param { ThreeJS.Material } material The material to give the mesh
  */
-function curve ( data, material ) {
+function curve$1 ( data, material ) {
     var nurbsControlPoints = _createControlPoints( data ),
-        geometry = new three.Geometry();
+        geometry = new three_js.Geometry();
 
     if ( data.knots.length !== nurbsControlPoints.length + data.degree + 1 )
         throw new Error( 'Number of uKnots in a NURBS curve should equal degree + N + 1, where N is the number ' +
                          'of control points' );
 
     geometry.vertices = data.degree > 1 ?
-        new three.NURBSCurve( data.degree, data.knots, nurbsControlPoints )
+        new three_js.NURBSCurve( data.degree, data.knots, nurbsControlPoints )
             .getPoints( nurbsControlPoints.length * data.degree * 4 ) : nurbsControlPoints;
 
-    return new three.Line( geometry, material );
+    return new three_js.Line( geometry, material );
 }
 
 
@@ -405,7 +408,7 @@ function _createControlPoints ( data ) {
     for ( ; i < len ; i++ ) {
         currentControlPoint = controlPoints[ i ];
         result.push(
-            new three.Vector4(
+            new three_js.Vector4(
                 currentControlPoint[ 0 ],
                 currentControlPoint[ 1 ],
                 currentControlPoint[ 2 ],
@@ -432,7 +435,7 @@ function _createControlPoints ( data ) {
  * @param { ThreeJS.Material } material The material to give the mesh
 
  */
-function arc ( data, material ) {
+function arc$1 ( data, material ) {
     var geometry,
         vertices;
 
@@ -478,12 +481,12 @@ function arc ( data, material ) {
     }
 
     // Create geometry and material
-    geometry = new three.BufferGeometry();
-    geometry.addAttribute( 'position', new three.BufferAttribute( vertices, 3 ) );
+    geometry = new three_js.BufferGeometry();
+    geometry.addAttribute( 'position', new three_js.BufferAttribute( vertices, 3 ) );
 
     vec.clear();
 
-    return new three.Line(geometry, material);
+    return new three_js.Line(geometry, material);
 }
 
 
@@ -613,13 +616,13 @@ function _setVecInArray (arr, offset, vec) {
  * @param { ThreeJS.Material } material The material to give the mesh
 
  */
-function mesh ( data, material ) {
-    var geometry = new three.Geometry(),
+function mesh$1 ( data, material ) {
+    var geometry = new three_js.Geometry(),
         face;
 
     for ( var i = 0, len = data.vertices.length ; i < len ; i++ )
         geometry.vertices.push(
-            new three.Vector3( data.vertices[ i ][ 0 ], data.vertices[ i ][ 1 ], data.vertices[ i ][ 2 ] )
+            new three_js.Vector3( data.vertices[ i ][ 0 ], data.vertices[ i ][ 1 ], data.vertices[ i ][ 2 ] )
         );
 
     for ( i = 0, len = data.faces.length ; i < len ; i++ ) {
@@ -628,15 +631,15 @@ function mesh ( data, material ) {
 
         if ( face.length === 3 )
             geometry.faces.push(
-                new three.Face3( face[ 0 ], face[ 1 ], face[ 2 ] )
+                new three_js.Face3( face[ 0 ], face[ 1 ], face[ 2 ] )
             );
 
         else if ( face.length === 4 ) {
             geometry.faces.push(
-                new three.Face3( face[ 0 ], face[ 1 ], face[ 2 ] )
+                new three_js.Face3( face[ 0 ], face[ 1 ], face[ 2 ] )
             );
             geometry.faces.push(
-                new three.Face3( face[ 0 ], face[ 2 ], face[ 3 ] )
+                new three_js.Face3( face[ 0 ], face[ 2 ], face[ 3 ] )
             );
         }
 
@@ -645,7 +648,7 @@ function mesh ( data, material ) {
     geometry.computeBoundingSphere();
     geometry.computeFaceNormals();
 
-    return new three.Mesh( geometry, material );
+    return new three_js.Mesh( geometry, material );
 }
 
 
@@ -661,10 +664,10 @@ function mesh ( data, material ) {
  * @param { ThreeJS.Material } material The material to give the mesh
 
  */
-function polygonSet ( data, material ) {
+function polygonSet$1 ( data, material ) {
 
     /*eslint-disable no-console */
-    console.warn( 'polygonSet has not been implmenented\n\nReceived Data: ' + JSON.stringify( data ) +
+    console.warn( 'polygonSet has not been implmenented\n\nReceived Data: ' + JSON.stringify( data ) + 
                   '\n\nand material: ' + JSON.stringify( material ) );
     /*eslint-enable no-console */
 
@@ -700,19 +703,19 @@ function polygonSet ( data, material ) {
  * @param { ThreeJS.Material } material The material to give the mesh
 
  */
-function polyline ( data, material ) {
-
-    var geometry = new three.Geometry(),
+function polyline$1 ( data, material ) {
+    
+    var geometry = new three_js.Geometry(),
         point;
 
     for ( var i = 0, len = data.points.length ; i < len ; i++ ) {
         point = data.points[ i ];
         geometry.vertices.push(
-            new three.Vector3( point[ 0 ], point[ 1 ], point[ 2 ] )
+            new three_js.Vector3( point[ 0 ], point[ 1 ], point[ 2 ] )
         );
     }
 
-    return new three.Mesh( geometry, material );
+    return new three_js.Mesh( geometry, material );
 }
 
 
@@ -728,7 +731,7 @@ function polyline ( data, material ) {
  * @param { ThreeJS.Material } material The material to give the mesh
 
  */
-function surface ( data, material ) {
+function surface$1 ( data, material ) {
     var nsControlPoints = [],
         controlPoints = data.controlPoints,
         i = 0,
@@ -750,7 +753,7 @@ function surface ( data, material ) {
             point = controlPointRow[ j ];
 
             arr.push(
-                new three.Vector4(
+                new three_js.Vector4(
                     point[ 0 ],
                     point[ 1 ],
                     point[ 2 ],
@@ -772,15 +775,15 @@ function surface ( data, material ) {
                          ', where N is the number of control points along V direction' );
 
     //
-    var nurbsSurface = new three.NURBSSurface( data.vDegree, data.uDegree, data.vKnots, data.uKnots, nsControlPoints );
+    var nurbsSurface = new three_js.NURBSSurface( data.vDegree, data.uDegree, data.vKnots, data.uKnots, nsControlPoints );
 
-    var geometry = new three.ParametricGeometry(function ( u, v ) {
+    var geometry = new three_js.ParametricGeometry(function ( u, v ) {
         return nurbsSurface.getPoint( u, v );
     }, data.vDegree * nsControlPoints.length * 4, data.uDegree * nsControlPoints[ 0 ].length * 4 );
 
     geometry.computeFaceNormals();
 
-    return new three.Mesh( geometry, material );
+    return new three_js.Mesh( geometry, material );
 }
 
 
@@ -797,11 +800,11 @@ function surface ( data, material ) {
 
  *
  */
-function polysurface ( data, material ) {
-    var mesh = new three.Object3D();
+function polysurface$1 ( data, material ) {
+    var mesh = new three_js.Object3D();
 
     for ( var i = 0, len = data.surfaces.length ; i < len ; i++ )
-        mesh.add( surface( data.surfaces[ i ], material ) );
+        mesh.add( surface$1( data.surfaces[ i ], material ) );
 
     return mesh;
 }
@@ -817,8 +820,8 @@ function polysurface ( data, material ) {
  *
  * @param { Object } data     Parasolid data
  */
-function text ( data ) {
-    return new three.TextHelper( data.text, {
+function text$1 ( data ) {
+    return new three_js.TextHelper( data.text, {
         size: data.size,
         resolution: data.resolution,
         color: data.color,
@@ -829,26 +832,26 @@ function text ( data ) {
 
 
 var primitiveHelpers = Object.freeze({
-    cone: cone,
-    cylinder: cylinder,
-    sphere: sphere,
-    torus: torus,
-    block: block,
-    circle: circle,
-    rectangle: rectangle,
-    plane: plane,
-    point: point,
-    vector: vector,
-    line: line,
-    polycurve: polycurve,
-    curve: curve,
-    arc: arc,
-    mesh: mesh,
-    polygonSet: polygonSet,
-    polyline: polyline,
-    surface: surface,
-    polysurface: polysurface,
-    text: text
+    cone: cone$1,
+    cylinder: cylinder$1,
+    sphere: sphere$1,
+    torus: torus$1,
+    block: block$1,
+    circle: circle$1,
+    rectangle: rectangle$1,
+    plane: plane$1,
+    point: point$1,
+    vector: vector$1,
+    line: line$1,
+    polycurve: polycurve$1,
+    curve: curve$1,
+    arc: arc$1,
+    mesh: mesh$1,
+    polygonSet: polygonSet$1,
+    polyline: polyline$1,
+    surface: surface$1,
+    polysurface: polysurface$1,
+    text: text$1
 });
 
 var PHONG = 0;
@@ -900,7 +903,7 @@ function createPrimitive ( data ) {
 
         if ( axis )
             mesh.lookAt( mesh.position.clone().add(
-                new three.Vector3(
+                new three_js.Vector3(
                     axis[ 0 ],
                     axis[ 1 ],
                     axis[ 2 ]
@@ -920,7 +923,7 @@ function createPrimitive ( data ) {
         return mesh;
 
     }
-
+    
     throw new Error( 'Unsupported geometry type: ' + data.primitive )
 
 }
@@ -944,7 +947,7 @@ function _findMaterialProperties ( data ) {
     if ( data.attributes ) return data.attributes.materialProperties;
     else if ( data.materialProperties ) return data.materialProperties;
     else return {
-        side: three.DoubleSide
+        side: three_js.DoubleSide
     };
 }
 
@@ -968,11 +971,11 @@ function _findMaterialProperties ( data ) {
  */
 function _createMaterial ( type, materialProperties ) {
 
-    if ( materialProperties && !materialProperties.side ) materialProperties.side = three.DoubleSide;
+    if ( materialProperties && !materialProperties.side ) materialProperties.side = three_js.DoubleSide;
 
-    if ( type === PHONG ) return new three.MeshPhongMaterial( materialProperties );
-    else if ( type === POINT ) return new three.PointsMaterial( materialProperties );
-    else if ( type === LINE ) return new three.LineBasicMaterial( materialProperties );
+    if ( type === PHONG ) return new three_js.MeshPhongMaterial( materialProperties );
+    else if ( type === POINT ) return new three_js.PointsMaterial( materialProperties );
+    else if ( type === LINE ) return new three_js.LineBasicMaterial( materialProperties );
 
 }
 
@@ -984,7 +987,7 @@ function _createMaterial ( type, materialProperties ) {
  *
  * @function _resolveLegacyNames
  * @private
- *
+ * 
  * @return { String } the current name
  *
  * @param { String } name a name that may be legacy
@@ -1047,10 +1050,10 @@ var DEFAULTS = {
  * Creates THREE scene and geometries from parasolid output.
  * The method is called recursively for each array and entities
  * map
- *
+ * 
  * @function createObject
  * @return { Object } An object with a ThreeJS scene graph as .mesh and a set of invalid primitives
- *
+ * 
  * @param { Object }  data        Parasolid Data from the flux json representation
  * @param { Boolean } mergeModels Whether or not to merge resulting geometries where possible
  *                                defaults to true
@@ -1110,7 +1113,7 @@ function _handleEntities ( data, root ) {
         results = createObject( data.Entities[ key ] );
 
         if ( results.mesh ) {
-            if ( !root.mesh ) root.mesh = new three.Object3D();
+            if ( !root.mesh ) root.mesh = new three_js.Object3D();
 
             root.mesh.add( results.mesh );
         }
@@ -1176,7 +1179,7 @@ function _handleArray ( data, root ) {
  */
 function _mergeModels ( mesh, root ) {
 
-    if ( !root.mesh ) root.mesh = new three.Object3D();
+    if ( !root.mesh ) root.mesh = new three_js.Object3D();
 
     var children = root.mesh.children,
         i = 0,
@@ -1206,7 +1209,7 @@ function _mergeModels ( mesh, root ) {
  * @param { ThreeJS.Object3D } object The object to check
  */
 function _objectDoesntHaveBufferGeometry ( object ) {
-    return object.geometry && !( object.geometry instanceof three.BufferGeometry );
+    return object.geometry && !( object.geometry instanceof three_js.BufferGeometry );
 }
 
 
@@ -1242,7 +1245,337 @@ function _upgradeChildrenToBuffer ( object ) {
  * @param { ThreeJS.Object3D } object Object to upgrade
  */
 function _upgradeGeometryToBuffer ( object ) {
-    object.geometry = new three.BufferGeometry().fromGeometry( object.geometry );
+    object.geometry = new three_js.BufferGeometry().fromGeometry( object.geometry );
 }
 
-module.exports = createObject;
+/*
+ * A set of fixtures for the parasolid util tests
+ */
+
+var cone = {
+    "input": {
+        "direction":[1,1,1],
+        "height":10,
+        "origin":[0,0,0],
+        "primitive":"cone",
+        "radius":10,
+        "semi-angle":10
+    },
+    "result": {
+        "type": "Mesh"
+    }
+};
+
+var cylinder = {
+    "input": {
+        "axis":[10,20,30],
+        "height":40,
+        "origin":[0,0,0],
+        "primitive":"cylinder",
+        "radius":10
+    },
+    "result": {
+        "type": "Mesh"
+    }
+};
+
+var sphere = {
+    "input": {
+        "origin":[0,0,0],
+        "primitive":"sphere",
+        "radius":10
+    },
+    "result": {
+        "type": "Mesh"
+    }
+};
+
+var torus = {
+    "input": {
+        "origin": [0,0,0],
+        "majorRadius": 5,
+        "minorRadius":3,
+        "axis":[0,0,1],
+        "primitive":"torus"
+    },
+    "result": {
+        "type": "Mesh"
+    }
+};
+
+var block = {
+    "input": {
+        "origin":[0,0,0],
+        "dimensions":[1,2,3],
+        "axis":[0,0,1],
+        "reference":[0,1,0],
+        "primitive":"block"
+    },
+    "result": {
+        "type": "Mesh"
+    }
+};
+
+
+var circle = {
+     "input": {
+         "origin":[0,0,0],
+         "primitive":"circle",
+         "radius":10
+     },
+     "result": {
+         "type": "Mesh"
+     }
+};
+
+var rectangle = {
+    "input": {
+        "dimensions": [2,2],
+        "primitive": "rectangle"
+    },
+    "result": {
+        "type": "Mesh"
+    }
+};
+
+var plane = {
+    "input": {
+        "origin":[5,5,0],
+        "normal":[0,0,1],
+        "primitive":"plane"
+    },
+    "result": {
+        "type": "Mesh"
+    }
+};
+
+var point = {
+    "input": {
+        "point":[0,0,0],
+        "primitive":"point"
+    },
+    "result": {
+        "type":"Points"
+    }
+};
+
+var vector = {
+    "input": {
+        "coords": [2,2,0], 
+        "primitive": "vector"
+    },
+    "result": {
+        "type": "Object3D"
+    }
+};
+
+var line = {
+    "input": {
+        "end":[2,2,2],
+        "primitive":"line",
+        "start":[1,1,1]
+    },
+    "result": {
+        "type": "Line"
+    }
+};
+
+var curve = {
+    "input": {
+        "controlPoints":[[0,0,0],[1,0,0],[1,1,0],[0,1,0]],
+        "degree":3,
+        "knots":[0,0,0,1,2,3,3,3],
+        "primitive":"curve"
+    },
+    "result": {
+        "type": "Line"
+    }
+};
+
+var polycurve = {
+    "input": {
+        "curves":[{
+            "controlPoints":[[0,0,0],[1,0,0],[1,1,0],[0,1,0]],
+            "degree":3,"knots":[0,0,0,1,2,3,3,3],
+            "primitive":"curve"
+        }, {
+            "degree":3,
+            "knots":[0,0,0,0,14.1,14.1,14.1,14.1],
+            "controlPoints":[[0,0,0],[-3.3,-3.3,0],[-6.6,-6.6,0],[-10,-10,0]],
+            "primitive":"curve"
+        }],
+        "primitive":"polycurve"
+    },
+    "result": {
+        "type": "Object3D"
+    }
+};
+
+var arc = {
+    "input": {
+        "start":[1,0,0],
+        "middle":[0,1,0],
+        "end":[-1,0,0],
+        "primitive":"arc"
+    },
+    "result": {
+        "type": "Line"
+    }
+};
+
+var degenerateArc = { // test degenerate arc
+    "input": {
+        "start":[0,0,0],
+        "middle":[1,1,0],
+        "end":[0,0,0],
+        "primitive":"arc"
+    },
+    "result": {
+        "type": "Line"
+    }
+};
+
+var mesh = {
+    "input": {
+         "vertices": [[-1,0,0],[0,1,2],[1,0,0],[0,-1,2]],
+         "faces":[[0,3,1],[1,3,2]],
+         "primitive":"mesh"
+    },
+    "result": {
+        "type": "Mesh"
+    }
+};
+
+var polygonSet = {
+    "input":{
+        "polygons":[{
+            "boundary":[[15,0,0],[-7.5,13.0,0],[-7.5,-13.0,0]],
+            "holes":[]
+        }],
+        "primitive":"polygon-set"
+    },
+    "result": {
+        "type": "Mesh"
+    },
+};
+
+var polyline = {
+    "input": {
+        "points":[[0,0,5],[1,0,5],[2,2,5],[0,1,5]],
+        "primitive":"polyline"
+    },
+    "result": {
+        "type": "Line"
+    }
+};
+
+var surface = {
+    "input": {
+        "controlPoints":[[[-8,8,0],[8,8,0]],[[-8,-8,0],[8,-8,0]]],
+        "primitive":"surface",
+        "uDegree":1,
+        "uKnots":[0,0,1,1],
+        "vDegree":1,
+        "vKnots":[0,0,1,1]
+    },
+    "result": {
+        "type": "Mesh"
+    }
+};
+
+var polysurface = {
+    "input": {
+        "surfaces":[{
+            "controlPoints":[[[-8,8,0],[8,8,0]],[[-8,-8,0],[8,-8,0]]],
+            "primitive":"surface",
+            "uDegree":1,
+            "uKnots":[0,0,1,1],
+            "vDegree":1,
+            "vKnots":[0,0,1,1]
+        }, {
+            "controlPoints":[[[-20,8,9],[-8,8,0]],[[-20,-8,9],[-8,-8,0]]],
+            "primitive":"surface",
+            "uDegree":1,
+            "uKnots":[0,0,1,1],
+            "vDegree":1,
+            "vKnots":[0,0,1,1]
+        }],
+        "primitive":"polysurface"
+    },
+    "result": {
+        "type": "Object3D"
+    }
+};
+
+var text = {
+    "input": {
+        "align":[0,0,0],
+        "direction":[0,-1,100],
+        "origin":[0,-7,1],
+        "primitive":"text",
+        "size":8,
+        "text":"Text!"
+    },
+    "result": {
+        "type": "textHelper"
+    }
+};
+
+var invalid = {
+    "input": {
+        "info": "Not supported", 
+        "primitive": "brep"
+    },
+    "result": null
+};
+
+
+
+var fixtures = Object.freeze({
+    cone: cone,
+    cylinder: cylinder,
+    sphere: sphere,
+    torus: torus,
+    block: block,
+    circle: circle,
+    rectangle: rectangle,
+    plane: plane,
+    point: point,
+    vector: vector,
+    line: line,
+    curve: curve,
+    polycurve: polycurve,
+    arc: arc,
+    degenerateArc: degenerateArc,
+    mesh: mesh,
+    polygonSet: polygonSet,
+    polyline: polyline,
+    surface: surface,
+    polysurface: polysurface,
+    text: text,
+    invalid: invalid
+});
+
+test( 'flux-parasolidUtil', function ( t ) {
+    var obj = createObject( 3 ),
+        key,
+        input;
+
+    t.equal( obj.mesh, null, 'it should ignore non geometric types' );
+
+    for ( key in fixtures ) {
+        input = fixtures[ key ].input;
+        obj = createObject( input );
+
+        if ( fixtures[ key ].result ) {
+            t.ok( obj.mesh, 'createObject should create a mesh for parasolid data of ' + key  );
+            t.equal( obj.mesh.type, fixtures[ key ].result.type, 'createObject should create a mesh of type ' +
+                                                                 fixtures[ key ].result.type + ' for data ' + key ); 
+        } else {
+            t.ok( obj.invalidPrims[ input.primitive ], 'if the data is invalid, createObject' +
+                                                       ' should return it as part of' +
+                                                       ' the set of invalid primitives' ); 
+        }
+    }
+
+});

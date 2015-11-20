@@ -30,7 +30,7 @@ import {
     NURBSSurface,
     ParametricGeometry,
     TextHelper
-} from 'three.js';
+} from 'three';
 import VectorManager from './vectorManager.js';
 
 
@@ -102,7 +102,7 @@ function rotateGeometry ( object, vector ) {
  */
 export function cone ( data, material ) {
     var geometry, mesh;
-    
+
     geometry = new CylinderGeometry( 0, data.radius, data.height, 32 );
     mesh = new Mesh( geometry, material );
     moveGeometry( mesh, new Vector3( 0, data.height * 0.5, 0 ) );
@@ -638,7 +638,7 @@ export function mesh ( data, material ) {
 export function polygonSet ( data, material ) {
 
     /*eslint-disable no-console */
-    console.warn( 'polygonSet has not been implmenented\n\nReceived Data: ' + JSON.stringify( data ) + 
+    console.warn( 'polygonSet has not been implmenented\n\nReceived Data: ' + JSON.stringify( data ) +
                   '\n\nand material: ' + JSON.stringify( material ) );
     /*eslint-enable no-console */
 
@@ -675,7 +675,7 @@ export function polygonSet ( data, material ) {
 
  */
 export function polyline ( data, material ) {
-    
+
     var geometry = new Geometry(),
         point;
 

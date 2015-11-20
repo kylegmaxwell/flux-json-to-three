@@ -8,7 +8,7 @@
  * Imports
  */
 import createPrimitive from './src/createPrimitive.js';
-import { Object3D, BufferGeometry } from 'three.js';
+import { Object3D, BufferGeometry } from 'three';
 
 var DEFAULTS = {
     MERGE_MODELS: true
@@ -20,10 +20,10 @@ var DEFAULTS = {
  * Creates THREE scene and geometries from parasolid output.
  * The method is called recursively for each array and entities
  * map
- * 
+ *
  * @function createObject
  * @return { Object } An object with a ThreeJS scene graph as .mesh and a set of invalid primitives
- * 
+ *
  * @param { Object }  data        Parasolid Data from the flux json representation
  * @param { Boolean } mergeModels Whether or not to merge resulting geometries where possible
  *                                defaults to true
