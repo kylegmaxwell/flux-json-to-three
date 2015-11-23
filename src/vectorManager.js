@@ -75,7 +75,18 @@ VectorManager.prototype.clear = function clear () {
  * @param { Three.Vector3 } v The vector to copy
  */
 VectorManager.prototype.clone = function clone ( v ) {
-    return this.alloc().clone( v );
+    return this.alloc().copy( v );
 };
 
 
+/**
+ * Create and allocate a vector from an array
+ *
+ * @method convert
+ * @return { Three.Vector3 } The newly allocated vector
+ *
+ * @param  {[Number]} arr Array of 3 numeric values
+ */
+VectorManager.prototype.convert = function clone ( arr ) {
+    return this.alloc().set( arr[0], arr[1], arr[2] );
+};

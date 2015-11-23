@@ -95,7 +95,7 @@ export default function createPrimitive ( data ) {
 
     }
 
-    throw new Error( 'Unsupported geometry type: ' + data.primitive )
+    throw new Error( 'Unsupported geometry type: ' + data.primitive );
 
 }
 
@@ -185,7 +185,7 @@ function _resolveLegacyNames ( name ) {
  * @function _convertToZUp
  * @private
  *
- * @param { ThreeJS.Object3d } object The object to convert to z-up
+ * @param { ThreeJS.Object3D } object The object to convert to z-up
  */
 function _convertToZUp ( object ) {
     object.up.set( 0, 0, 1 );
