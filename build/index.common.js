@@ -885,10 +885,12 @@ var PRIMITIVE_TO_MATERIAL = {
  */
 function createPrimitive ( data ) {
 
-    var materialProperties = _findMaterialProperties( data ),
-        material = _createMaterial( PRIMITIVE_TO_MATERIAL[ data.primitive ], materialProperties ),
-        mesh = primitiveHelpers[ _resolveLegacyNames( data.primitive ) ]( data, material ),
-        axis;
+    var materialProperties = _findMaterialProperties( data );
+    var material = _createMaterial( PRIMITIVE_TO_MATERIAL[ data.primitive ], materialProperties );
+    var primFunction = primitiveHelpers[ _resolveLegacyNames( data.primitive ) ];
+    if (!primFunction) return;
+    var mesh = primFunction( data, material );
+    var axis;
 
     if ( mesh ) {
 
@@ -1133,29 +1135,33 @@ function _handleEntities ( data, root ) {
  * @param { Object } data Parasolid data
  * @param { Object } root The root object that is being built
  *                        in this part of the scene graph
+ * @param { Object } data Whether to merge models when possible
  */
-function _handleArray ( data, root ) {
+function _handleArray ( data, root, mergeModels ) {
     var i = 0,
         len = data.length,
         key,
         results;
+    if ( !root.mesh ) root.mesh = new three.Object3D();
 
     for (  ; i < len ; i++ ) {
-        results = this.createObject( data[ i ] );
+        results = createObject( data[ i ] );
 
         if ( results.mesh ) {
 
             results.mesh.updateMatrixWorld( true );
 
-            if ( this.mergeModels && !results.mesh.materialProperties )
+            if ( mergeModels && !results.mesh.materialProperties ) {
                 _mergeModels( results.mesh, root );
-
-            else root.mesh.add( results.mesh );
-
+            }
+            else {
+                root.mesh.add( results.mesh);
+            }
         }
 
-        for ( key in results.invalidPrims ) root.invalidPrims[ key ] = true;
-
+        for ( key in results.invalidPrims ) {
+            root.invalidPrims[ key ] = true;
+        }
     }
 
     if ( root.mesh ) _upgradeChildrenToBuffer( root.mesh );

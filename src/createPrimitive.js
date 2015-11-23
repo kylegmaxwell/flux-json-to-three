@@ -57,10 +57,12 @@ var PHONG = 0,
  */
 export default function createPrimitive ( data ) {
 
-    var materialProperties = _findMaterialProperties( data ),
-        material = _createMaterial( PRIMITIVE_TO_MATERIAL[ data.primitive ], materialProperties ),
-        mesh = primitiveHelpers[ _resolveLegacyNames( data.primitive ) ]( data, material ),
-        axis;
+    var materialProperties = _findMaterialProperties( data );
+    var material = _createMaterial( PRIMITIVE_TO_MATERIAL[ data.primitive ], materialProperties );
+    var primFunction = primitiveHelpers[ _resolveLegacyNames( data.primitive ) ];
+    if (!primFunction) return;
+    var mesh = primFunction( data, material );
+    var axis;
 
     if ( mesh ) {
 
