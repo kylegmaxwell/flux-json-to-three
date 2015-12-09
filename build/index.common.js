@@ -78,253 +78,21 @@ VectorManager.prototype.convert = function clone ( arr ) {
     return this.alloc().set( arr[0], arr[1], arr[2] );
 };
 
-var HALF_PI = Math.PI * 0.5;
-var TOLERANCE = 0.000001;
-var DEFAULT_ROTATION = new three.Vector3( HALF_PI, HALF_PI, 0 );
-var PLANE_DEFAULTS = {
+const HALF_PI = Math.PI * 0.5;
+const TOLERANCE = 0.000001;
+const DEFAULT_ROTATION = new three.Vector3( HALF_PI, HALF_PI, 0 );
+const PLANE_DEFAULTS = {
         WIDTH: 10000,
         HEIGHT: 10000,
         WIDTH_SEGMENTS: 100,
         HEIGHT_SEGMENTS: 100
     };
+
 /*
  * helpers
  */
 
 var vec = new VectorManager(); // an ObjectPool for managing Three.js vectors
-
-
-
-/**
- * Moves a geometry by a vector
- *
- * @function moveGeometry
- *
- * @param { THREEJS.OBJECT3D } object The object to move
- * @param { THREEJS.VECTOR3 } vector The vector to move the object by
- */
-function moveGeometry ( object, vector ) {
-    object.position.copy( vector );
-    object.updateMatrix();
-    object.geometry.applyMatrix( object.matrix );
-    object.position.set( 0, 0, 0 );
-}
-
-
-
-/**
- * Rotates a geometry by a vector
- *
- * @function rotateGeometry
- *
- * @param { THREEJS.OBJECT3D } object The object to rotate
- * @param { THREEJS.VECTOR3 }  vector The vector to rotate by in Euler Angles
- */
-function rotateGeometry ( object, vector ) {
-    object.rotation.set( vector.x, vector.y, vector.z );
-    object.updateMatrix();
-    object.geometry.applyMatrix( object.matrix );
-    object.rotation.set( 0, 0, 0 );
-}
-
-
-
-/**
- * Creates a cone mesh from parasolid data and a material.
- *
- * @function cone
- *
- * @return { ThreeJS.Mesh } The cone mesh
- *
- * @param { Object }           data     Parasolid data
- * @param { THREEJS.Material } material The material to give the mesh
- */
-function cone ( data, material ) {
-    var geometry, mesh;
-
-    geometry = new three.CylinderGeometry( 0, data.radius, data.height, 32 );
-    mesh = new three.Mesh( geometry, material );
-    moveGeometry( mesh, new three.Vector3( 0, data.height * 0.5, 0 ) );
-    rotateGeometry( mesh, DEFAULT_ROTATION );
-
-    return mesh;
-}
-
-
-
-/**
- * Creates a cylindrical mesh from parasolid data and a material
- *
- * @function cylinder
- *
- * @return { ThreeJS.Mesh } The cylindrical mesh
- *
- * @param { Object }           data     Parasolid data
- * @param { ThreeJS.Material } material The material to give the mesh
- */
-function cylinder ( data, material ) {
-    var geometry, mesh;
-
-    geometry = new three.CylinderGeometry( data.radius, data.radius, data.height, 32 );
-    mesh = new three.Mesh( geometry, material );
-    moveGeometry( mesh, new three.Vector3( 0, data.height * 0.5, 0 ) );
-    rotateGeometry( mesh, DEFAULT_ROTATION );
-
-    return mesh;
-}
-
-
-
-/**
- * Creates a spherical mesh from parasolid data and a material
- *
- * @function sphere
- *
- * @return { ThreeJS.Mesh } The spherical mesh
- *
- * @param { Object }           data     Parasolid data
- * @param { ThreeJS.Material } material The material to give the mesh
- */
-function sphere ( data, material ) {
-    var geometry, mesh;
-
-    geometry = new three.SphereBufferGeometry( data.radius, 12, 8 );
-    mesh = new three.Mesh( geometry, material );
-    rotateGeometry( mesh, DEFAULT_ROTATION );
-
-    return mesh;
-}
-
-
-
-/**
- * Creates a toroidal mesh from parasolid data and a material
- *
- * @function torus
- *
- * @return { ThreeJS.Mesh } The toroidal mesh
- *
- * @param { Object }           data     Parasolid data
- * @param { ThreeJS.Material } material The material to give the mesh
- */
-function torus ( data, material ) {
-    var geometry = new three.TorusGeometry( data.major_radius, data.minor_radius, 24, 24 );
-    return new three.Mesh( geometry, material );
-}
-
-
-
-/**
- * Creates a box mesh from parasolid data and a material
- *
- * @function block
- *
- * @return { ThreeJS.Mesh } The box mesh
- *
- * @param { Object }           data     Parasolid data
- * @param { ThreeJS.Material } material The material to give the mesh
- */
-function block ( data, material ) {
-    var geometry = new three.BoxGeometry( data.dimensions[ 0 ], data.dimensions[ 1 ], data.dimensions[ 2 ] );
-    return new three.Mesh( geometry, material );
-}
-
-
-
-/**
- * Creates a circular mesh from parasolid data and a material
- *
- * @function circle
- *
- * @return { ThreeJS.Mesh } The circular mesh
- *
- * @param { Object }           data     Parasolid data
- * @param { ThreeJS.Material } material The material to give the mesh
- */
-function circle ( data, material ) {
-    var geometry = new three.CircleGeometry( data.radius, 32 );
-    return new three.Mesh( geometry, material );
-}
-
-
-
-/**
- * Creates a rectangular mesh from parasolid data and a material
- *
- * @function rectangle
- *
- * @return { ThreeJS.Mesh } The rectangular mesh
- *
- * @param { Object }           data     Parasolid data
- * @param { ThreeJS.Material } material The material to give the mesh
- */
-function rectangle ( data, material ) {
-    var geometry = new three.PlaneBufferGeometry( data.dimensions[ 0 ], data.dimensions[ 1 ] );
-    return new three.Mesh( geometry, material );
-}
-
-
-
-/**
- * Creates a planar mesh from parasolid data and a material
- *
- * @function plane
- *
- * @return { ThreeJS.Mesh } The planar mesh
- *
- * @param { Object }           data     Parasolid data
- * @param { ThreeJS.Material } material The material to give the mesh
- */
-function plane ( data, material ) {
-    var geometry = new three.PlaneBufferGeometry( PLANE_DEFAULTS.WIDTH, PLANE_DEFAULTS.HEIGHT,
-                                            PLANE_DEFAULTS.WIDTH_SEGMENTS, PLANE_DEFAULTS.HEIGHT_SEGMENTS );
-    return new three.Mesh( geometry, material );
-}
-
-
-
-/**
- * Creates a point mesh from parasolid data and a material
- *
- * @function point
- *
- * @return { ThreeJS.Mesh } The point mesh
- *
- * @param { Object }           data     Parasolid data
- * @param { ThreeJS.Material } material The material to give the mesh
- */
-function point ( data, material ) {
-    var positions = new Float32Array( data.point ),
-        geometry = new three.BufferGeometry();
-
-    geometry.addAttribute( 'position', new three.BufferAttribute( positions, 3 ) );
-    geometry.computeBoundingBox();
-    return new three.Points( geometry, material );
-}
-
-
-
-/**
- * Creates a vector mesh from parasolid data and a material
- *
- * @function vector
- *
- * @return { ThreeJS.Mesh } The vector mesh
- *
- * @param { Object }           data     Parasolid data
- * @param { ThreeJS.Material } material The material to give the mesh
- */
-function vector ( data ) {
-    var dir = new three.Vector3( data.coords[ 0 ], data.coords[ 1 ], data.coords[ 2 ] ),
-        origin = new three.Vector3( 0, 0, 0 );
-
-    if ( dir.length() > 0 ) dir.normalize();
-    else throw new Error( 'Vector primitive has length zero' );
-
-    return new three.ArrowHelper( dir, origin, dir.length() );
-}
-
-
 
 /**
  * Creates a linear mesh from parasolid data and a material
@@ -345,30 +113,46 @@ function line ( data, material ) {
     return new three.Line( geometry, material );
 }
 
-
-
 /**
- * Creates a mesh with multiple curves from parasolid data and a material
+ * Creates a mesh as a set of lines from parasolid data and a material
  *
- * @function polycurve
+ * @function polyline
  *
- * @return { ThreeJS.Mesh } The mesh with curves
+ * @return { ThreeJS.Mesh } The mesh
  *
  * @param { Object }           data     Parasolid data
  * @param { ThreeJS.Material } material The material to give the mesh
 
  */
-function polycurve ( data, material ) {
-    var mesh = new three.Object3D(),
-        i, len;
+function polyline ( data, material ) {
 
-    for ( i = 0, len = data.curves.length ; i < len ; i++ )
-        mesh.add( curve( data.curves[ i ], material ) );
+    var geometry = new three.Geometry(),
+        point;
 
-    return mesh;
+    for ( var i = 0, len = data.points.length ; i < len ; i++ ) {
+        point = data.points[ i ];
+        geometry.vertices.push(
+            new three.Vector3( point[ 0 ], point[ 1 ], point[ 2 ] )
+        );
+    }
+
+    return new three.Line( geometry, material );
 }
 
-
+/**
+ * Creates a circular mesh from parasolid data and a material
+ *
+ * @function circle
+ *
+ * @return { ThreeJS.Mesh } The circular mesh
+ *
+ * @param { Object }           data     Parasolid data
+ * @param { ThreeJS.Material } material The material to give the mesh
+ */
+function circle ( data, material ) {
+    var geometry = new three.CircleGeometry( data.radius, 32 );
+    return new three.Mesh( geometry, material );
+}
 
 /**
  * Creates a curve mesh from parasolid data and a material
@@ -394,8 +178,6 @@ function curve ( data, material ) {
 
     return new three.Line( geometry, material );
 }
-
-
 
 /**
  * Helper to create a set of control points from parasolid data
@@ -429,8 +211,6 @@ function _createControlPoints ( data ) {
 
     return result;
 }
-
-
 
 /**
  * Creates a arc mesh from parasolid data and a material
@@ -490,6 +270,10 @@ function arc ( data, material ) {
         vertices = _tessellateArc(a, c, ab, bc, center, up);
     }
 
+    if (vertices.length <= 0) {
+        throw new Error( 'Arc has no vertices');
+    }
+
     // Create geometry and material
     geometry = new three.BufferGeometry();
     geometry.addAttribute( 'position', new three.BufferAttribute( vertices, 3 ) );
@@ -498,8 +282,6 @@ function arc ( data, material ) {
 
     return new three.Line(geometry, material);
 }
-
-
 
 /**
  * Computes the midpoint as the center of segment ab
@@ -517,8 +299,6 @@ function _computeMidpoint ( a, b, midPoint ) {
     midPoint.multiplyScalar( 0.5 );
     midPoint.add( a );
 }
-
-
 
 /**
  * Caclulate an appropriate number of points along a given arc
@@ -560,8 +340,6 @@ function _tessellateArc ( a, c, ab, bc, center, up ) {
     return vertices;
 }
 
-
-
 /**
  * Compute the intersection of two lines in 3D.
  * @Precondition The lines are not parallel, there is exactly 1 intersection.
@@ -587,7 +365,7 @@ function _intersectLines (p0, p1, d0, d1, intersect) {
     var i = 0;
     var x;
     var y;
-    while(isFinite(t0) && i < cases.length) {
+    while(!isFinite(t0) && i < cases.length) {
         x = cases[i];
         y = cases[i+1];
         // compute t from the formula
@@ -598,8 +376,6 @@ function _intersectLines (p0, p1, d0, d1, intersect) {
     // calculate the intersection as a linear combination of the point and direction
     intersect.copy(d0).multiplyScalar(t0).add(p0);
 }
-
-
 
 /**
  * Add each element of a vector to an array
@@ -613,53 +389,35 @@ function _setVecInArray (arr, offset, vec) {
     arr[offset+2] = vec.z;
 }
 
-
-
 /**
- * Creates a mesh from parasolid data and a material
+ * Creates a rectangular mesh from parasolid data and a material
  *
- * @function mesh
+ * @function rectangle
  *
- * @return { ThreeJS.Mesh } The mesh
+ * @return { ThreeJS.Mesh } The rectangular mesh
  *
  * @param { Object }           data     Parasolid data
  * @param { ThreeJS.Material } material The material to give the mesh
-
  */
-function mesh ( data, material ) {
-    var geometry = new three.Geometry(),
-        face;
-
-    for ( var i = 0, len = data.vertices.length ; i < len ; i++ )
-        geometry.vertices.push(
-            new three.Vector3( data.vertices[ i ][ 0 ], data.vertices[ i ][ 1 ], data.vertices[ i ][ 2 ] )
-        );
-
-    for ( i = 0, len = data.faces.length ; i < len ; i++ ) {
-
-        face = data.faces[ i ];
-
-        if ( face.length === 3 )
-            geometry.faces.push(
-                new three.Face3( face[ 0 ], face[ 1 ], face[ 2 ] )
-            );
-
-        else if ( face.length === 4 ) {
-            geometry.faces.push(
-                new three.Face3( face[ 0 ], face[ 1 ], face[ 2 ] )
-            );
-            geometry.faces.push(
-                new three.Face3( face[ 0 ], face[ 2 ], face[ 3 ] )
-            );
-        }
-
-    }
-
-    geometry.computeBoundingSphere();
-    geometry.computeFaceNormals();
-
+function rectangle ( data, material ) {
+    var geometry = new three.PlaneBufferGeometry( data.dimensions[ 0 ], data.dimensions[ 1 ] );
     return new three.Mesh( geometry, material );
 }
+
+var wirePrimitives = Object.freeze({
+    line: line,
+    polyline: polyline,
+    circle: circle,
+    curve: curve,
+    arc: arc,
+    rectangle: rectangle
+});
+
+/*
+ * helpers
+ */
+
+var vec$1 = new VectorManager(); // an ObjectPool for managing Three.js vectors
 
 /**
  * Convert a flux json polygon to an object with THREE.Vector3 coordinates
@@ -685,7 +443,7 @@ function _polygonToThree(polygon) {
  */
 function _pointArrayToThree(pointsThree, pointsArray) {
     for (var i=0, len=pointsArray.length; i<len; i++) {
-        pointsThree.push(vec.convert(pointsArray[i]));
+        pointsThree.push(vec$1.convert(pointsArray[i]));
     }
 }
 
@@ -703,10 +461,10 @@ function polygonSet ( data, material ) {
 
     // TODO check for degeneracy (such as collocated points)
     // TODO check for winding order (holes should match boundary)
-    var p = vec.alloc();
-    var n = vec.alloc();
-    var u = vec.alloc();
-    var v = vec.alloc();
+    var p = vec$1.alloc();
+    var n = vec$1.alloc();
+    var u = vec$1.alloc();
+    var v = vec$1.alloc();
 
     // Loop over all shapes and holes
     for (var i=0, len=data.polygons.length; i<len; i++) {
@@ -715,7 +473,7 @@ function polygonSet ( data, material ) {
 
         _computePointBasis(p, n, u, v, polygon.boundary);
 
-        var p0 = vec.clone(polygon.boundary[0]);
+        var p0 = vec$1.clone(polygon.boundary[0]);
 
         // Polygon must be planar
         if (!_isPlanarPolygon(polygon, n, p0)) {
@@ -748,7 +506,7 @@ function polygonSet ( data, material ) {
  * @return {Boolean}                True when the points are on the plane
  */
 function _isPlanarArray (pointsThree, n, p0) {
-    var pointRel = vec.alloc();
+    var pointRel = vec$1.alloc();
     for (var i=0, len=pointsThree.length; i<len; i++) {
         pointRel.copy(pointsThree[i]).sub(p0);
         if (Math.abs(pointRel.dot(n))>TOLERANCE) {
@@ -785,14 +543,14 @@ function _isPlanarPolygon(polyThree, n, p0) {
  * @param  {THREE.Vector3} p0         Point on the polygon
  */
 function _reduceCoordinates(destPoints, srcPoints, u, v, p0) {
-    var p = vec.alloc();
+    var p = vec$1.alloc();
     var s, t;
     for (var i=0, len=srcPoints.length; i<len; i++) {
         p.copy(srcPoints[i]).sub(p0);
 
         s = p.dot(u);
         t = p.dot(v);
-        destPoints.push(vec.alloc().set(s, t, 0));
+        destPoints.push(vec$1.alloc().set(s, t, 0));
     }
 }
 
@@ -805,8 +563,8 @@ function _reduceCoordinates(destPoints, srcPoints, u, v, p0) {
  * @param  {[type]} v        The second basis direction.
  */
 function _restoreCoordinates(geometry, p, u, v) {
-    var uTmp = vec.alloc();
-    var vTmp = vec.alloc();
+    var uTmp = vec$1.alloc();
+    var vTmp = vec$1.alloc();
     for ( var i = 0, len = geometry.vertices.length ; i < len ; i++ ) {
 
         var vert = geometry.vertices[i];
@@ -838,7 +596,7 @@ function _computePointBasis(p, n, u, v, points) {
     p.copy(points[0]);
 
     //TODO check memory allocation (would be large for many polygons)
-    var v0 = vec.alloc().copy(points[0]);
+    var v0 = vec$1.alloc().copy(points[0]);
     u.copy(points[1]);
     v.copy(points[points.length-1]);
 
@@ -895,34 +653,6 @@ function _makeShape(boundary) {
 }
 
 /**
- * Creates a mesh as a set of lines from parasolid data and a material
- *
- * @function polyline
- *
- * @return { ThreeJS.Mesh } The mesh
- *
- * @param { Object }           data     Parasolid data
- * @param { ThreeJS.Material } material The material to give the mesh
-
- */
-function polyline ( data, material ) {
-
-    var geometry = new three.Geometry(),
-        point;
-
-    for ( var i = 0, len = data.points.length ; i < len ; i++ ) {
-        point = data.points[ i ];
-        geometry.vertices.push(
-            new three.Vector3( point[ 0 ], point[ 1 ], point[ 2 ] )
-        );
-    }
-
-    return new three.Line( geometry, material );
-}
-
-
-
-/**
  * Creates a surface mesh from parasolid data and a material
  *
  * @function surface
@@ -967,7 +697,6 @@ function surface ( data, material ) {
 
     }
 
-
     if ( data.uKnots.length !== nsControlPoints[ 0 ].length + data.uDegree + 1 )
         throw new Error( 'Number of uKnots in a NURBS surface should equal uDegree + N + 1' +
                          ', where N is the number of control points along U direction' );
@@ -989,6 +718,295 @@ function surface ( data, material ) {
 }
 
 
+var sheetPrimitives = Object.freeze({
+    polygonSet: polygonSet,
+    surface: surface
+});
+
+/**
+ * Moves a geometry by a vector
+ *
+ * @function moveGeometry
+ *
+ * @param { THREEJS.OBJECT3D } object The object to move
+ * @param { THREEJS.VECTOR3 } vector The vector to move the object by
+ */
+function moveGeometry ( object, vector ) {
+    object.position.copy( vector );
+    object.updateMatrix();
+    object.geometry.applyMatrix( object.matrix );
+    object.position.set( 0, 0, 0 );
+}
+
+/**
+ * Rotates a geometry by a vector
+ *
+ * @function rotateGeometry
+ *
+ * @param { THREEJS.OBJECT3D } object The object to rotate
+ * @param { THREEJS.VECTOR3 }  vector The vector to rotate by in Euler Angles
+ */
+function rotateGeometry ( object, vector ) {
+    object.rotation.set( vector.x, vector.y, vector.z );
+    object.updateMatrix();
+    object.geometry.applyMatrix( object.matrix );
+    object.rotation.set( 0, 0, 0 );
+}
+
+/**
+ * Creates a cone mesh from parasolid data and a material.
+ *
+ * @function cone
+ *
+ * @return { ThreeJS.Mesh } The cone mesh
+ *
+ * @param { Object }           data     Parasolid data
+ * @param { THREEJS.Material } material The material to give the mesh
+ */
+function cone ( data, material ) {
+    var geometry, mesh;
+
+    geometry = new three.CylinderGeometry( 0, data.radius, data.height, 32 );
+    mesh = new three.Mesh( geometry, material );
+    moveGeometry( mesh, new three.Vector3( 0, data.height * 0.5, 0 ) );
+    rotateGeometry( mesh, DEFAULT_ROTATION );
+
+    return mesh;
+}
+
+/**
+ * Creates a cylindrical mesh from parasolid data and a material
+ *
+ * @function cylinder
+ *
+ * @return { ThreeJS.Mesh } The cylindrical mesh
+ *
+ * @param { Object }           data     Parasolid data
+ * @param { ThreeJS.Material } material The material to give the mesh
+ */
+function cylinder ( data, material ) {
+    var geometry, mesh;
+
+    geometry = new three.CylinderGeometry( data.radius, data.radius, data.height, 32 );
+    mesh = new three.Mesh( geometry, material );
+    moveGeometry( mesh, new three.Vector3( 0, data.height * 0.5, 0 ) );
+    rotateGeometry( mesh, DEFAULT_ROTATION );
+
+    return mesh;
+}
+
+/**
+ * Creates a spherical mesh from parasolid data and a material
+ *
+ * @function sphere
+ *
+ * @return { ThreeJS.Mesh } The spherical mesh
+ *
+ * @param { Object }           data     Parasolid data
+ * @param { ThreeJS.Material } material The material to give the mesh
+ */
+function sphere ( data, material ) {
+    var geometry, mesh;
+
+    geometry = new three.SphereBufferGeometry( data.radius, 12, 8 );
+    mesh = new three.Mesh( geometry, material );
+    rotateGeometry( mesh, DEFAULT_ROTATION );
+
+    return mesh;
+}
+
+/**
+ * Creates a toroidal mesh from parasolid data and a material
+ *
+ * @function torus
+ *
+ * @return { ThreeJS.Mesh } The toroidal mesh
+ *
+ * @param { Object }           data     Parasolid data
+ * @param { ThreeJS.Material } material The material to give the mesh
+ */
+function torus ( data, material ) {
+    var geometry = new three.TorusGeometry( data.major_radius, data.minor_radius, 24, 24 );
+    return new three.Mesh( geometry, material );
+}
+
+/**
+ * Creates a box mesh from parasolid data and a material
+ *
+ * @function block
+ *
+ * @return { ThreeJS.Mesh } The box mesh
+ *
+ * @param { Object }           data     Parasolid data
+ * @param { ThreeJS.Material } material The material to give the mesh
+ */
+function block ( data, material ) {
+    var geometry = new three.BoxGeometry( data.dimensions[ 0 ], data.dimensions[ 1 ], data.dimensions[ 2 ] );
+    return new three.Mesh( geometry, material );
+}
+
+/**
+ * Creates a mesh from parasolid data and a material
+ *
+ * @function mesh
+ *
+ * @return { ThreeJS.Mesh } The mesh
+ *
+ * @param { Object }           data     Parasolid data
+ * @param { ThreeJS.Material } material The material to give the mesh
+
+ */
+function mesh ( data, material ) {
+    var geometry = new three.Geometry(),
+        face;
+
+    for ( var i = 0, len = data.vertices.length ; i < len ; i++ )
+        geometry.vertices.push(
+            new three.Vector3( data.vertices[ i ][ 0 ], data.vertices[ i ][ 1 ], data.vertices[ i ][ 2 ] )
+        );
+
+    for ( i = 0, len = data.faces.length ; i < len ; i++ ) {
+
+        face = data.faces[ i ];
+
+        if ( face.length === 3 )
+            geometry.faces.push(
+                new three.Face3( face[ 0 ], face[ 1 ], face[ 2 ] )
+            );
+
+        else if ( face.length === 4 ) {
+            geometry.faces.push(
+                new three.Face3( face[ 0 ], face[ 1 ], face[ 2 ] )
+            );
+            geometry.faces.push(
+                new three.Face3( face[ 0 ], face[ 2 ], face[ 3 ] )
+            );
+        }
+
+    }
+
+    geometry.computeBoundingSphere();
+    geometry.computeFaceNormals();
+
+    return new three.Mesh( geometry, material );
+}
+
+
+var solidPrimitives = Object.freeze({
+    cone: cone,
+    cylinder: cylinder,
+    sphere: sphere,
+    torus: torus,
+    block: block,
+    mesh: mesh
+});
+
+var BODY_TYPES = {
+    minimum: 0,
+    wire: 1,
+    sheet: 2,
+    solid: 3,
+    other: 4,
+};
+
+var wirePrimitivesList = Object.keys(wirePrimitives);
+var sheetPrimitivesList = Object.keys(sheetPrimitives);
+var solidPrimitivesList = Object.keys(solidPrimitives);
+
+function getEntityType ( primitive ) {
+    if (wirePrimitivesList.indexOf(primitive) !== -1) {
+        return BODY_TYPES.wire;
+    }
+    if (sheetPrimitivesList.indexOf(primitive) !== -1) {
+        return BODY_TYPES.sheet;
+    }
+    if (solidPrimitivesList.indexOf(primitive) !== -1) {
+        return BODY_TYPES.solid;
+    }
+    return 'other';
+}
+
+/**
+ * Creates a planar mesh from parasolid data and a material
+ *
+ * @function plane
+ *
+ * @return { ThreeJS.Mesh } The planar mesh
+ *
+ * @param { Object }           data     Parasolid data
+ * @param { ThreeJS.Material } material The material to give the mesh
+ */
+function plane ( data, material ) {
+    var geometry = new three.PlaneBufferGeometry( PLANE_DEFAULTS.WIDTH, PLANE_DEFAULTS.HEIGHT,
+                                            PLANE_DEFAULTS.WIDTH_SEGMENTS, PLANE_DEFAULTS.HEIGHT_SEGMENTS );
+    return new three.Mesh( geometry, material );
+}
+
+/**
+ * Creates a point mesh from parasolid data and a material
+ *
+ * @function point
+ *
+ * @return { ThreeJS.Mesh } The point mesh
+ *
+ * @param { Object }           data     Parasolid data
+ * @param { ThreeJS.Material } material The material to give the mesh
+ */
+function point ( data, material ) {
+    var positions = new Float32Array( data.point ),
+        geometry = new three.BufferGeometry();
+
+    geometry.addAttribute( 'position', new three.BufferAttribute( positions, 3 ) );
+    geometry.computeBoundingBox();
+    return new three.Points( geometry, material );
+}
+
+/**
+ * Creates a vector mesh from parasolid data and a material
+ *
+ * @function vector
+ *
+ * @return { ThreeJS.Mesh } The vector mesh
+ *
+ * @param { Object }           data     Parasolid data
+ * @param { ThreeJS.Material } material The material to give the mesh
+ */
+function vector ( data ) {
+    var dir = new three.Vector3( data.coords[ 0 ], data.coords[ 1 ], data.coords[ 2 ] ),
+        origin = new three.Vector3( 0, 0, 0 );
+
+    if ( dir.length() > 0 ) dir.normalize();
+    else throw new Error( 'Vector primitive has length zero' );
+
+    return new three.ArrowHelper( dir, origin, dir.length() );
+}
+
+/**
+ * Creates a mesh with multiple curves from parasolid data and a material
+ *
+ * @function polycurve
+ *
+ * @return { ThreeJS.Mesh } The mesh with curves
+ *
+ * @param { Object }           data     Parasolid data
+ * @param { ThreeJS.Material } material The material to give the mesh
+
+ */
+function polycurve ( data, material ) {
+    var mesh = new three.Object3D();
+    var i, len;
+    for ( i = 0, len = data.curves.length ; i < len ; i++ ) {
+        var curveData = data.curves[ i ];
+        if (curveData.primitive && getEntityType(curveData.primitive) === BODY_TYPES.wire) {
+            var wireFunction = wirePrimitives[curveData.primitive];
+            mesh.add( wireFunction( data.curves[ i ], material ) );
+        } else {
+            throw new Error( 'Found non wire body in a polycurve' );
+        }
+    }
+
+    return mesh;
+}
 
 /**
  * Creates a polysurface mesh from parasolid data and a material
@@ -1005,18 +1023,23 @@ function surface ( data, material ) {
 function polysurface ( data, material ) {
     var mesh = new three.Object3D();
 
-    for ( var i = 0, len = data.surfaces.length ; i < len ; i++ )
-        mesh.add( surface( data.surfaces[ i ], material ) );
+    for ( var i = 0, len = data.surfaces.length ; i < len ; i++ ) {
+        var surfaceData = data.surfaces[ i ];
+        if (surfaceData.primitive && getEntityType(surfaceData.primitive) === BODY_TYPES.sheet) {
+            var sheetFunction = sheetPrimitives[surfaceData.primitive];
+            mesh.add( sheetFunction( data.surfaces[ i ], material ) );
+        } else {
+            throw new Error( 'Found non sheet body in a polysurface' );
+        }
+    }
 
     return mesh;
 }
 
-
-
 /**
  * Creates a linear mesh from parasolid data and a material
  *
- * @function line
+ * @function text
  *
  * @return { ThreeJS.Mesh } The linear mesh
  *
@@ -1032,54 +1055,55 @@ function text ( data ) {
 }
 
 
-
 var primitiveHelpers = Object.freeze({
-    cone: cone,
-    cylinder: cylinder,
-    sphere: sphere,
-    torus: torus,
-    block: block,
-    circle: circle,
-    rectangle: rectangle,
     plane: plane,
     point: point,
     vector: vector,
-    line: line,
     polycurve: polycurve,
-    curve: curve,
-    arc: arc,
-    mesh: mesh,
-    polygonSet: polygonSet,
-    polyline: polyline,
-    surface: surface,
     polysurface: polysurface,
     text: text
 });
 
-var PHONG = 0;
-var POINT = 1;
-var LINE = 2;
-var PRIMITIVE_TO_MATERIAL = {
-        cone: PHONG,
-        cylinder: PHONG,
-        sphere: PHONG,
-        torus: PHONG,
-        block: PHONG,
-        circle: PHONG,
-        rectangle: PHONG,
-        plane: PHONG,
-        point: POINT,
-        'point-2d': POINT,
-        line: LINE,
-        polycurve: LINE,
-        curve: LINE,
-        arc:LINE,
-        mesh: PHONG,
-        'polygon-set': PHONG,
-        polygonSet: PHONG,
-        polyline: LINE,
-        surface: PHONG
-    };
+/*
+ * constants
+ */
+var materialTypes = {
+    PHONG: 0,
+    POINT: 1,
+    LINE: 2
+};
+
+function resolveType (primitive) {
+    var resolvedName = _resolveLegacyNames( primitive );
+
+    var primFunction = primitiveHelpers[ resolvedName ];
+    var materialType = materialTypes.POINT;
+
+    if (!primFunction) {
+        primFunction = wirePrimitives[ resolvedName ];
+        materialType = materialTypes.LINE;
+    }
+    if (!primFunction) {
+        primFunction = sheetPrimitives[ resolvedName ];
+        materialType = materialTypes.PHONG;
+    }
+    if (!primFunction) {
+        primFunction = solidPrimitives[ resolvedName ];
+        materialType = materialTypes.PHONG;
+    }
+
+    // special cases
+    if (primitive === 'polysurface' || primitive === 'plane') {
+        materialType = materialTypes.PHONG;
+    }
+
+    if (primitive === 'polycurve') {
+        materialType = materialTypes.LINE;
+    }
+
+    return { func: primFunction, material: materialType};
+}
+
 /**
  * Creates the ParaSolid Object
  *
@@ -1090,10 +1114,14 @@ var PRIMITIVE_TO_MATERIAL = {
  */
 function createPrimitive ( data ) {
 
+    var type = resolveType(data.primitive);
+
     var materialProperties = _findMaterialProperties( data );
-    var material = _createMaterial( PRIMITIVE_TO_MATERIAL[ data.primitive ], materialProperties );
-    var primFunction = primitiveHelpers[ _resolveLegacyNames( data.primitive ) ];
+    var material = _createMaterial( type.material, materialProperties );
+
+    var primFunction = type.func;
     if (!primFunction) return;
+
     var mesh = primFunction( data, material );
     var axis;
 
@@ -1132,11 +1160,6 @@ function createPrimitive ( data ) {
 
 }
 
-
-/*
- * helpers
- */
-
 /**
  * Helper method to find the material properties on the data
  *
@@ -1154,8 +1177,6 @@ function _findMaterialProperties ( data ) {
         side: three.DoubleSide
     };
 }
-
-
 
 /**
  * Helper method to create the material from the material properties.
@@ -1177,13 +1198,11 @@ function _createMaterial ( type, materialProperties ) {
 
     if ( materialProperties && !materialProperties.side ) materialProperties.side = three.DoubleSide;
 
-    if ( type === PHONG ) return new three.MeshPhongMaterial( materialProperties );
-    else if ( type === POINT ) return new three.PointsMaterial( materialProperties );
-    else if ( type === LINE ) return new three.LineBasicMaterial( materialProperties );
+    if ( type === materialTypes.PHONG ) return new three.MeshPhongMaterial( materialProperties );
+    else if ( type === materialTypes.POINT ) return new three.PointsMaterial( materialProperties );
+    else if ( type === materialTypes.LINE ) return new three.LineBasicMaterial( materialProperties );
 
 }
-
-
 
 /**
  * A helper to resolve legacy names to present names. This prevents deprication
@@ -1209,8 +1228,6 @@ function _resolveLegacyNames ( name ) {
     }
 }
 
-
-
 /**
  * A helper to convert geometry to z-up world by setting ups axis and rotation
  * order
@@ -1224,8 +1241,6 @@ function _convertToZUp ( object ) {
     object.up.set( 0, 0, 1 );
     object.rotation.order = 'YXZ';
 }
-
-
 
 /**
  * A helper to apply an origin to a mesh

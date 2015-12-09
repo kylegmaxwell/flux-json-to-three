@@ -14,38 +14,51 @@ import {
     PointsMaterial,
     LineBasicMaterial
 } from 'three';
-import * as primitiveHelpers from './primitives.js';
 
+import * as wirePrimitives from './wirePrimitives.js';
+import * as sheetPrimitives from './sheetPrimitives.js';
+import * as solidPrimitives from './solidPrimitives.js';
+import * as primitiveHelpers from './primitives.js';
 
 /*
  * constants
  */
-var PHONG = 0,
-    POINT = 1,
-    LINE = 2,
-    PRIMITIVE_TO_MATERIAL = {
-        cone: PHONG,
-        cylinder: PHONG,
-        sphere: PHONG,
-        torus: PHONG,
-        block: PHONG,
-        circle: PHONG,
-        rectangle: PHONG,
-        plane: PHONG,
-        point: POINT,
-        'point-2d': POINT,
-        line: LINE,
-        polycurve: LINE,
-        curve: LINE,
-        arc:LINE,
-        mesh: PHONG,
-        'polygon-set': PHONG,
-        polygonSet: PHONG,
-        polyline: LINE,
-        surface: PHONG
-    };
+var materialTypes = {
+    PHONG: 0,
+    POINT: 1,
+    LINE: 2
+};
 
+function resolveType (primitive) {
+    var resolvedName = _resolveLegacyNames( primitive );
 
+    var primFunction = primitiveHelpers[ resolvedName ];
+    var materialType = materialTypes.POINT;
+
+    if (!primFunction) {
+        primFunction = wirePrimitives[ resolvedName ];
+        materialType = materialTypes.LINE;
+    }
+    if (!primFunction) {
+        primFunction = sheetPrimitives[ resolvedName ];
+        materialType = materialTypes.PHONG;
+    }
+    if (!primFunction) {
+        primFunction = solidPrimitives[ resolvedName ];
+        materialType = materialTypes.PHONG;
+    }
+
+    // special cases
+    if (primitive === 'polysurface' || primitive === 'plane') {
+        materialType = materialTypes.PHONG;
+    }
+
+    if (primitive === 'polycurve') {
+        materialType = materialTypes.LINE;
+    }
+
+    return { func: primFunction, material: materialType};
+}
 
 /**
  * Creates the ParaSolid Object
@@ -57,10 +70,14 @@ var PHONG = 0,
  */
 export default function createPrimitive ( data ) {
 
+    var type = resolveType(data.primitive);
+
     var materialProperties = _findMaterialProperties( data );
-    var material = _createMaterial( PRIMITIVE_TO_MATERIAL[ data.primitive ], materialProperties );
-    var primFunction = primitiveHelpers[ _resolveLegacyNames( data.primitive ) ];
+    var material = _createMaterial( type.material, materialProperties );
+
+    var primFunction = type.func;
     if (!primFunction) return;
+
     var mesh = primFunction( data, material );
     var axis;
 
@@ -99,11 +116,6 @@ export default function createPrimitive ( data ) {
 
 }
 
-
-/*
- * helpers
- */
-
 /**
  * Helper method to find the material properties on the data
  *
@@ -121,8 +133,6 @@ function _findMaterialProperties ( data ) {
         side: DOUBLE_SIDE
     };
 }
-
-
 
 /**
  * Helper method to create the material from the material properties.
@@ -144,13 +154,11 @@ function _createMaterial ( type, materialProperties ) {
 
     if ( materialProperties && !materialProperties.side ) materialProperties.side = DOUBLE_SIDE;
 
-    if ( type === PHONG ) return new MeshPhongMaterial( materialProperties );
-    else if ( type === POINT ) return new PointsMaterial( materialProperties );
-    else if ( type === LINE ) return new LineBasicMaterial( materialProperties );
+    if ( type === materialTypes.PHONG ) return new MeshPhongMaterial( materialProperties );
+    else if ( type === materialTypes.POINT ) return new PointsMaterial( materialProperties );
+    else if ( type === materialTypes.LINE ) return new LineBasicMaterial( materialProperties );
 
 }
-
-
 
 /**
  * A helper to resolve legacy names to present names. This prevents deprication
@@ -176,8 +184,6 @@ function _resolveLegacyNames ( name ) {
     }
 }
 
-
-
 /**
  * A helper to convert geometry to z-up world by setting ups axis and rotation
  * order
@@ -191,8 +197,6 @@ function _convertToZUp ( object ) {
     object.up.set( 0, 0, 1 );
     object.rotation.order = 'YXZ';
 }
-
-
 
 /**
  * A helper to apply an origin to a mesh
