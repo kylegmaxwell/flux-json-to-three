@@ -889,6 +889,29 @@ define(['three'], function (three) { 'use strict';
         return new three.Mesh( geometry, material );
     }
 
+    /**
+     * Creates a mesh from parasolid brep with mesh information
+     *
+     * @function brep
+     *
+     * @return { ThreeJS.Mesh } The mesh
+
+     * @throws Error if brep is missing faces or vertices properties
+     *
+     * @param { Object }           data     Parasolid data
+     * @param { ThreeJS.Material } material The material to give the mesh
+
+     */
+    function brep ( data, material ) {
+        // If we define both faces and points, then treat the primitive as
+        // a mesh for rendering purposes;
+        if (data.faces != null && data.vertices != null) {
+            data.primitive = 'mesh';
+            return mesh(data, material);
+        }
+        throw new Error('Brep not supported.');
+    }
+
 
     var solidPrimitives = Object.freeze({
         cone: cone,
@@ -896,7 +919,8 @@ define(['three'], function (three) { 'use strict';
         sphere: sphere,
         torus: torus,
         block: block,
-        mesh: mesh
+        mesh: mesh,
+        brep: brep
     });
 
     var BODY_TYPES = {
