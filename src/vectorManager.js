@@ -8,11 +8,6 @@
 
 'use strict';
 
-/*
- * Imports
- */
-import { Vector3 } from 'three';
-
 
 
 /**
@@ -42,7 +37,7 @@ VectorManager.prototype.alloc = function alloc () {
 
     if ( this._vectorCount < this._vectorData.length ) result = this._vectorData[ this._vectorCount ];
     else {
-        result = new Vector3();
+        result = new THREE.Vector3();
         this._vectorData.push( result );
     }
 
@@ -70,9 +65,9 @@ VectorManager.prototype.clear = function clear () {
  * Allocate a new vector with the same values as an existing one
  *
  * @method clone
- * @return { Three.Vector3 } The newly allocated vector
+ * @return { THREE.Vector3 } The newly allocated vector
  *
- * @param { Three.Vector3 } v The vector to copy
+ * @param { THREE.Vector3 } v The vector to copy
  */
 VectorManager.prototype.clone = function clone ( v ) {
     return this.alloc().copy( v );
@@ -83,7 +78,7 @@ VectorManager.prototype.clone = function clone ( v ) {
  * Create and allocate a vector from an array
  *
  * @method convert
- * @return { Three.Vector3 } The newly allocated vector
+ * @return { THREE.Vector3 } The newly allocated vector
  *
  * @param  {[Number]} arr Array of 3 numeric values
  */

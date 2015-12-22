@@ -7,29 +7,6 @@
 /*
  * imports
  */
-import {
-    Object3D,
-    Vector3,
-    Vector4,
-    Face3,
-    CylinderGeometry,
-    Mesh,
-    SphereBufferGeometry,
-    TorusGeometry,
-    BoxGeometry,
-    CircleGeometry,
-    PlaneBufferGeometry,
-    BufferGeometry,
-    Points,
-    BufferAttribute,
-    ArrowHelper,
-    Line,
-    Geometry,
-    NURBSCurve,
-    NURBSSurface,
-    ParametricGeometry,
-    TextHelper
-} from 'three';
 
 import VectorManager from './vectorManager.js';
 
@@ -49,15 +26,15 @@ var vec = new VectorManager(); // an ObjectPool for managing Three.js vectors
  * @return { ThreeJS.Mesh } The linear mesh
  *
  * @param { Object }           data     Parasolid data
- * @param { ThreeJS.Material } material The material to give the mesh
+ * @param { THREE.Material } material The material to give the mesh
  */
 export function line ( data, material ) {
-    var geometry = new BufferGeometry(),
+    var geometry = new THREE.BufferGeometry(),
         vertices = new Float32Array( data.start.concat( data.end ) );
 
-    geometry.addAttribute( 'position', new BufferAttribute( vertices, 3 ) );
+    geometry.addAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
 
-    return new Line( geometry, material );
+    return new THREE.Line( geometry, material );
 }
 
 /**
@@ -68,22 +45,22 @@ export function line ( data, material ) {
  * @return { ThreeJS.Mesh } The mesh
  *
  * @param { Object }           data     Parasolid data
- * @param { ThreeJS.Material } material The material to give the mesh
+ * @param { THREE.Material } material The material to give the mesh
 
  */
 export function polyline ( data, material ) {
 
-    var geometry = new Geometry(),
+    var geometry = new THREE.Geometry(),
         point;
 
     for ( var i = 0, len = data.points.length ; i < len ; i++ ) {
         point = data.points[ i ];
         geometry.vertices.push(
-            new Vector3( point[ 0 ], point[ 1 ], point[ 2 ] )
+            new THREE.Vector3( point[ 0 ], point[ 1 ], point[ 2 ] )
         );
     }
 
-    return new Line( geometry, material );
+    return new THREE.Line( geometry, material );
 }
 
 /**
@@ -94,11 +71,11 @@ export function polyline ( data, material ) {
  * @return { ThreeJS.Mesh } The circular mesh
  *
  * @param { Object }           data     Parasolid data
- * @param { ThreeJS.Material } material The material to give the mesh
+ * @param { THREE.Material } material The material to give the mesh
  */
 export function circle ( data, material ) {
-    var geometry = new CircleGeometry( data.radius, 32 );
-    return new Mesh( geometry, material );
+    var geometry = new THREE.CircleGeometry( data.radius, 32 );
+    return new THREE.Mesh( geometry, material );
 }
 
 /**
@@ -109,21 +86,21 @@ export function circle ( data, material ) {
  * @return { ThreeJS.Mesh } The curve mesh
  *
  * @param { Object }           data     Parasolid data
- * @param { ThreeJS.Material } material The material to give the mesh
+ * @param { THREE.Material } material The material to give the mesh
  */
 export function curve ( data, material ) {
     var nurbsControlPoints = _createControlPoints( data ),
-        geometry = new Geometry();
+        geometry = new THREE.Geometry();
 
     if ( data.knots.length !== nurbsControlPoints.length + data.degree + 1 )
         throw new Error( 'Number of uKnots in a NURBS curve should equal degree + N + 1, where N is the number ' +
                          'of control points' );
 
     geometry.vertices = data.degree > 1 ?
-        new NURBSCurve( data.degree, data.knots, nurbsControlPoints )
+        new THREE.NURBSCurve( data.degree, data.knots, nurbsControlPoints )
             .getPoints( nurbsControlPoints.length * data.degree * 4 ) : nurbsControlPoints;
 
-    return new Line( geometry, material );
+    return new THREE.Line( geometry, material );
 }
 
 /**
@@ -147,7 +124,7 @@ function _createControlPoints ( data ) {
     for ( ; i < len ; i++ ) {
         currentControlPoint = controlPoints[ i ];
         result.push(
-            new Vector4(
+            new THREE.Vector4(
                 currentControlPoint[ 0 ],
                 currentControlPoint[ 1 ],
                 currentControlPoint[ 2 ],
@@ -169,7 +146,7 @@ function _createControlPoints ( data ) {
  * @throws Error if the data doesn't have a start, middle, or end property
  *
  * @param { Object }           data     Parasolid data
- * @param { ThreeJS.Material } material The material to give the mesh
+ * @param { THREE.Material } material The material to give the mesh
 
  */
 export function arc ( data, material ) {
@@ -222,12 +199,12 @@ export function arc ( data, material ) {
     }
 
     // Create geometry and material
-    geometry = new BufferGeometry();
-    geometry.addAttribute( 'position', new BufferAttribute( vertices, 3 ) );
+    geometry = new THREE.BufferGeometry();
+    geometry.addAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
 
     vec.clear();
 
-    return new Line(geometry, material);
+    return new THREE.Line(geometry, material);
 }
 
 /**
@@ -236,9 +213,9 @@ export function arc ( data, material ) {
  * @function _computeMidpoint
  * @private
  *
- * @param { ThreeJS.Vector3 } a        The first point
- * @param { ThreeJS.Vector3 } b        The second point
- * @param { ThreeJS.Vector3 } midPoint The midpoint
+ * @param { THREE.Vector3 } a        The first point
+ * @param { THREE.Vector3 } b        The second point
+ * @param { THREE.Vector3 } midPoint The midpoint
  */
 function _computeMidpoint ( a, b, midPoint ) {
     midPoint.copy( b );
@@ -255,12 +232,12 @@ function _computeMidpoint ( a, b, midPoint ) {
  *
  * @return { Float32Array } List of coordinates
  *
- * @param { Three.Vector3 } a First point along the arc
- * @param { Three.Vector3 } c Third point on arc
- * @param { Three.Vector3 } ab Segement from a to b
- * @param { Three.Vector3 } bc Segement from b to c
- * @param { Three.Vector3 } center Center of arc
- * @param { Three.Vector3 } up Normal to plane containing the arc
+ * @param { THREE.Vector3 } a First point along the arc
+ * @param { THREE.Vector3 } c Third point on arc
+ * @param { THREE.Vector3 } ab Segement from a to b
+ * @param { THREE.Vector3 } bc Segement from b to c
+ * @param { THREE.Vector3 } center Center of arc
+ * @param { THREE.Vector3 } up Normal to plane containing the arc
  */
 function _tessellateArc ( a, c, ab, bc, center, up ) {
     // interpolate points on the curve and populate geometry
@@ -344,9 +321,9 @@ function _setVecInArray (arr, offset, vec) {
  * @return { ThreeJS.Mesh } The rectangular mesh
  *
  * @param { Object }           data     Parasolid data
- * @param { ThreeJS.Material } material The material to give the mesh
+ * @param { THREE.Material } material The material to give the mesh
  */
 export function rectangle ( data, material ) {
-    var geometry = new PlaneBufferGeometry( data.dimensions[ 0 ], data.dimensions[ 1 ] );
-    return new Mesh( geometry, material );
+    var geometry = new THREE.PlaneBufferGeometry( data.dimensions[ 0 ], data.dimensions[ 1 ] );
+    return new THREE.Mesh( geometry, material );
 }

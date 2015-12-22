@@ -111,7 +111,7 @@ export var point = {
 
 export var vector = {
     "input": {
-        "coords": [2,2,0], 
+        "coords": [2,2,0],
         "primitive": "vector"
     },
     "result": {
@@ -197,12 +197,12 @@ export var mesh = {
 };
 
 export var polygonSet = {
-    "input":{
-        "polygons":[{
-            "boundary":[[15,0,0],[-7.5,13.0,0],[-7.5,-13.0,0]],
-            "holes":[]
-        }],
-        "primitive":"polygon-set"
+    "input": {
+        "polygons":[
+            {"boundary":[[15,0,15], [0,13.0,0],[0,-13.0,0]],
+            "holes":[[[10,0,10],[2,9.0,2],[2,-9.0,2]]]}
+        ],
+        "primitive":"polygonSet"
     },
     "result": {
         "type": "Mesh"
@@ -273,8 +273,8 @@ export var text = {
 
 export var invalid = {
     "input": {
-        "info": "Not supported", 
-        "primitive": "brep"
+        "info": "Not supported",
+        "primitive": "test"
     },
     "result": null
 };

@@ -1,5 +1,5 @@
 {
-  "name": "flux-parasolid-util",
+  "name": "flux-json-to-three",
   "version": "0.0.1",
   "description": "A module that takes parasolid data and produces Three.js objects",
   "main": "build/index.common.min.js",
@@ -7,8 +7,9 @@
   "repository": "git@bitbucket.org:vannevartech/flux-json-to-three.git",
   "scripts": {
     "test": "npm run run-test --silent",
-    "run-test": "npm run lint; npm run build-test; tape ./build/test_suite.js;",
-    "build-test": "rollup -f=cjs -e=tape,three.js -o=./build/test_tmp.js -i=./test/test.js && echo \"global.self = {};\" > ./build/header.js && cat ./build/header.js ./build/test_tmp.js > ./build/test_suite.js; rm ./build/header.js ./build/test_tmp.js;",
+    "run-test": "npm run lint; npm run build-test; npm run assemble; tape ./build/test_stubbed.js;",
+    "build-test": "node scripts/rollupTest.js;",
+    "assemble": "cat ./test/threeStub.js > ./build/test_stubbed.js; cat ./build/test_suite.js >> ./build/test_stubbed.js;",
     "lint": "eslint index.js src/**;",
     "build": "npm run build-common; npm run build-amd;",
     "build-common": "rollup -f=cjs -e=three.js -o=./build/index.common.js -i=./index.js; uglifyjs ./build/index.common.js -c -o ./build/index.common.min.js",
@@ -17,12 +18,12 @@
   },
   "author": "Flux Factory Inc.",
   "license": "ISC",
-  "dependencies": {
-    "three.js": "^0.72.0"
-  },
+  "dependencies": {},
   "devDependencies": {
     "eslint": "^1.9.0",
     "rollup": "^0.20.5",
+    "rollup-plugin-commonjs": "^1.4.0",
+    "rollup-plugin-npm": "^1.1.0",
     "tape": "^4.2.2",
     "uglify-js": "^2.5.0"
   }

@@ -11,7 +11,8 @@
         "classes": true
     },
     "globals": {
-        "__coverage__": false
+        "__coverage__": false,
+        "THREE": true
     },
     "rules": {
         "valid-jsdoc": [2, {

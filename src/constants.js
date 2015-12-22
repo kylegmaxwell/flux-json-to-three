@@ -4,17 +4,10 @@
 
 'use strict';
 
-/*
- * imports
- */
-import {
-Vector3
-} from 'three';
-
-export const HALF_PI = Math.PI * 0.5;
-export const TOLERANCE = 0.000001;
-export const DEFAULT_ROTATION = new Vector3( HALF_PI, HALF_PI, 0 );
-export const PLANE_DEFAULTS = {
+export var HALF_PI = Math.PI * 0.5;
+export var TOLERANCE = 0.000001;
+export var DEFAULT_ROTATION = new THREE.Vector3( HALF_PI, HALF_PI, 0 );
+export var PLANE_DEFAULTS = {
         WIDTH: 10000,
         HEIGHT: 10000,
         WIDTH_SEGMENTS: 100,

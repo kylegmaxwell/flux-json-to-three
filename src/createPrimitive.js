@@ -4,17 +4,6 @@
 
 'use strict';
 
-/*
- * imports
- */
-import {
-    Vector3,
-    DoubleSide as DOUBLE_SIDE,
-    MeshPhongMaterial,
-    PointsMaterial,
-    LineBasicMaterial
-} from 'three';
-
 import * as wirePrimitives from './wirePrimitives.js';
 import * as sheetPrimitives from './sheetPrimitives.js';
 import * as solidPrimitives from './solidPrimitives.js';
@@ -91,7 +80,7 @@ export default function createPrimitive ( data ) {
 
         if ( axis )
             mesh.lookAt( mesh.position.clone().add(
-                new Vector3(
+                new THREE.Vector3(
                     axis[ 0 ],
                     axis[ 1 ],
                     axis[ 2 ]
@@ -130,7 +119,7 @@ function _findMaterialProperties ( data ) {
     if ( data.attributes ) return data.attributes.materialProperties;
     else if ( data.materialProperties ) return data.materialProperties;
     else return {
-        side: DOUBLE_SIDE
+        side: THREE.DoubleSide
     };
 }
 
@@ -142,7 +131,7 @@ function _findMaterialProperties ( data ) {
  * @function _createMaterial
  * @private
  *
- * @return { THREEJS.MATERIAL } an instance of a Three.js material
+ * @return { THREE.Material } an instance of a Three.js material
  *
  * @param { Number } type               A member of the enumeration of material types
  *                                      present in the parasolid utility
@@ -152,11 +141,11 @@ function _findMaterialProperties ( data ) {
  */
 function _createMaterial ( type, materialProperties ) {
 
-    if ( materialProperties && !materialProperties.side ) materialProperties.side = DOUBLE_SIDE;
+    if ( materialProperties && !materialProperties.side ) materialProperties.side = THREE.DoubleSide;
 
-    if ( type === materialTypes.PHONG ) return new MeshPhongMaterial( materialProperties );
-    else if ( type === materialTypes.POINT ) return new PointsMaterial( materialProperties );
-    else if ( type === materialTypes.LINE ) return new LineBasicMaterial( materialProperties );
+    if ( type === materialTypes.PHONG ) return new THREE.MeshPhongMaterial( materialProperties );
+    else if ( type === materialTypes.POINT ) return new THREE.PointsMaterial( materialProperties );
+    else if ( type === materialTypes.LINE ) return new THREE.LineBasicMaterial( materialProperties );
 
 }
 

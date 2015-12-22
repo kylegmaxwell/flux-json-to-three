@@ -1,5 +1,5 @@
 /**
- * Flux Parasolid Util
+ * flux-json-to-three main file
  */
 
 'use strict';
@@ -8,7 +8,6 @@
  * Imports
  */
 import createPrimitive from './src/createPrimitive.js';
-import { Object3D, BufferGeometry } from 'three';
 
 var DEFAULTS = {
     MERGE_MODELS: true
@@ -83,7 +82,7 @@ function _handleEntities ( data, root ) {
         results = createObject( data.Entities[ key ] );
 
         if ( results.mesh ) {
-            if ( !root.mesh ) root.mesh = new Object3D();
+            if ( !root.mesh ) root.mesh = new THREE.Object3D();
 
             root.mesh.add( results.mesh );
         }
@@ -103,17 +102,17 @@ function _handleEntities ( data, root ) {
  * @function _handleArray
  * @private
  *
- * @param { Object } data Parasolid data
- * @param { Object } root The root object that is being built
- *                        in this part of the scene graph
- * @param { Object } data Whether to merge models when possible
+ * @param { Object } data           Parasolid data
+ * @param { Object } root           The root object that is being built
+ *                                  in this part of the scene graph
+ * @param { Object } mergeModels    Whether to merge models when possible
  */
 function _handleArray ( data, root, mergeModels ) {
     var i = 0,
         len = data.length,
         key,
         results;
-    if ( !root.mesh ) root.mesh = new Object3D();
+    if ( !root.mesh ) root.mesh = new THREE.Object3D();
 
     for (  ; i < len ; i++ ) {
         results = createObject( data[ i ] );
@@ -153,7 +152,7 @@ function _handleArray ( data, root, mergeModels ) {
  */
 function _mergeModels ( mesh, root ) {
 
-    if ( !root.mesh ) root.mesh = new Object3D();
+    if ( !root.mesh ) root.mesh = new THREE.Object3D();
 
     var children = root.mesh.children,
         i = 0,
@@ -183,7 +182,7 @@ function _mergeModels ( mesh, root ) {
  * @param { ThreeJS.Object3D } object The object to check
  */
 function _objectDoesntHaveBufferGeometry ( object ) {
-    return object.geometry && !( object.geometry instanceof BufferGeometry );
+    return object.geometry && !( object.geometry instanceof THREE.BufferGeometry );
 }
 
 
@@ -219,7 +218,7 @@ function _upgradeChildrenToBuffer ( object ) {
  * @param { ThreeJS.Object3D } object Object to upgrade
  */
 function _upgradeGeometryToBuffer ( object ) {
-    object.geometry = new BufferGeometry().fromGeometry( object.geometry );
+    object.geometry = new THREE.BufferGeometry().fromGeometry( object.geometry );
 }
 
 

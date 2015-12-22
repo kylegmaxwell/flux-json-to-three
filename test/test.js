@@ -3,10 +3,10 @@
 'use strict'
 
 import test from 'tape';
-import createObject from '../index.js'
+import createObject from '../index.js';
 import * as fixtures from './fixtures.js';
 
-test( 'flux-parasolidUtil', function ( t ) {
+test( 'flux-json-to-three', function ( t ) {
     var obj = createObject( 3 ),
         key,
         input;
@@ -20,12 +20,13 @@ test( 'flux-parasolidUtil', function ( t ) {
         if ( fixtures[ key ].result ) {
             t.ok( obj.mesh, 'createObject should create a mesh for parasolid data of ' + key  );
             t.equal( obj.mesh.type, fixtures[ key ].result.type, 'createObject should create a mesh of type ' +
-                                                                 fixtures[ key ].result.type + ' for data ' + key ); 
+                                                                 fixtures[ key ].result.type + ' for data ' + key );
         } else {
             t.ok( obj.invalidPrims[ input.primitive ], 'if the data is invalid, createObject' +
                                                        ' should return it as part of' +
-                                                       ' the set of invalid primitives' ); 
+                                                       ' the set of invalid primitives' );
         }
     }
+    t.end();
 
 });

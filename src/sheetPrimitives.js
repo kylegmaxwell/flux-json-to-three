@@ -7,29 +7,6 @@
 /*
  * imports
  */
-import {
-    Object3D,
-    Vector3,
-    Vector4,
-    Face3,
-    CylinderGeometry,
-    Mesh,
-    SphereBufferGeometry,
-    TorusGeometry,
-    BoxGeometry,
-    CircleGeometry,
-    PlaneBufferGeometry,
-    BufferGeometry,
-    Points,
-    BufferAttribute,
-    ArrowHelper,
-    Line,
-    Geometry,
-    NURBSCurve,
-    NURBSSurface,
-    ParametricGeometry,
-    TextHelper
-} from 'three';
 
 import VectorManager from './vectorManager.js';
 
@@ -42,9 +19,13 @@ import * as constants from './constants.js'
 var vec = new VectorManager(); // an ObjectPool for managing Three.js vectors
 
 /**
- * Convert a flux json polygon to an object with THREE.Vector3 coordinates
- * @param  {Flux JSON polygon} polygon The polygon to convert
+ * Convert a flux json polygon to an object with THREE Vector3 coordinates
+ *
+ * @function _polygonToThree
+ *
  * @return {Object}         The new converted polygon
+ *
+ * @param  {Object} polygon The Flux JSON polygon to convert
  */
 function _polygonToThree(polygon) {
     var polygonThree = {boundary: [], holes: []};
@@ -70,14 +51,14 @@ function _pointArrayToThree(pointsThree, pointsArray) {
 }
 
 /**
- * Creates a mesh as a set of polygons from parasolid data and a material
+ * Creates a THREE.Mesh as a set of polygons from parasolid data and a material
  *
  * @function polygonSet
  *
- * @return { ThreeJS.Mesh } The mesh
+ * @return { THREE.Mesh } The THREE.Mesh
  *
  * @param { Object }           data     Parasolid data
- * @param { ThreeJS.Material } material The material to give the mesh
+ * @param { THREE.Material } material The material to give the THREE.Mesh
  */
 export function polygonSet ( data, material ) {
 
@@ -117,7 +98,7 @@ export function polygonSet ( data, material ) {
         _restoreCoordinates(geometry, p, u, v);
     }
 
-    return new Mesh( geometry, material );
+    return new THREE.Mesh( geometry, material );
 }
 
 /**
@@ -208,7 +189,7 @@ function _restoreCoordinates(geometry, p, u, v) {
  * @param  {THREE.Vector3} n      Return vector for the polygon normal
  * @param  {THREE.Vector3} u      Return vector for the polygon basis first direction
  * @param  {THREE.Vector3} v      Return vector for the polygon basis second direction
- * @param  {Array.<Array>.<Number>} points The points defining the polygon
+ * @param  {Array.<Array.<Number>>} points The points defining the polygon
  */
 function _computePointBasis(p, n, u, v, points) {
     n.set(0,0,1);
@@ -252,6 +233,8 @@ function _makeShapeGeometry(polygon) {
 
 /**
  * Process each hole as a shape to convert it.
+ * @param  {Object} shape The shape to contain the converted holes
+ * @param  {Object} holes The list of holes
  */
 function _makeShapeHoles(shape, holes) {
     for (var i=0, len=holes.length; i<len; i++) {
@@ -275,14 +258,14 @@ function _makeShape(boundary) {
 }
 
 /**
- * Creates a surface mesh from parasolid data and a material
+ * Creates a surface THREE.Mesh from parasolid data and a material
  *
  * @function surface
  *
- * @return { ThreeJS.Mesh } The mesh
+ * @return { THREE.Mesh } The THREE.Mesh
  *
  * @param { Object }           data     Parasolid data
- * @param { ThreeJS.Material } material The material to give the mesh
+ * @param { THREE.Material } material The material to give the THREE.Mesh
 
  */
 export function surface ( data, material ) {
@@ -307,7 +290,7 @@ export function surface ( data, material ) {
             point = controlPointRow[ j ];
 
             arr.push(
-                new Vector4(
+                new THREE.Vector4(
                     point[ 0 ],
                     point[ 1 ],
                     point[ 2 ],
@@ -328,13 +311,13 @@ export function surface ( data, material ) {
                          ', where N is the number of control points along V direction' );
 
     //
-    var nurbsSurface = new NURBSSurface( data.vDegree, data.uDegree, data.vKnots, data.uKnots, nsControlPoints );
+    var nurbsSurface = new THREE.NURBSSurface( data.vDegree, data.uDegree, data.vKnots, data.uKnots, nsControlPoints );
 
-    var geometry = new ParametricGeometry(function ( u, v ) {
+    var geometry = new THREE.ParametricGeometry(function ( u, v ) {
         return nurbsSurface.getPoint( u, v );
     }, data.vDegree * nsControlPoints.length * 4, data.uDegree * nsControlPoints[ 0 ].length * 4 );
 
     geometry.computeFaceNormals();
 
-    return new Mesh( geometry, material );
+    return new THREE.Mesh( geometry, material );
 }
