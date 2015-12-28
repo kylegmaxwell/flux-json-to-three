@@ -12,6 +12,8 @@ import VectorManager from './vectorManager.js';
 
 import * as constants from './constants.js'
 
+import FluxGeometryError from './geometryError.js';
+
 /*
  * helpers
  */
@@ -84,6 +86,7 @@ export function circle ( data, material ) {
  * @function curve
  *
  * @return { ThreeJS.Mesh } The curve mesh
+ * @throws FluxGeometryError if nurbs are invalid
  *
  * @param { Object }           data     Parasolid data
  * @param { THREE.Material } material The material to give the mesh
@@ -93,7 +96,7 @@ export function curve ( data, material ) {
         geometry = new THREE.Geometry();
 
     if ( data.knots.length !== nurbsControlPoints.length + data.degree + 1 )
-        throw new Error( 'Number of uKnots in a NURBS curve should equal degree + N + 1, where N is the number ' +
+        throw new FluxGeometryError( 'Number of uKnots in a NURBS curve should equal degree + N + 1, where N is the number ' +
                          'of control points' );
 
     geometry.vertices = data.degree > 1 ?
@@ -143,7 +146,7 @@ function _createControlPoints ( data ) {
  *
  * @return { ThreeJS.Mesh } The arc mesh
  *
- * @throws Error if the data doesn't have a start, middle, or end property
+ * @throws FluxGeometryError if the data doesn't have a start, middle, or end property
  *
  * @param { Object }           data     Parasolid data
  * @param { THREE.Material } material The material to give the mesh
@@ -154,7 +157,7 @@ export function arc ( data, material ) {
         vertices;
 
     if (!data.start || !data.middle || !data.end) {
-        throw new Error('Can not create arc due to incomplete definition.');
+        throw new FluxGeometryError('Can not create arc due to incomplete definition.');
     }
 
     // Initialize vectors
@@ -195,7 +198,7 @@ export function arc ( data, material ) {
     }
 
     if (vertices.length <= 0) {
-        throw new Error( 'Arc has no vertices');
+        throw new FluxGeometryError( 'Arc has no vertices');
     }
 
     // Create geometry and material

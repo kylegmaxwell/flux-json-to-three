@@ -29,9 +29,10 @@ THREE.Object3D = function () {
     this.position = new THREE.Vector3();
     this.up = new THREE.Vector3();
     this.rotation = new THREE.Euler();
-    this.add = function () {};
+    this.children = [];
     this.type = 'Object3D';
 };
+THREE.Object3D.prototype.add = function (x) { this.children.push(x); };
 
 THREE.Mesh = function () {
 

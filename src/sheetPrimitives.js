@@ -12,6 +12,8 @@ import VectorManager from './vectorManager.js';
 
 import * as constants from './constants.js'
 
+import FluxGeometryError from './geometryError.js';
+
 /*
  * helpers
  */
@@ -57,6 +59,8 @@ function _pointArrayToThree(pointsThree, pointsArray) {
  *
  * @return { THREE.Mesh } The THREE.Mesh
  *
+ *  @throws FluxGeometryError if polygon is non planar
+ *
  * @param { Object }           data     Parasolid data
  * @param { THREE.Material } material The material to give the THREE.Mesh
  */
@@ -80,7 +84,7 @@ export function polygonSet ( data, material ) {
 
         // Polygon must be planar
         if (!_isPlanarPolygon(polygon, n, p0)) {
-            throw new Error('Non planar polygon in polygonSet');
+            throw new FluxGeometryError('Non planar polygon in polygonSet');
         }
 
         //TODO convert the remaining code to use polygon
@@ -264,6 +268,8 @@ function _makeShape(boundary) {
  *
  * @return { THREE.Mesh } The THREE.Mesh
  *
+ * @throws FluxGeometryError if nurbs definition is invalid
+ *
  * @param { Object }           data     Parasolid data
  * @param { THREE.Material } material The material to give the THREE.Mesh
 
@@ -303,11 +309,11 @@ export function surface ( data, material ) {
     }
 
     if ( data.uKnots.length !== nsControlPoints[ 0 ].length + data.uDegree + 1 )
-        throw new Error( 'Number of uKnots in a NURBS surface should equal uDegree + N + 1' +
+        throw new FluxGeometryError( 'Number of uKnots in a NURBS surface should equal uDegree + N + 1' +
                          ', where N is the number of control points along U direction' );
 
     if ( data.vKnots.length !== nsControlPoints.length + data.vDegree + 1 )
-        throw new Error( 'Number of vKnots in a NURBS surface should equal vDegree + N + 1' +
+        throw new FluxGeometryError( 'Number of vKnots in a NURBS surface should equal vDegree + N + 1' +
                          ', where N is the number of control points along V direction' );
 
     //

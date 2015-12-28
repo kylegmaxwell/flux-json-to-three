@@ -8,6 +8,7 @@ import * as wirePrimitives from './wirePrimitives.js';
 import * as sheetPrimitives from './sheetPrimitives.js';
 import * as solidPrimitives from './solidPrimitives.js';
 import * as primitiveHelpers from './primitives.js';
+import FluxGeometryError from './geometryError.js';
 
 /*
  * constants
@@ -54,6 +55,7 @@ function resolveType (primitive) {
  *
  * @function createPrimitive
  * @return { ThreeJS.Mesh } The created mesh
+ * @throws FluxGeometryError if unsupported geometry is found
  *
  * @param { Object } data The data to create the object with
  */
@@ -101,7 +103,7 @@ export default function createPrimitive ( data ) {
 
     }
 
-    throw new Error( 'Unsupported geometry type: ' + data.primitive );
+    throw new FluxGeometryError( 'Unsupported geometry type: ' + data.primitive );
 
 }
 

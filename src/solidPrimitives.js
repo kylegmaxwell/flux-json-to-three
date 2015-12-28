@@ -10,6 +10,8 @@
 
 import * as constants from './constants.js'
 
+import FluxGeometryError from './geometryError.js';
+
 /**
  * Moves a geometry by a vector
  *
@@ -185,7 +187,7 @@ export function mesh ( data, material ) {
  *
  * @return { THREE.Mesh } The THREE.Mesh
 
- * @throws Error if brep is missing faces or vertices properties
+ * @throws FluxGeometryError if brep is missing faces or vertices properties
  *
  * @param { Object }           data     Parasolid data
  * @param { THREE.Material } material The material to give the THREE.Mesh
@@ -195,8 +197,7 @@ export function brep ( data, material ) {
     // If we define both faces and points, then treat the primitive as
     // a THREE.Mesh for rendering purposes;
     if (data.faces != null && data.vertices != null) {
-        data.primitive = 'mesh';
-        return THREE.Mesh(data, material);
+        return mesh(data, material);
     }
-    throw new Error('Brep not supported.');
+    throw new FluxGeometryError('Brep not supported.');
 }

@@ -8,6 +8,7 @@ import * as wirePrimitives from './wirePrimitives.js';
 import * as sheetPrimitives from './sheetPrimitives.js';
 import * as solidPrimitives from './solidPrimitives.js';
 import * as constants from './constants.js';
+import FluxGeometryError from './geometryError.js';
 
 var BODY_TYPES = {
     minimum: 0,
@@ -76,6 +77,8 @@ export function point ( data, material ) {
  *
  * @return { THREE.Mesh } The vector THREE.Mesh
  *
+ * @throws FluxGeometryError if vector has zero length
+ *
  * @param { Object }           data     Parasolid data
  * @param { THREE.Material } material The material to give the THREE.Mesh
  */
@@ -84,7 +87,7 @@ export function vector ( data ) {
         origin = new THREE.Vector3( 0, 0, 0 );
 
     if ( dir.length() > 0 ) dir.normalize();
-    else throw new Error( 'Vector primitive has length zero' );
+    else throw new FluxGeometryError( 'Vector primitive has length zero' );
 
     return new THREE.ArrowHelper( dir, origin, dir.length() );
 }
@@ -96,9 +99,10 @@ export function vector ( data ) {
  *
  * @return { THREE.Mesh } The THREE.Mesh with curves
  *
+ * @throws FluxGeometryError if it contains non wire entities
+ *
  * @param { Object }           data     Parasolid data
  * @param { THREE.Material } material The material to give the THREE.Mesh
-
  */
 export function polycurve ( data, material ) {
     var mesh = new THREE.Object3D();
@@ -109,7 +113,7 @@ export function polycurve ( data, material ) {
             var wireFunction = wirePrimitives[curveData.primitive];
             mesh.add( wireFunction( data.curves[ i ], material ) );
         } else {
-            throw new Error( 'Found non wire body in a polycurve' );
+            throw new FluxGeometryError( 'Found non wire body in a polycurve' );
         }
     }
 
@@ -122,6 +126,8 @@ export function polycurve ( data, material ) {
  * @function polysurface
  *
  * @return { THREE.Mesh } The polysurface THREE.Mesh
+ *
+ * @throws FluxGeometryError if it contains non sheet entities
  *
  * @param { Object }           data     Parasolid data
  * @param { THREE.Material } material The material to give the THREE.Mesh
@@ -137,7 +143,7 @@ export function polysurface ( data, material ) {
             var sheetFunction = sheetPrimitives[surfaceData.primitive];
             mesh.add( sheetFunction( data.surfaces[ i ], material ) );
         } else {
-            throw new Error( 'Found non sheet body in a polysurface' );
+            throw new FluxGeometryError( 'Found non sheet body in a polysurface' );
         }
     }
 
