@@ -74,7 +74,7 @@ export var circle = {
          "radius":10
      },
      "result": {
-         "type": "Mesh"
+         "type": "Line"
      }
 };
 
@@ -84,7 +84,7 @@ export var rectangle = {
         "primitive": "rectangle"
     },
     "result": {
-        "type": "Mesh"
+        "type": "Line"
     }
 };
 

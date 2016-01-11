@@ -25,7 +25,7 @@ var vec = new VectorManager(); // an ObjectPool for managing Three.js vectors
  *
  * @function line
  *
- * @return { ThreeJS.Mesh } The linear mesh
+ * @return { THREE.Mesh } The linear mesh
  *
  * @param { Object }           data     Parasolid data
  * @param { THREE.Material } material The material to give the mesh
@@ -44,7 +44,7 @@ export function line ( data, material ) {
  *
  * @function polyline
  *
- * @return { ThreeJS.Mesh } The mesh
+ * @return { THREE.Mesh } The mesh
  *
  * @param { Object }           data     Parasolid data
  * @param { THREE.Material } material The material to give the mesh
@@ -66,18 +66,35 @@ export function polyline ( data, material ) {
 }
 
 /**
- * Creates a circular mesh from parasolid data and a material
+ * Creates a circular line from parasolid data and a material
  *
  * @function circle
  *
- * @return { ThreeJS.Mesh } The circular mesh
+ * @return { THREE.Line } The circular line
  *
  * @param { Object }           data     Parasolid data
  * @param { THREE.Material } material The material to give the mesh
  */
 export function circle ( data, material ) {
-    var geometry = new THREE.CircleGeometry( data.radius, 32 );
-    return new THREE.Mesh( geometry, material );
+    var r = data.radius;
+    var numPoints = 32;
+    var vertices = new Float32Array( ( numPoints  ) * 3 );
+    var i, x, y, t, dt;
+    t = 0;
+    dt = 2 * Math.PI / (numPoints-1);
+    for (i = 0; i < vertices.length; i += 3, t += dt) {
+        x = r * Math.cos(t);
+        y = r * Math.sin(t);
+        vertices[i  ] = x;
+        vertices[i+1] = y;
+        vertices[i+2] = 0;
+    }
+
+    // Create geometry and material
+    var geometry = new THREE.BufferGeometry();
+    geometry.addAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
+
+    return new THREE.Line(geometry, material);
 }
 
 /**
@@ -85,7 +102,7 @@ export function circle ( data, material ) {
  *
  * @function curve
  *
- * @return { ThreeJS.Mesh } The curve mesh
+ * @return { THREE.Mesh } The curve mesh
  * @throws FluxGeometryError if nurbs are invalid
  *
  * @param { Object }           data     Parasolid data
@@ -144,7 +161,7 @@ function _createControlPoints ( data ) {
  *
  * @function arc
  *
- * @return { ThreeJS.Mesh } The arc mesh
+ * @return { THREE.Mesh } The arc mesh
  *
  * @throws FluxGeometryError if the data doesn't have a start, middle, or end property
  *
@@ -317,16 +334,44 @@ function _setVecInArray (arr, offset, vec) {
 }
 
 /**
- * Creates a rectangular mesh from parasolid data and a material
+ * Creates a rectangular line from parasolid data and a material
  *
  * @function rectangle
  *
- * @return { ThreeJS.Mesh } The rectangular mesh
+ * @return { THREE.Line } The rectangular line
  *
  * @param { Object }           data     Parasolid data
  * @param { THREE.Material } material The material to give the mesh
  */
 export function rectangle ( data, material ) {
-    var geometry = new THREE.PlaneBufferGeometry( data.dimensions[ 0 ], data.dimensions[ 1 ] );
-    return new THREE.Mesh( geometry, material );
+    var dx = data.dimensions[0] * 0.5;
+    var dy = data.dimensions[1] * 0.5;
+
+    var numPoints = 5;
+    var vertices = new Float32Array( ( numPoints  ) * 3 );
+    vertices[0] = -dx;
+    vertices[1] = dy;
+    vertices[2] = 0;
+
+    vertices[3] = dx;
+    vertices[4] = dy;
+    vertices[5] = 0;
+
+    vertices[6] = dx;
+    vertices[7] = -dy;
+    vertices[8] = 0;
+
+    vertices[9] = -dx;
+    vertices[10] = -dy;
+    vertices[11] = 0;
+
+    vertices[12] = -dx;
+    vertices[13] = dy;
+    vertices[14] = 0;
+
+    // Create geometry and material
+    var geometry = new THREE.BufferGeometry();
+    geometry.addAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
+
+    return new THREE.Line(geometry, material);
 }
