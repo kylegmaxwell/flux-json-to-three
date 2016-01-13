@@ -44,5 +44,13 @@ test( 'Geometry translation', function ( t ) {
         }
     }
     t.end();
+});
 
+test( 'Geometry with attributes', function ( t ) {
+    var root = new index.GeometryResults();
+    var data = {"attributes":{ "foo": 123 },
+    "origin": [0,0,0],"primitive": "sphere","radius": 10}
+    index.createObject(data, true, root);
+    t.ok(root.mesh.children[0].materialProperties, 'createobject should create a mesh with materialProperties');
+    t.end();
 });

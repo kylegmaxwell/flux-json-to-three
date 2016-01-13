@@ -118,7 +118,7 @@ export default function createPrimitive ( data ) {
  * @param { Object } data The data used to construct the primitive
  */
 function _findMaterialProperties ( data ) {
-    if ( data.attributes ) return data.attributes.materialProperties;
+    if ( data.attributes && data.attributes.materialProperties ) return data.attributes.materialProperties;
     else if ( data.materialProperties ) return data.materialProperties;
     else return {
         side: THREE.DoubleSide
