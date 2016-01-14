@@ -158,10 +158,12 @@ function _mergeModels ( mesh, root ) {
         i = 0,
         len = children.length;
 
-    for ( ; i < len ; i++ ) {
-        if ( _objectDoesntHaveBufferGeometry( children[ i ] ) ) {
-            children[ i ].geometry.merge( mesh.geometry, mesh.matrixWorld );
-            return;
+    if ( _objectCanMerge( mesh ) ) {
+        for ( ; i < len ; i++ ) {
+            if ( _objectCanMerge( children[ i ] ) ) {
+                children[ i ].geometry.merge( mesh.geometry, mesh.matrixWorld );
+                return;
+            }
         }
     }
 
@@ -169,20 +171,36 @@ function _mergeModels ( mesh, root ) {
 
 }
 
-
-
 /**
- * Takes a mesh and determines whether it can be merged.
+ * Determines if an object can merge.
  *
- * @function _objectDoesntHaveBufferGeometry
+ * Currently only meshes can be merged.
+ *
+ * @function _objectCanMerge
  * @private
  *
- * @returns { Boolean } Whether the object has a BufferGeometry
+ * @returns { Boolean } Whether the object is a mesh that can be combined with others
  *
  * @param { ThreeJS.Object3D } object The object to check
  */
-function _objectDoesntHaveBufferGeometry ( object ) {
-    return object.geometry && !( object.geometry instanceof THREE.BufferGeometry );
+function _objectCanMerge ( object ) {
+    return object.geometry && !( object.geometry instanceof THREE.BufferGeometry ) && object.type === 'Mesh';
+}
+
+/**
+ * Takes a mesh and determines whether it can be be converted to buffer geometry.
+ *
+ *  Currently only meshes can be converted to buffers.
+ *
+ * @function _objectCanBuffer
+ * @private
+ *
+ * @returns { Boolean } Whether the object can become BufferGeometry
+ *
+ * @param { ThreeJS.Object3D } object The object to check
+ */
+function _objectCanBuffer ( object ) {
+    return object.geometry && !( object.geometry instanceof THREE.BufferGeometry ) && object.type === 'Mesh';
 }
 
 
@@ -202,7 +220,7 @@ function _upgradeChildrenToBuffer ( object ) {
 
     for ( var i = 0, len = object.children.length ; i < len ; i++ ) {
         child = object.children[ i ];
-        if ( _objectDoesntHaveBufferGeometry( child ) ) _upgradeGeometryToBuffer( child );
+        if ( _objectCanBuffer( child ) ) _upgradeGeometryToBuffer( child );
     }
 
 }
