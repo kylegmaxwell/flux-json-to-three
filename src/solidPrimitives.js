@@ -43,6 +43,35 @@ function rotateGeometry ( object, vector ) {
 }
 
 /**
+ * Extract the semi angle property from a data object.
+ * Used to determine cone shape. Data is expected to have a
+ * semiAngle property set in degrees.
+ *
+ * @param  {Object} data The data describing a cone.
+ *
+ * @function getSemiAngle
+ *
+ * @throws FluxGeometryError if property is missing or out of bounds
+ *
+ * @return {Number}      The semi angle in radians.
+ */
+function getSemiAngle(data) {
+    var semiAngle;
+    if (data.semiAngle) {
+        semiAngle = data.semiAngle;
+    } else {
+        if (data['semi-angle']) {
+            semiAngle = data['semi-angle'];
+        } else {
+            throw new FluxGeometryError('Cone must specify semiAngle parameter.')
+        }
+    }
+    if (data.semiAngle <= 0 || data.semiAngle >= 90) {
+        throw new FluxGeometryError('Cone semiAngle must be between 0 and 90 degrees exclusive.');
+    }
+    return constants.DEG_2_RAD * semiAngle;
+}
+/**
  * Creates a cone THREE.Mesh from parasolid data and a material.
  *
  * @function cone
@@ -54,8 +83,9 @@ function rotateGeometry ( object, vector ) {
  */
 export function cone ( data, material ) {
     var geometry, mesh;
-
-    geometry = new THREE.CylinderGeometry( 0, data.radius, data.height, 32 );
+    var semiAngle = getSemiAngle(data);
+    var topRadius = data.height * Math.tan(semiAngle);
+    geometry = new THREE.CylinderGeometry( topRadius+data.radius, data.radius, data.height, constants.CIRCLE_RES );
     mesh = new THREE.Mesh( geometry, material );
     moveGeometry( mesh, new THREE.Vector3( 0, data.height * 0.5, 0 ) );
     rotateGeometry( mesh, constants.DEFAULT_ROTATION );
@@ -76,7 +106,7 @@ export function cone ( data, material ) {
 export function cylinder ( data, material ) {
     var geometry, mesh;
 
-    geometry = new THREE.CylinderGeometry( data.radius, data.radius, data.height, 32 );
+    geometry = new THREE.CylinderGeometry( data.radius, data.radius, data.height, constants.CIRCLE_RES );
     mesh = new THREE.Mesh( geometry, material );
     moveGeometry( mesh, new THREE.Vector3( 0, data.height * 0.5, 0 ) );
     rotateGeometry( mesh, constants.DEFAULT_ROTATION );

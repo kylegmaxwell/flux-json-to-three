@@ -13,3 +13,10 @@ export var PLANE_DEFAULTS = {
         WIDTH_SEGMENTS: 100,
         HEIGHT_SEGMENTS: 100
     };
+export var CIRCLE_RES = 32;
+export var DEG_2_RAD = Math.PI / 180;
+export var MATERIAL_TYPES = {
+    PHONG: 0,
+    POINT: 1,
+    LINE: 2
+};

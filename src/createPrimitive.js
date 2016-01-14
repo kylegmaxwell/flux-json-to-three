@@ -8,43 +8,36 @@ import * as wirePrimitives from './wirePrimitives.js';
 import * as sheetPrimitives from './sheetPrimitives.js';
 import * as solidPrimitives from './solidPrimitives.js';
 import * as primitiveHelpers from './primitives.js';
+import * as constants from './constants.js'
 import FluxGeometryError from './geometryError.js';
 
-/*
- * constants
- */
-var materialTypes = {
-    PHONG: 0,
-    POINT: 1,
-    LINE: 2
-};
 
 function resolveType (primitive) {
     var resolvedName = _resolveLegacyNames( primitive );
 
     var primFunction = primitiveHelpers[ resolvedName ];
-    var materialType = materialTypes.POINT;
+    var materialType = constants.MATERIAL_TYPES.POINT;
 
     if (!primFunction) {
         primFunction = wirePrimitives[ resolvedName ];
-        materialType = materialTypes.LINE;
+        materialType = constants.MATERIAL_TYPES.LINE;
     }
     if (!primFunction) {
         primFunction = sheetPrimitives[ resolvedName ];
-        materialType = materialTypes.PHONG;
+        materialType = constants.MATERIAL_TYPES.PHONG;
     }
     if (!primFunction) {
         primFunction = solidPrimitives[ resolvedName ];
-        materialType = materialTypes.PHONG;
+        materialType = constants.MATERIAL_TYPES.PHONG;
     }
 
     // special cases
     if (primitive === 'polysurface' || primitive === 'plane') {
-        materialType = materialTypes.PHONG;
+        materialType = constants.MATERIAL_TYPES.PHONG;
     }
 
     if (primitive === 'polycurve') {
-        materialType = materialTypes.LINE;
+        materialType = constants.MATERIAL_TYPES.LINE;
     }
 
     return { func: primFunction, material: materialType};
@@ -145,9 +138,9 @@ function _createMaterial ( type, materialProperties ) {
 
     if ( materialProperties && !materialProperties.side ) materialProperties.side = THREE.DoubleSide;
 
-    if ( type === materialTypes.PHONG ) return new THREE.MeshPhongMaterial( materialProperties );
-    else if ( type === materialTypes.POINT ) return new THREE.PointsMaterial( materialProperties );
-    else if ( type === materialTypes.LINE ) return new THREE.LineBasicMaterial( materialProperties );
+    if ( type === constants.MATERIAL_TYPES.PHONG ) return new THREE.MeshPhongMaterial( materialProperties );
+    else if ( type === constants.MATERIAL_TYPES.POINT ) return new THREE.PointsMaterial( materialProperties );
+    else if ( type === constants.MATERIAL_TYPES.LINE ) return new THREE.LineBasicMaterial( materialProperties );
 
 }
 

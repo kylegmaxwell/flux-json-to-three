@@ -77,7 +77,7 @@ export function polyline ( data, material ) {
  */
 export function circle ( data, material ) {
     var r = data.radius;
-    var numPoints = 32;
+    var numPoints = constants.CIRCLE_RES;
     var vertices = new Float32Array( ( numPoints  ) * 3 );
     var i, x, y, t, dt;
     t = 0;
