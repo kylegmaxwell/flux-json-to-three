@@ -20,3 +20,5 @@ export var MATERIAL_TYPES = {
     POINT: 1,
     LINE: 2
 };
+export var NURBS_CURVE_QUALITY = 4;
+export var NURBS_SURFACE_QUALITY = 4;

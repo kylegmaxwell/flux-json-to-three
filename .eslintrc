@@ -17,6 +17,7 @@
     "rules": {
         "valid-jsdoc": [2, {
             "requireReturn": false
-        }]
+        }],
+        semi: [2, "always"]
     }
 }

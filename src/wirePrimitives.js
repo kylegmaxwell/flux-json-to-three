@@ -10,7 +10,7 @@
 
 import VectorManager from './vectorManager.js';
 
-import * as constants from './constants.js'
+import * as constants from './constants.js';
 
 import FluxGeometryError from './geometryError.js';
 
@@ -118,7 +118,7 @@ export function curve ( data, material ) {
 
     geometry.vertices = data.degree > 1 ?
         new THREE.NURBSCurve( data.degree, data.knots, nurbsControlPoints )
-            .getPoints( nurbsControlPoints.length * data.degree * 4 ) : nurbsControlPoints;
+            .getPoints( nurbsControlPoints.length * data.degree * constants.NURBS_CURVE_QUALITY ) : nurbsControlPoints;
 
     return new THREE.Line( geometry, material );
 }

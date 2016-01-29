@@ -8,7 +8,7 @@ import * as wirePrimitives from './wirePrimitives.js';
 import * as sheetPrimitives from './sheetPrimitives.js';
 import * as solidPrimitives from './solidPrimitives.js';
 import * as primitiveHelpers from './primitives.js';
-import * as constants from './constants.js'
+import * as constants from './constants.js';
 import FluxGeometryError from './geometryError.js';
 
 

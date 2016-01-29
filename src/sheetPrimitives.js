@@ -10,7 +10,7 @@
 
 import VectorManager from './vectorManager.js';
 
-import * as constants from './constants.js'
+import * as constants from './constants.js';
 
 import FluxGeometryError from './geometryError.js';
 
@@ -275,6 +275,9 @@ function _makeShape(boundary) {
 
  */
 export function surface ( data, material ) {
+    if (!data || !data.controlPoints) {
+        throw new FluxGeometryError('Data must exist and have controlPoints');
+    }
     var nsControlPoints = [],
         controlPoints = data.controlPoints,
         i = 0,
@@ -300,7 +303,7 @@ export function surface ( data, material ) {
                     point[ 0 ],
                     point[ 1 ],
                     point[ 2 ],
-                    data.weights ? data.weights[ j * len + j ] : 1
+                    data.weights ? data.weights[ j * len + i ] : 1
                 )
             );
 
@@ -321,7 +324,9 @@ export function surface ( data, material ) {
 
     var geometry = new THREE.ParametricGeometry(function ( u, v ) {
         return nurbsSurface.getPoint( u, v );
-    }, data.vDegree * nsControlPoints.length * 4, data.uDegree * nsControlPoints[ 0 ].length * 4 );
+    },
+    data.vDegree * nsControlPoints.length * constants.NURBS_SURFACE_QUALITY,
+    data.uDegree * nsControlPoints[0].length * constants.NURBS_SURFACE_QUALITY );
 
     geometry.computeFaceNormals();
 

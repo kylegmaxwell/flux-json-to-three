@@ -8,7 +8,7 @@
  * imports
  */
 
-import * as constants from './constants.js'
+import * as constants from './constants.js';
 
 import FluxGeometryError from './geometryError.js';
 
@@ -63,7 +63,7 @@ function getSemiAngle(data) {
         if (data['semi-angle']) {
             semiAngle = data['semi-angle'];
         } else {
-            throw new FluxGeometryError('Cone must specify semiAngle parameter.')
+            throw new FluxGeometryError('Cone must specify semiAngle parameter.');
         }
     }
     if (data.semiAngle <= 0 || data.semiAngle >= 90) {
