@@ -109,6 +109,9 @@ export function circle ( data, material ) {
  * @param { THREE.Material } material The material to give the mesh
  */
 export function curve ( data, material ) {
+    if ( !data.knots || !data.controlPoints )
+        throw new FluxGeometryError( 'Curve is missing knots or control points.');
+
     var nurbsControlPoints = _createControlPoints( data ),
         geometry = new THREE.Geometry();
 
