@@ -22,3 +22,7 @@ export var MATERIAL_TYPES = {
 };
 export var NURBS_CURVE_QUALITY = 4;
 export var NURBS_SURFACE_QUALITY = 4;
+export var LEGACY_NAMES_MAP = {
+    'point-2d': 'point',
+    'polygon-set': 'polygonSet'
+};

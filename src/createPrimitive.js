@@ -42,6 +42,27 @@ function resolveType (primitive) {
 
     return { func: primFunction, material: materialType};
 }
+/**
+ * Cache to prevent repetitive munging of arrays.
+ * Stores all the acceptable primitive types for geometry.
+ * @type {Array.<String>}
+ */
+var validPrimsList = null;
+
+/**
+ * Return a list of all the valid primitive strings
+ * @return {Array.<String>} The list of primitives
+ */
+export function listValidPrims ( ) {
+    if (validPrimsList) return validPrimsList;
+
+    validPrimsList = Object.keys(primitiveHelpers).concat(
+                        Object.keys(solidPrimitives),
+                        Object.keys(sheetPrimitives),
+                        Object.keys(wirePrimitives),
+                        Object.keys(constants.LEGACY_NAMES_MAP));
+    return validPrimsList;
+}
 
 /**
  * Creates the ParaSolid Object
@@ -52,7 +73,7 @@ function resolveType (primitive) {
  *
  * @param { Object } data The data to create the object with
  */
-export default function createPrimitive ( data ) {
+export function createPrimitive ( data ) {
 
     var type = resolveType(data.primitive);
 
@@ -156,16 +177,10 @@ function _createMaterial ( type, materialProperties ) {
  * @param { String } name a name that may be legacy
  */
 function _resolveLegacyNames ( name ) {
-    switch ( name ) {
-
-        case 'point':
-        case 'point-2d': return 'point';
-
-        case 'polygon-set':
-        case 'polygonSet': return 'polygonSet';
-
-        default: return name;
-    }
+    var legacyMap = constants.LEGACY_NAMES_MAP;
+    if (Object.keys(legacyMap).indexOf(name) !== -1)
+        return legacyMap[name];
+    return name;
 }
 
 /**

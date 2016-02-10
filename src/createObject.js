@@ -7,7 +7,7 @@
 /*
  * Imports
  */
-import createPrimitive from './createPrimitive.js';
+import { createPrimitive, listValidPrims } from './createPrimitive.js';
 import GeometryResults from './geometryResults.js';
 
 var DEFAULTS = {
@@ -28,7 +28,7 @@ var DEFAULTS = {
  *                                defaults to true
  * @param { Object } root Object containing properties for categorizing primitives
  */
-export default function createObject ( data, mergeModels, root ) {
+export function createObject ( data, mergeModels, root ) {
     if (root.constructor !== GeometryResults) {
         throw new Error('Root have class GeometryResults');
     }
@@ -41,7 +41,26 @@ export default function createObject ( data, mergeModels, root ) {
     }
 }
 
-
+/**
+ * Determine if the given data contains geometry.
+ *
+ * It must only contain geometry, and arrays of geometry, no mixed types.
+ *
+ * @param  {Object}  data Flux JSON formatted object.
+ * @return {Boolean}      Whether the data is geometry.
+ */
+export function isKnownGeom (data) {
+    if (!data) return false;
+    var isValid = false;
+    if (data.primitive) {
+        isValid = listValidPrims().indexOf(data.primitive) !== -1;
+    } else if (data.constructor === Array) {
+        isValid = data.reduce(function(prev, curr) {
+            return prev || isKnownGeom(curr);
+        }, false);
+    }
+    return isValid;
+}
 
 /**
  * Helper method to handle the case where the parasolid data has a
@@ -60,7 +79,15 @@ function _handlePrimitive( data, root ) {
         root.asyncPrims.push(data);
     }
     else {
-        var mesh = createPrimitive( data, root );
+        var mesh;
+        try {
+            mesh = createPrimitive( data, root );
+        }
+        catch(err) {
+            if (err.name !== "FluxGeometryError") {
+                throw err;
+            }
+        }
         if ( !mesh ) {
             root.invalidPrims[ data.primitive ] = true;
         }

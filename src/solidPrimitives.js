@@ -121,11 +121,17 @@ export function cylinder ( data, material ) {
  *
  * @return { THREE.Mesh } The spherical THREE.Mesh
  *
+ * @throws FluxGeometryError if sphere is missing radius
+ *
  * @param { Object }           data     Parasolid data
  * @param { THREE.Material } material The material to give the THREE.Mesh
  */
 export function sphere ( data, material ) {
     var geometry, mesh;
+
+    if (!data.radius) {
+        throw new FluxGeometryError('Sphere is missing radius.');
+    }
 
     geometry = new THREE.SphereBufferGeometry( data.radius, 12, 8 );
     mesh = new THREE.Mesh( geometry, material );
