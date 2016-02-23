@@ -11,12 +11,19 @@ import * as primitiveHelpers from './primitives.js';
 import * as constants from './constants.js';
 import FluxGeometryError from './geometryError.js';
 
-
-function resolveType (primitive) {
+/**
+ * Determine the material type that would be used for a given primitive
+ * @param {Object} primitive The geometry object parameters
+ * @returns {{func: *, material: number}} A function to convert a prim to geomtry and a material type
+ */
+export function resolveType (primitive) {
     var resolvedName = _resolveLegacyNames( primitive );
 
     var primFunction = primitiveHelpers[ resolvedName ];
-    var materialType = constants.MATERIAL_TYPES.POINT;
+    var materialType = constants.MATERIAL_TYPES.PHONG;
+    if (resolvedName === 'point') {
+        materialType = constants.MATERIAL_TYPES.POINT;
+    }
 
     if (!primFunction) {
         primFunction = wirePrimitives[ resolvedName ];
@@ -65,6 +72,116 @@ export function listValidPrims ( ) {
 }
 
 /**
+ * Convert a color string or array to an object
+ * @param {String|Array} color The html color
+ * @returns {THREE.Color} The color object
+ * @private
+ */
+function _convertColor(color) {
+    var newColor = new THREE.Color();
+    if (typeof color === 'object' &&
+        color.r !== undefined && color.g !== undefined && color.b !== undefined) {
+        newColor.copy(color);
+    } else if (typeof color === 'object' && color instanceof Array && color.length === 3) {
+        newColor.setRGB(color[0], color[1], color[2]);
+    } else {
+        newColor.set(color);
+    }
+    return newColor;
+}
+
+/**
+ * Get the color from a given entity
+ * @param {Object} prim The primitive with the material
+ * @returns {Array.<Number>} Color array
+ * @private
+ */
+function _getColor(prim) {
+    var color = [0.5,0.5,0.8];
+    if (!prim) return;
+    var materialProperties = prim.materialProperties || (prim.attributes && prim.attributes.materialProperties);
+    if (materialProperties && materialProperties.color) {
+        color = materialProperties.color;
+    }
+    var threeColor = _convertColor(color);
+    return [threeColor.r, threeColor.g, threeColor.b];
+}
+
+/**
+ * Get the point size from a given entity
+ * @param {Array} prims Array of point data
+ * @returns {Number} Point size
+ * @private
+ */
+function _getPointSize(prims) {
+    var size = 10;
+    // Just use the first point for now, can't set size per point.
+    var prim = prims[0];
+    if (!prim) return;
+    var materialProperties = prim.materialProperties || (prim.attributes && prim.attributes.materialProperties);
+    if (materialProperties && materialProperties.size) {
+        size = materialProperties.size;
+    }
+    return size;
+}
+
+/**
+ * Get the point size attenuation from a given entity
+ * Determines whether the points change size based on distance to camera
+ * @param {Array} prims Array of point data
+ * @returns {Boolean} True when points change apparent size
+ * @private
+ */
+function _getPointSizeAttenuation(prims) {
+    // default to fixed size for 1 point, and attenuate for multiples
+    var sizeAttenuation = prims.length !== 1;
+    // Just use the first point for now, can't set attenuation per point.
+    var prim = prims[0];
+    if (!prim) return;
+    var materialProperties = prim.materialProperties || (prim.attributes && prim.attributes.materialProperties);
+    if (materialProperties && materialProperties.size) {
+        sizeAttenuation = materialProperties.sizeAttenuation;
+    }
+    return sizeAttenuation;
+}
+
+/**
+ * Create the point cloud mesh for all the input primitives
+ * @param {Object} prims List of point primitive objects
+ * @returns {THREE.Points} An Object3D containing points
+ */
+export function createPoints (prims) {
+    var positions = new Float32Array(prims.length*3);
+    var colors = new Float32Array(prims.length*3);
+    for (var i=0;i<prims.length;i++) {
+        var prim = prims[i];
+        positions[i*3] = prim.point[0];
+        positions[i*3+1] = prim.point[1];
+        positions[i*3+2] = prim.point[2]||0;
+        // Get color or default color
+        var color = _getColor(prim);
+        colors[i*3] = color[0];
+        colors[i*3+1] = color[1];
+        colors[i*3+2] = color[2];
+    }
+    var geometry = new THREE.BufferGeometry();
+
+    geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
+    geometry.addAttribute( 'color', new THREE.BufferAttribute( colors, 3 ) );
+    var materialProperties = {
+        size: _getPointSize(prims),
+        sizeAttenuation: _getPointSizeAttenuation(prims),
+        vertexColors: THREE.VertexColors
+    };
+    var material = new THREE.PointsMaterial(materialProperties);
+    var mesh = new THREE.Points( geometry, material );
+
+    cleanupMesh(mesh);
+
+    return mesh;
+}
+
+/**
  * Creates the ParaSolid Object
  *
  * @function createPrimitive
@@ -84,41 +201,51 @@ export function createPrimitive ( data ) {
     if (!primFunction) return;
 
     var mesh = primFunction( data, material );
-    var axis;
 
     if ( mesh ) {
-
-        _convertToZUp( mesh );
-
-        if ( data.origin ) _applyOrigin( mesh, data.origin );
-
-        axis = data.axis || data.direction || data.normal;
-
-        if ( axis )
-            mesh.lookAt( mesh.position.clone().add(
-                new THREE.Vector3(
-                    axis[ 0 ],
-                    axis[ 1 ],
-                    axis[ 2 ]
-                )
-            ));
-
-        if ( data.attributes && data.attributes.tag ) mesh.userData.tag = data.attributes.tag;
-
-        if ( mesh.type === 'Mesh' ) {
-            materialProperties.polygonOffset = true;
-            materialProperties.polygonOffsetFactor = 1;
-            materialProperties.polygonOffsetUnits = 1;
-        }
-
-        mesh.materialProperties = materialProperties;
-
-        return mesh;
-
+        return cleanupMesh(mesh, data, materialProperties);
     }
 
     throw new FluxGeometryError( 'Unsupported geometry type: ' + data.primitive );
 
+}
+
+/**
+ * Do some post processing to the mesh to prep it for Flux
+ * @param {THREE.Object3D} mesh Geometry and material object
+ * @param {Object} data The entity object
+ * @param {Object} materialProperties The material properties object
+ * @returns {THREE.Mesh} The processed mesh
+ */
+export function cleanupMesh(mesh, data, materialProperties) {
+    _convertToZUp( mesh );
+
+    if (!data) return;
+
+    if ( data.origin ) _applyOrigin( mesh, data.origin );
+
+    var axis = data.axis || data.direction || data.normal;
+
+    if ( axis )
+        mesh.lookAt( mesh.position.clone().add(
+            new THREE.Vector3(
+                axis[ 0 ],
+                axis[ 1 ],
+                axis[ 2 ]
+            )
+        ));
+
+    if ( data.attributes && data.attributes.tag ) mesh.userData.tag = data.attributes.tag;
+
+    if ( mesh.type === 'Mesh' ) {
+        materialProperties.polygonOffset = true;
+        materialProperties.polygonOffsetFactor = 1;
+        materialProperties.polygonOffsetUnits = 1;
+    }
+
+    mesh.materialProperties = materialProperties;
+
+    return mesh;
 }
 
 /**

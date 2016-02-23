@@ -7,39 +7,9 @@
 /*
  * Imports
  */
-import { createPrimitive, listValidPrims } from './createPrimitive.js';
+import * as createPrimitive from './createPrimitive.js';
+import * as constants from './constants.js';
 import GeometryResults from './geometryResults.js';
-
-var DEFAULTS = {
-    MERGE_MODELS: true
-};
-
-
-
-/**
- * Creates THREE scene and geometries from parasolid output.
- * The method is called recursively for each array and entities
- * map
- *
- * @function createObject
- *
- * @param { Object }  data        Parasolid Data from the flux json representation
- * @param { Boolean } mergeModels Whether or not to merge resulting geometries where possible
- *                                defaults to true
- * @param { Object } root Object containing properties for categorizing primitives
- */
-export function createObject ( data, mergeModels, root ) {
-    if (root.constructor !== GeometryResults) {
-        throw new Error('Root have class GeometryResults');
-    }
-
-    if ( mergeModels == null ) mergeModels = DEFAULTS.MERGE_MODELS;
-
-    if ( data ) {
-        if ( data.primitive ) _handlePrimitive( data, root );
-        else if ( data.constructor === Array ) _handleArray( data, root, mergeModels );
-    }
-}
 
 /**
  * Determine if the given data contains geometry.
@@ -53,13 +23,122 @@ export function isKnownGeom (data) {
     if (!data) return false;
     var isValid = false;
     if (data.primitive) {
-        isValid = listValidPrims().indexOf(data.primitive) !== -1;
+        isValid = createPrimitive.listValidPrims().indexOf(data.primitive) !== -1;
     } else if (data.constructor === Array) {
         isValid = data.reduce(function(prev, curr) {
             return prev || isKnownGeom(curr);
         }, false);
     }
     return isValid;
+}
+
+/**
+ * Creates THREE scene and geometries from parasolid output.
+ * The method is called recursively for each array and entities
+ * map
+ *
+ * @function createObject
+ *
+ * @param { Object }  data        Parasolid Data from the flux json representation
+ * @param { Object } geomResult Object containing properties for categorizing primitives
+ */
+export function createObject ( data, geomResult ) {
+
+    if (geomResult.constructor !== GeometryResults) {
+        throw new Error('Root must have class GeometryResults');
+    }
+
+    if (data && Object.keys(data).length > 0) {
+        geomResult.clear();
+        _flattenData(data, geomResult);
+        _createObject(geomResult);
+    }
+}
+
+/**
+ * Resolve the nested arrays of primitives into categorized flat arrays of primitives.
+ * @param {Object} data The entities objects / arrays
+ * @param {GeometryResult} geomResult The results container
+ * @private
+ */
+function _flattenData(data, geomResult) {
+    if (!data) return;
+
+    // Breps are skipped when they need to be handled async
+    if (data.primitive === 'brep' && (data.faces == null || data.vertices == null)) {
+        geomResult.asyncPrims.push(data);
+    } else if (data.primitive) {
+        var type = createPrimitive.resolveType(data.primitive).material;
+        switch(type) {
+            case constants.MATERIAL_TYPES.POINT: {
+                geomResult.pointPrims.push(data);
+                break;
+            }
+            case constants.MATERIAL_TYPES.LINE: {
+                geomResult.linePrims.push(data);
+                break;
+            }
+            case constants.MATERIAL_TYPES.PHONG: {
+                geomResult.phongPrims.push(data);
+                break;
+            }
+        }
+    }
+    if (data.constructor === Array) {
+        for (var i=0;i<data.length;i++) {
+            _flattenData(data[i], geomResult);
+        }
+    }
+}
+/**
+ * Create the objects for each geometry type.
+ * @param {GeometryResult} geomResult The results container
+ * @private
+ */
+function _createObject ( geomResult ) {
+    _handlePoints(geomResult);
+    _handleLines(geomResult);
+    _handlePhongs(geomResult);
+}
+
+/**
+ * Create all point objects into point clouds.
+ * @param {GeometryResult} geomResult The results container
+ * @private
+ */
+function _handlePoints(geomResult) {
+    var prims = geomResult.pointPrims;
+    if (prims.length === 0) return;
+
+    var mesh = createPrimitive.createPoints(prims);
+
+    geomResult.invalidPrims.point  = false;
+    geomResult.mesh.add(mesh);
+}
+
+/**
+ * Create all the lines primitives.
+ * @param {GeometryResult} geomResult The results container
+ * @private
+ */
+function _handleLines(geomResult) {
+    var prims = geomResult.linePrims;
+    for (var i=0;i<prims.length;i++) {
+        _handlePrimitive( prims[i], geomResult);
+    }
+}
+
+/**
+ * Create all geometry that will be phong shaded.
+ * @param {GeometryResult} geomResult The results container
+ * @private
+ */
+function _handlePhongs(geomResult) {
+    var prims = geomResult.phongPrims;
+    for (var i=0;i<prims.length;i++) {
+        _handlePrimitive( prims[i], geomResult);
+    }
+    if (geomResult.mesh) _upgradeChildrenToBuffer(geomResult.mesh);
 }
 
 /**
@@ -70,72 +149,27 @@ export function isKnownGeom (data) {
  * @private
  *
  * @param { Object } data Parametric data
- * @param { Object } root The root object that is being built
+ * @param {GeometryResult} geomResult The geomResult object that is being built
  *                        in this part of the scene graph
  */
-function _handlePrimitive( data, root ) {
-    // Breps are skipped when they need to be handled async
-    if (data.primitive === 'brep' && (data.faces == null || data.vertices == null)) {
-        root.asyncPrims.push(data);
+function _handlePrimitive( data, geomResult ) {
+    var mesh;
+    try {
+        mesh = createPrimitive.createPrimitive( data, geomResult );
+    }
+    catch(err) {
+        if (err.name !== "FluxGeometryError") {
+            throw err;
+        }
+    }
+    if ( !mesh ) {
+        geomResult.invalidPrims[ data.primitive ] = true;
     }
     else {
-        var mesh;
-        try {
-            mesh = createPrimitive( data, root );
-        }
-        catch(err) {
-            if (err.name !== "FluxGeometryError") {
-                throw err;
-            }
-        }
-        if ( !mesh ) {
-            root.invalidPrims[ data.primitive ] = true;
-        }
-        else {
-            root.invalidPrims[ data.primitive ] = false;
-            root.mesh.add(mesh);
-        }
+        geomResult.invalidPrims[ data.primitive ] = false;
+        _maybeMergeModels(mesh, geomResult);
     }
 }
-
-/**
- * Helper function to handle the case where the parasolid data
- * is an array of other parasolid data
- *
- * @function _handleArray
- * @private
- *
- * @param { Object } data           Parasolid data
- * @param { Object } root           The root object that is being built
- *                                  in this part of the scene graph
- * @param { Object } mergeModels    Whether to merge models when possible
- */
-function _handleArray ( data, root, mergeModels ) {
-    var i = 0,
-        len = data.length;
-
-    for (  ; i < len ; i++ ) {
-        createObject( data[ i ], mergeModels, root );
-
-        var children = root.mesh.children;
-        var targetMesh = children[children.length-1];
-        if ( targetMesh ) {
-
-            targetMesh.updateMatrixWorld( true );
-
-            if ( mergeModels && !targetMesh.materialProperties ) {
-                _mergeModels( targetMesh, root );
-            }
-            else {
-                root.mesh.add( targetMesh);
-            }
-        }
-    }
-
-    if ( root.mesh ) _upgradeChildrenToBuffer( root.mesh );
-}
-
-
 
 /**
  * Helper function to merge the children of a particular
@@ -146,26 +180,29 @@ function _handleArray ( data, root, mergeModels ) {
  * @private
  *
  * @param { ThreeJS.Mesh } mesh A three js mesh
- * @param { Object }       root The object being built by recursion
+ * @param { Object }       geomResult The object being built
  */
-function _mergeModels ( mesh, root ) {
+function _maybeMergeModels ( mesh, geomResult ) {
+    if ( !geomResult.mesh ) geomResult.mesh = new THREE.Object3D();
 
-    if ( !root.mesh ) root.mesh = new THREE.Object3D();
+    if (!mesh) return;
+    mesh.updateMatrixWorld(true);
+    var merged = false;
+    if (_objectCanMerge(mesh)) {
 
-    var children = root.mesh.children,
-        i = 0,
-        len = children.length;
+        var children = geomResult.mesh.children;
+        var index = children.length-1;
 
-    if ( _objectCanMerge( mesh ) ) {
-        for ( ; i < len ; i++ ) {
-            if ( _objectCanMerge( children[ i ] ) ) {
-                children[ i ].geometry.merge( mesh.geometry, mesh.matrixWorld );
-                return;
-            }
+        if ( _objectCanMerge( children[index])) {
+            children[index].geometry.merge( mesh.geometry, mesh.matrixWorld );
+            merged = true;
         }
     }
-
-    root.mesh.add( mesh );
+    if (!merged) {
+        geomResult.mesh.add(mesh);
+    } else {
+        mesh.geometry.dispose();
+    }
 
 }
 
@@ -182,7 +219,8 @@ function _mergeModels ( mesh, root ) {
  * @param { ThreeJS.Object3D } object The object to check
  */
 function _objectCanMerge ( object ) {
-    return object.geometry && !( object.geometry instanceof THREE.BufferGeometry ) && object.type === 'Mesh';
+    return !object.materialProperties && object.geometry &&
+           !( object.geometry instanceof THREE.BufferGeometry ) && object.type === 'Mesh';
 }
 
 /**
@@ -234,7 +272,9 @@ function _upgradeChildrenToBuffer ( object ) {
  * @param { ThreeJS.Object3D } object Object to upgrade
  */
 function _upgradeGeometryToBuffer ( object ) {
-    object.geometry = new THREE.BufferGeometry().fromGeometry( object.geometry );
+    var oldGeom = object.geometry;
+    object.geometry = new THREE.BufferGeometry().fromGeometry( oldGeom );
+    oldGeom.dispose();
 }
 
 

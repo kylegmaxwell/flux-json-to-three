@@ -1,6 +1,7 @@
 /*
  * A set of fixtures for the parasolid util tests
  */
+'use strict';
 
 export var cone = {
     "input": {
@@ -278,4 +279,3 @@ export var invalid = {
     },
     "result": null
 };
-
