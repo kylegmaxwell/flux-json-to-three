@@ -19,6 +19,7 @@ THREE.Vector3.prototype.multiplyScalar = function () { return this; };
 THREE.Vector3.prototype.crossVectors = function () { return this; };
 THREE.Vector3.prototype.angleTo = function () { return 0.1; };
 THREE.Vector3.prototype.applyAxisAngle = function () { return 0.1; };
+THREE.Vector3.prototype.distanceToSquared = function () { return 0.1; };
 
 THREE.Euler = function () {
     this.order = '';
@@ -101,6 +102,7 @@ THREE.Geometry = function () {
     this.faces = [];
     this.computeBoundingSphere = function () {};
     this.computeFaceNormals = function () {};
+    this.computeVertexNormals = function () {};
 };
 
 THREE.ParametricGeometry = function () {
@@ -114,6 +116,14 @@ THREE.ShapeGeometry = function () {
     this.computeFaceNormals = function () {};
 };
 
+THREE.Face3 = function (a, b, c) {
+    this.a=0;
+    this.b=0;
+    this.c=0;
+    this.normal = new THREE.Vector3();
+    this.vertexNormals = [];
+};
+
 THREE.CylinderGeometry = function () {};
 THREE.SphereBufferGeometry = function () {};
 THREE.TorusGeometry = function () {};
@@ -123,8 +133,6 @@ THREE.PlaneBufferGeometry = function () {};
 THREE.MeshPhongMaterial = function() {};
 THREE.PointsMaterial = function() {};
 THREE.LineBasicMaterial = function() {};
-THREE.Face3 = function () {};
 THREE.Vector4 = function () {};
-THREE.Face3 = function () {};
 THREE.BufferAttribute = function () {};
 THREE.NURBSSurface = function () {};

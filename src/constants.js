@@ -26,3 +26,9 @@ export var LEGACY_NAMES_MAP = {
     'point-2d': 'point',
     'polygon-set': 'polygonSet'
 };
+// For a face compare the angle between it's normals and those of
+// it's neighbors. If all the angles are smaller than the limit,
+// the face will be rendered smooth.
+// Range is from 0 (more faceted) to 180 (more smooth)
+var degreesSmoothLimit = 45;
+export var NORMALS_SMOOTH_LIMIT = Math.cos(degreesSmoothLimit * DEG_2_RAD);
