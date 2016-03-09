@@ -245,39 +245,37 @@ function computeCuspNormals ( geom, thresh ) {
 /**
  * Creates a THREE.Mesh from parasolid data and a material
  *
+ * @precondition The faces in the mesh must be triangles or convex planar polygons.
+ * Also this assumes the faces are wound counter clockwise.
+ *
  * @function THREE.Mesh
  *
- * @return { THREE.Mesh } The THREE.Mesh
+ * @return {THREE.Mesh} The THREE.Mesh
  *
- * @param { Object }           data     Parasolid data
- * @param { THREE.Material } material The material to give the THREE.Mesh
+ * @param {Object}          data     Parasolid data
+ * @param {THREE.Material}  material The material to give the THREE.Mesh
 
  */
-export function mesh ( data, material ) {
+export function mesh (data, material) {
     var geometry = new THREE.Geometry(),
         face;
 
-    for ( var i = 0, len = data.vertices.length ; i < len ; i++ )
-        geometry.vertices.push(
-            new THREE.Vector3( data.vertices[ i ][ 0 ], data.vertices[ i ][ 1 ], data.vertices[ i ][ 2 ] )
+    for ( var i = 0, len = data.vertices.length ; i < len ; i++ ) {
+        geometry.vertices.push(new THREE.Vector3(
+            data.vertices[i][0],
+            data.vertices[i][1],
+            data.vertices[i][2])
         );
+    }
 
     for ( i = 0, len = data.faces.length ; i < len ; i++ ) {
-
         face = data.faces[ i ];
-
-        if ( face.length === 3 )
-            geometry.faces.push(
-                new THREE.Face3( face[ 0 ], face[ 1 ], face[ 2 ] )
-            );
-
-        else if ( face.length === 4 ) {
-            geometry.faces.push(
-                new THREE.Face3( face[ 0 ], face[ 1 ], face[ 2 ] )
-            );
-            geometry.faces.push(
-                new THREE.Face3( face[ 0 ], face[ 2 ], face[ 3 ] )
-            );
+        if ( face.length === 3 ) {
+            geometry.faces.push(new THREE.Face3(face[0], face[1], face[2]));
+        } else if ( face.length > 3 ) {
+            for ( var j=0; j+2<face.length; j++) {
+                geometry.faces.push(new THREE.Face3(face[0], face[j+1], face[j+2]));
+            }
         }
 
     }
