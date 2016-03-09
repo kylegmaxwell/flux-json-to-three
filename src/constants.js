@@ -32,3 +32,4 @@ export var LEGACY_NAMES_MAP = {
 // Range is from 0 (more faceted) to 180 (more smooth)
 var degreesSmoothLimit = 45;
 export var NORMALS_SMOOTH_LIMIT = Math.cos(degreesSmoothLimit * DEG_2_RAD);
+export var DEFAULT_POINT_SIZE = 5;

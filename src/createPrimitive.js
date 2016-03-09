@@ -114,7 +114,7 @@ function _getColor(prim) {
  * @private
  */
 function _getPointSize(prims) {
-    var size = 10;
+    var size = constants.DEFAULT_POINT_SIZE;
     // Just use the first point for now, can't set size per point.
     var prim = prims[0];
     if (!prim) return;
