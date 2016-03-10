@@ -50,7 +50,9 @@ THREE.PointsMaterial = function() {};
 THREE.LineBasicMaterial = function() {};
 THREE.Vector4 = function () {};
 THREE.BufferAttribute = function () {};
-THREE.NURBSSurface = function () {};
+THREE.NURBSSurface = function () {
+    this.getPoint = function () {};
+};
 
 //----Buffer Geometry
 THREE.BufferGeometry = function () {
@@ -81,6 +83,7 @@ THREE.Geometry = function () {
 };
 
 THREE.ParametricGeometry = function () {
+    THREE.Geometry.call(this);
     this.computeBoundingSphere = function () {};
     this.computeFaceNormals = function () {};
 };
@@ -88,6 +91,7 @@ THREE.ParametricGeometry.prototype = Object.create(THREE.Geometry.prototype);
 THREE.ParametricGeometry.prototype.constructor = THREE.ParametricGeometry;
 
 THREE.ShapeGeometry = function () {
+    THREE.Geometry.call(this);
     this.vertices = [];
     this.computeBoundingSphere = function () {};
     this.computeFaceNormals = function () {};
@@ -95,19 +99,27 @@ THREE.ShapeGeometry = function () {
 THREE.ShapeGeometry.prototype = Object.create(THREE.Geometry.prototype);
 THREE.ShapeGeometry.prototype.constructor = THREE.ShapeGeometry;
 
-THREE.CylinderGeometry = function () {};
+THREE.CylinderGeometry = function () {
+    THREE.Geometry.call(this);
+};
 THREE.CylinderGeometry.prototype = Object.create(THREE.Geometry.prototype);
 THREE.CylinderGeometry.prototype.constructor = THREE.CylinderGeometry;
 
-THREE.TorusGeometry = function () {};
+THREE.TorusGeometry = function () {
+    THREE.Geometry.call(this);
+};
 THREE.TorusGeometry.prototype = Object.create(THREE.Geometry.prototype);
 THREE.TorusGeometry.prototype.constructor = THREE.TorusGeometry;
 
-THREE.BoxGeometry = function () {};
+THREE.BoxGeometry = function () {
+    THREE.Geometry.call(this);
+};
 THREE.BoxGeometry.prototype = Object.create(THREE.Geometry.prototype);
 THREE.BoxGeometry.prototype.constructor = THREE.BoxGeometry;
 
-THREE.CircleGeometry = function () {};
+THREE.CircleGeometry = function () {
+    THREE.Geometry.call(this);
+};
 THREE.CircleGeometry.prototype = Object.create(THREE.Geometry.prototype);
 THREE.CircleGeometry.prototype.constructor = THREE.CircleGeometry;
 

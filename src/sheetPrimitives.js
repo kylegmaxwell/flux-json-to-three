@@ -262,6 +262,56 @@ function _makeShape(boundary) {
 }
 
 /**
+ * Calculate the maximum curvature across a surface geometry
+ * The curvature is computed for each face compared to it's neighbors
+ * and then the maximum angle is the result.
+ * @param {THREE.Geometry} geom The surface
+ * @returns {number} The normalized curvature between 0 and 1
+ * @private
+ */
+function _calcMaxCurvature(geom) {
+
+    var v, vl, f, fl, face, vertexToFaces;
+    // List of all the co-incident faces, indexed by [v][f]
+    // Stores a pair of a face index and a vertex index on a face
+    vertexToFaces = [];
+
+    for ( v = 0, vl = geom.vertices.length; v < vl; v ++ ) {
+        vertexToFaces[v] = [];
+    }
+
+    // Add the face normals as vertex normals
+    for ( f = 0, fl = geom.faces.length; f < fl; f ++ ) {
+        face = geom.faces[ f ];
+        vertexToFaces[face.a].push([f,0]);
+        vertexToFaces[face.b].push([f,1]);
+        vertexToFaces[face.c].push([f,2]);
+    }
+    var invPi = 1.0 / Math.PI;
+    var maxCurvature = 0;
+    // Convert triangle index scheme from a b c to 1 2 3
+    var iToAbc = ['a', 'b', 'c'];
+    // For each face
+    for ( f = 0, fl = geom.faces.length; f < fl; f ++ ) {
+        face = geom.faces[ f ];
+        // For each vertex on the face
+        for (var i=0; i<3; i++) {
+            var faceAbc = face[iToAbc[i]];
+            // For each face neighboring the vertex
+            for ( v = 0, vl = vertexToFaces[faceAbc].length; v < vl; v ++ ) {
+                // look up normal by face, and vertex and add if within threshold
+                var faceIndex = vertexToFaces[faceAbc][v][0];
+                var curvature = invPi * face.normal.angleTo(geom.faces[faceIndex].normal);
+                if (curvature > maxCurvature) {
+                    maxCurvature = curvature;
+                }
+            }
+        }
+    }
+
+    return maxCurvature;
+}
+/**
  * Creates a surface THREE.Mesh from parasolid data and a material
  *
  * @function surface
@@ -278,37 +328,26 @@ export function surface ( data, material ) {
     if (!data || !data.controlPoints) {
         throw new FluxGeometryError('Data must exist and have controlPoints');
     }
-    var nsControlPoints = [],
-        controlPoints = data.controlPoints,
-        i = 0,
-        len = controlPoints.length,
-        j,
-        len2,
-        controlPointRow,
-        point,
-        arr;
+    var j, len2, controlPointRow, point, arr;
+    var nsControlPoints = [];
+    var controlPoints = data.controlPoints;
+    var i = 0;
+    var len = controlPoints.length;
 
+    // For each control point
     for ( ; i < len ; i++ ) {
-
         arr = [];
         nsControlPoints.push( arr );
         controlPointRow = controlPoints[ i ];
-
         for ( j = 0, len2 = controlPointRow.length ; j < len2 ; j++ ) {
-
             point = controlPointRow[ j ];
-
             arr.push(
                 new THREE.Vector4(
-                    point[ 0 ],
-                    point[ 1 ],
-                    point[ 2 ],
+                    point[ 0 ], point[ 1 ], point[ 2 ],
                     data.weights ? data.weights[ j * len + i ] : 1
                 )
             );
-
         }
-
     }
 
     if ( data.uKnots.length !== nsControlPoints[ 0 ].length + data.uDegree + 1 )
@@ -319,16 +358,34 @@ export function surface ( data, material ) {
         throw new FluxGeometryError( 'Number of vKnots in a NURBS surface should equal vDegree + N + 1' +
                          ', where N is the number of control points along V direction' );
 
-    //
     var nurbsSurface = new THREE.NURBSSurface( data.vDegree, data.uDegree, data.vKnots, data.uKnots, nsControlPoints );
 
-    var geometry = new THREE.ParametricGeometry(function ( u, v ) {
-        return nurbsSurface.getPoint( u, v );
-    },
-    data.vDegree * nsControlPoints.length * constants.NURBS_SURFACE_QUALITY,
-    data.uDegree * nsControlPoints[0].length * constants.NURBS_SURFACE_QUALITY );
-
+    // Tessellate the NURBS at the minimum level to get the polygon control hull
+    var minSlices = nsControlPoints.length-1;
+    var minStacks = nsControlPoints[0].length-1;
+    var geometry = new THREE.ParametricGeometry(nurbsSurface.getPoint.bind(nurbsSurface), minSlices, minStacks);
     geometry.computeFaceNormals();
+
+    // Determine the appropriate resolution for the surface based on the curvature of the control hull
+    var curvature = _calcMaxCurvature(geometry);
+    var factor = curvature * constants.NURBS_SURFACE_QUALITY;
+
+    // Interpolate between flat and maximum detail, never less than the nurbs control hull
+    var slices = Math.max(Math.floor(data.vDegree * nsControlPoints.length * factor), minSlices);
+    var stacks = Math.max(Math.floor(data.uDegree * nsControlPoints[0].length * factor), minStacks);
+
+    // Exception for totally flat surfaces, then render as a single quad
+    if (curvature < constants.NURBS_FLAT_LIMIT) {
+        slices = 1;
+        stacks = 1;
+    }
+
+    if (slices !== minSlices || stacks !== minStacks) {
+        // Build the final geometry using the dynamic resolution
+        geometry.dispose();
+        geometry = new THREE.ParametricGeometry(nurbsSurface.getPoint.bind(nurbsSurface), slices, stacks);
+        geometry.computeFaceNormals();
+    }
 
     return new THREE.Mesh( geometry, material );
 }

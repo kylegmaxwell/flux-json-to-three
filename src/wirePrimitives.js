@@ -119,9 +119,11 @@ export function curve ( data, material ) {
         throw new FluxGeometryError( 'Number of uKnots in a NURBS curve should equal degree + N + 1, where N is the number ' +
                          'of control points' );
 
+    var numPoints = Math.max(Math.floor(nurbsControlPoints.length * data.degree * constants.NURBS_CURVE_QUALITY),
+        nurbsControlPoints.length-1);
     geometry.vertices = data.degree > 1 ?
-        new THREE.NURBSCurve( data.degree, data.knots, nurbsControlPoints )
-            .getPoints( nurbsControlPoints.length * data.degree * constants.NURBS_CURVE_QUALITY ) : nurbsControlPoints;
+        new THREE.NURBSCurve( data.degree, data.knots, nurbsControlPoints ).getPoints( numPoints ) :
+        nurbsControlPoints;
 
     return new THREE.Line( geometry, material );
 }

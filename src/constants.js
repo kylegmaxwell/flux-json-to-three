@@ -20,8 +20,14 @@ export var MATERIAL_TYPES = {
     POINT: 1,
     LINE: 2
 };
-export var NURBS_CURVE_QUALITY = 4;
-export var NURBS_SURFACE_QUALITY = 4;
+//----NURBS
+export var NURBS_CURVE_QUALITY = 2.5;
+export var NURBS_SURFACE_QUALITY = 2.5;
+// A NURBS surface with angles between the faces of its control hull below
+// this threshold will be considered flat
+var degreesFlatLimit = 1.0;
+export var NURBS_FLAT_LIMIT = degreesFlatLimit/180.0;
+
 export var LEGACY_NAMES_MAP = {
     'point-2d': 'point',
     'polygon-set': 'polygonSet'
