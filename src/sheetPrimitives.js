@@ -359,11 +359,12 @@ export function surface ( data, material ) {
                          ', where N is the number of control points along V direction' );
 
     var nurbsSurface = new THREE.NURBSSurface( data.vDegree, data.uDegree, data.vKnots, data.uKnots, nsControlPoints );
+    var getPointFunction = nurbsSurface.getPoint.bind(nurbsSurface);
 
     // Tessellate the NURBS at the minimum level to get the polygon control hull
     var minSlices = nsControlPoints.length-1;
     var minStacks = nsControlPoints[0].length-1;
-    var geometry = new THREE.ParametricGeometry(nurbsSurface.getPoint.bind(nurbsSurface), minSlices, minStacks);
+    var geometry = new THREE.ParametricGeometry(getPointFunction, minSlices, minStacks);
     geometry.computeFaceNormals();
 
     // Determine the appropriate resolution for the surface based on the curvature of the control hull
@@ -383,7 +384,7 @@ export function surface ( data, material ) {
     if (slices !== minSlices || stacks !== minStacks) {
         // Build the final geometry using the dynamic resolution
         geometry.dispose();
-        geometry = new THREE.ParametricGeometry(nurbsSurface.getPoint.bind(nurbsSurface), slices, stacks);
+        geometry = new THREE.ParametricGeometry(getPointFunction, slices, stacks);
         geometry.computeFaceNormals();
     }
 
