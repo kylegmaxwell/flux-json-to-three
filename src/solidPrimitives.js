@@ -289,6 +289,37 @@ export function mesh (data, material) {
     return new THREE.Mesh( geometry, material );
   }
 
+// Singleton loader object
+var objLoader = new THREE.OBJLoader();
+/**
+ * Convert stl data into geometry
+ * @param {object} data The stl primitive
+ * @param {THREE.material} material The material to use
+ * @returns {THREE.Mesh} The mesh containing the geometry
+ */
+export function obj (data) {
+    return objLoader.parse(data.data);
+}
+
+// Singleton loader object
+var stlLoader = new THREE.STLLoader();
+/**
+ * Convert stl data into geometry
+ * @param {object} data The stl primitive
+ * @param {THREE.material} material The material to use
+ * @returns {THREE.Mesh} The mesh containing the geometry
+ */
+export function stl (data, material) {
+    var geometry = stlLoader.parseASCII(data.data);
+
+    geometry.computeBoundingSphere();
+    geometry.mergeVertices();
+    geometry.computeFaceNormals();
+    computeCuspNormals(geometry, constants.NORMALS_SMOOTH_LIMIT);
+
+    return new THREE.Mesh( geometry, material );
+}
+
 /**
  * Creates a THREE.Mesh from parasolid brep with THREE.Mesh information
  *

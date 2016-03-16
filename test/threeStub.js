@@ -233,3 +233,11 @@ THREE.TextHelper = function () {
 };
 THREE.TextHelper.prototype = Object.create(THREE.Mesh.prototype);
 THREE.TextHelper.prototype.constructor = THREE.TextHelper;
+
+THREE.OBJLoader = function () {
+    return new THREE.Object3D();
+};
+
+THREE.STLLoader = function () {
+    return new THREE.Object3D();
+};
