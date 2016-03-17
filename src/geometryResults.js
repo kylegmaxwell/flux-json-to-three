@@ -5,8 +5,15 @@
  */
 'use strict';
 export default function GeometryResults() {
+    // Container for all geometry results
     this.mesh = new THREE.Object3D();
+
+    // Map from primitive name to boolean
     this.invalidPrims = {};
+
+    // Array of THREE.Texture objects used for image based lighting
+    this.cubeArray = null;
+
     this.clear();
 }
 
@@ -25,4 +32,8 @@ GeometryResults.prototype.clear = function () {
 
     // Buffer for combining all surface objects
     this.phongPrims = [];
+
+    // Map from geometry id to material
+    // Used to detect shared materials when merging
+    this._geometryMaterialMap = {};
 };

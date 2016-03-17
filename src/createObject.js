@@ -123,9 +123,7 @@ function _handlePoints(geomResult) {
  */
 function _handleLines(geomResult) {
     var prims = geomResult.linePrims;
-    for (var i=0;i<prims.length;i++) {
-        _handlePrimitive( prims[i], geomResult);
-    }
+    _handlePrimitives(prims, geomResult);
 }
 
 /**
@@ -135,24 +133,55 @@ function _handleLines(geomResult) {
  */
 function _handlePhongs(geomResult) {
     var prims = geomResult.phongPrims;
-    for (var i=0;i<prims.length;i++) {
-        _handlePrimitive( prims[i], geomResult);
+    _handlePrimitives(prims, geomResult);
+}
+
+/**
+ * Create all the primitives from a list
+ *
+ * @param { Object } prims Entity parameter data
+ * @param {GeometryResult} geomResult The results container
+ */
+function _handlePrimitives( prims, geomResult ) {
+    var primMeshes = [];
+    var i;
+
+    // create
+    for (i=0;i<prims.length;i++) {
+        var mesh = _tryCreatePrimitive( prims[i], geomResult);
+        if (mesh) {
+            primMeshes.push(mesh);
+        }
     }
+
+    //sort
+    primMeshes.sort(function (a, b) {
+        // Leave non meshes at the front of the list.
+        if (!a.material) {
+            return -1;
+        }
+        if (!b.material) {
+            return 1;
+        }
+        return a.material.name > b.material.name;
+    });
+
+    //merge
+    for (i=0;i<primMeshes.length;i++) {
+        _maybeMergeModels(primMeshes[i], geomResult);
+    }
+
     if (geomResult.mesh) _upgradeChildrenToBuffer(geomResult.mesh);
 }
 
 /**
- * Helper method to handle the case where the parasolid data has a
- * primitive
- *
- * @function _handlePrimitive
+ * Call create primitive and handle errors due to bad inputs
+ * @param {Object} data Primitive properties
+ * @param {GeometryResults} geomResult The results object for shared data
+ * @returns {THREE.Object3D} The created primitive or falsey
  * @private
- *
- * @param { Object } data Parametric data
- * @param {GeometryResult} geomResult The geomResult object that is being built
- *                        in this part of the scene graph
  */
-function _handlePrimitive( data, geomResult ) {
+function _tryCreatePrimitive(data, geomResult) {
     var mesh;
     try {
         mesh = createPrimitive.createPrimitive( data, geomResult );
@@ -167,8 +196,8 @@ function _handlePrimitive( data, geomResult ) {
     }
     else {
         geomResult.invalidPrims[ data.primitive ] = false;
-        _maybeMergeModels(mesh, geomResult);
     }
+    return mesh;
 }
 
 /**
@@ -194,16 +223,41 @@ function _maybeMergeModels ( mesh, geomResult ) {
         var index = children.length-1;
 
         if ( _objectCanMerge( children[index])) {
-            children[index].geometry.merge( mesh.geometry, mesh.matrixWorld );
-            merged = true;
+            merged = _conditionalMerge(children[index].geometry, mesh.geometry, mesh.matrixWorld, geomResult._geometryMaterialMap);
         }
     }
-    if (!merged) {
-        geomResult.mesh.add(mesh);
-    } else {
+    if (merged) {
         mesh.geometry.dispose();
+    } else {
+        geomResult.mesh.add(mesh);
     }
+}
+/**
+ * Determine if two geometries have the same configuration of face vertex uvs
+ * Used to determine if the geometry can merge.
+ * Three.js throws warnings when converting to buffer geometry if they are mismatched.
+ * @param {THREE.Geometry} geomA The first geometry
+ * @param {THREE.Geometry} geomB The second geometry
+ * @returns {boolean} True if they match
+ * @private
+ */
+function _sameFaceVertexUvs(geomA, geomB) {
+    var hasFaceVertexUvA = geomA.faceVertexUvs[ 0 ] && geomA.faceVertexUvs[ 0 ].length > 0;
+    var hasFaceVertexUv2A = geomA.faceVertexUvs[ 1 ] && geomA.faceVertexUvs[ 1 ].length > 0;
+    var hasFaceVertexUvB = geomB.faceVertexUvs[ 0 ] && geomB.faceVertexUvs[ 0 ].length > 0;
+    var hasFaceVertexUv2B = geomB.faceVertexUvs[ 1 ] && geomB.faceVertexUvs[ 1 ].length > 0;
+    return hasFaceVertexUvA === hasFaceVertexUvB && hasFaceVertexUv2A === hasFaceVertexUv2B;
+}
 
+function _conditionalMerge(geom1, geom2, mat, geomMap) {
+
+    var merged = false;
+    //Compare string identifiers for materials to see if they are equivalent
+    if (geomMap[geom1.id] === geomMap[geom2.id] && _sameFaceVertexUvs(geom1, geom2)) {
+        geom1.merge( geom2, mat );
+        merged = true;
+    }
+    return merged;
 }
 
 /**
@@ -219,8 +273,8 @@ function _maybeMergeModels ( mesh, geomResult ) {
  * @param { ThreeJS.Object3D } object The object to check
  */
 function _objectCanMerge ( object ) {
-    return !object.materialProperties && object.geometry &&
-           !( object.geometry instanceof THREE.BufferGeometry ) && object.type === 'Mesh';
+    return object && object.geometry && object.type === 'Mesh' &&
+           !( object.geometry instanceof THREE.BufferGeometry ) ;
 }
 
 /**

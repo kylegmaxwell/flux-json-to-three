@@ -49,6 +49,6 @@ test( 'Geometry with attributes', function ( t ) {
     var data = {"attributes":{ "foo": 123 },
     "origin": [0,0,0],"primitive": "sphere","radius": 10}
     index.createObject(data, root);
-    t.ok(root.mesh.children[0].materialProperties, 'createobject should create a mesh with materialProperties');
+    t.ok(root.mesh.children[0], 'createobject should create a mesh despite attributes');
     t.end();
 });

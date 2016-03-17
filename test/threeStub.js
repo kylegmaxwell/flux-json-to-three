@@ -42,12 +42,34 @@ THREE.Color = function () {
     this.r = 0;
     this.g = 0;
     this.b = 0;
-    this.setRGB = function() {};
+};
+THREE.Color.prototype.clone = function () { return this; };
+THREE.Color.prototype.set = function () { return this; };
+THREE.Color.prototype.setRGB = function () { return this; };
+THREE.Color.prototype.multiplyScalar = function () { return this; };
+
+THREE.Material = function() {
+    this.color = new THREE.Color();
 };
 
-THREE.MeshPhongMaterial = function() {};
-THREE.PointsMaterial = function() {};
-THREE.LineBasicMaterial = function() {};
+THREE.MeshPhongMaterial = function() {
+    THREE.Material.call(this);
+};
+THREE.MeshPhongMaterial.prototype = Object.create(THREE.Material.prototype);
+THREE.MeshPhongMaterial.prototype.constructor = THREE.MeshPhongMaterial;
+
+THREE.PointsMaterial = function() {
+    THREE.Material.call(this);
+};
+THREE.PointsMaterial.prototype = Object.create(THREE.Material.prototype);
+THREE.PointsMaterial.prototype.constructor = THREE.PointsMaterial;
+
+THREE.LineBasicMaterial = function() {
+    THREE.Material.call(this);
+};
+THREE.LineBasicMaterial.prototype = Object.create(THREE.Material.prototype);
+THREE.LineBasicMaterial.prototype.constructor = THREE.LineBasicMaterial;
+
 THREE.Vector4 = function () {};
 THREE.BufferAttribute = function () {};
 THREE.NURBSSurface = function () {
@@ -62,6 +84,7 @@ THREE.BufferGeometry = function () {
         return this;
     };
     this.dispose = function() {};
+    this.type = 'BufferGeometry';
 };
 THREE.SphereBufferGeometry = function () {};
 THREE.SphereBufferGeometry.prototype = Object.create(THREE.BufferGeometry.prototype);
@@ -80,6 +103,7 @@ THREE.Geometry = function () {
     this.computeVertexNormals = function () {};
     this.applyMatrix = function () {};
     this.dispose = function() {};
+    this.type = 'Geometry';
 };
 
 THREE.ParametricGeometry = function () {
@@ -146,12 +170,14 @@ THREE.Mesh = function () {
     this.updateMatrixWorld = function () {};
     this.lookAt = function () {};
     this.geometry = new THREE.Geometry();
+    this.material = new THREE.Material();
     this.type = 'Mesh';
 };
 THREE.Mesh.prototype = Object.create(THREE.Object3D.prototype);
 THREE.Mesh.prototype.constructor = THREE.Mesh;
 
 THREE.Points = function () {
+    THREE.Mesh.call(this);
     this.position = new THREE.Vector3();
     this.up = new THREE.Vector3();
     this.rotation = new THREE.Euler();

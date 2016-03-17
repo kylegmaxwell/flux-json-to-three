@@ -38,4 +38,24 @@ export var LEGACY_NAMES_MAP = {
 // Range is from 0 (more faceted) to 180 (more smooth)
 var degreesSmoothLimit = 45;
 export var NORMALS_SMOOTH_LIMIT = Math.cos(degreesSmoothLimit * DEG_2_RAD);
-export var DEFAULT_POINT_SIZE = 5;
+
+export var DEFAULT_POINT_COLOR = [0.5,0.5,0.8];
+export var DEFAULT_LINE_COLOR =  [0.5,0.5,0.8];
+export var DEFAULT_PHONG_COLOR = [  1,  1,  1];
+
+export var DEFAULT_MATERIAL_PROPERTIES = {
+    // color is per point
+    phong: {
+        opacity: 1.0,
+        //roughness: 1.0,  TODO this has to be translated to specular as in flux-materialUtil.html
+        wireframe: false,
+        side: THREE.DoubleSide
+    },
+    point: {
+        size: 5.0,
+        sizeAttenuation: true
+    },
+    line: {
+        linewidth: 1.0
+    }
+};
