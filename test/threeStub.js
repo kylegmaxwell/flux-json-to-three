@@ -51,6 +51,7 @@ THREE.Color.prototype.multiplyScalar = function () { return this; };
 THREE.Material = function() {
     this.color = new THREE.Color();
 };
+THREE.Material.prototype.clone = function () { return this; };
 
 THREE.MeshPhongMaterial = function() {
     THREE.Material.call(this);
@@ -158,7 +159,8 @@ THREE.Object3D = function () {
     this.type = 'Object3D';
 };
 THREE.Object3D.prototype.add = function (x) { this.children.push(x); };
-THREE.Object3D.prototype.updateMatrixWorld = function (x) {};
+THREE.Object3D.prototype.updateMatrixWorld = function () {};
+THREE.Object3D.prototype.traverse = function () {};
 
 THREE.Mesh = function () {
     THREE.Object3D.call(this);

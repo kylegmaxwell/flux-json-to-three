@@ -111,7 +111,7 @@ export function polycurve ( data, material ) {
         var curveData = data.curves[ i ];
         if (curveData.primitive && getEntityType(curveData.primitive) === BODY_TYPES.wire) {
             var wireFunction = wirePrimitives[curveData.primitive];
-            mesh.add( wireFunction( data.curves[ i ], material ) );
+            mesh.add( wireFunction( data.curves[ i ], material.clone() ) );
         } else {
             throw new FluxGeometryError( 'Found non wire body in a polycurve' );
         }
@@ -141,7 +141,7 @@ export function polysurface ( data, material ) {
         var surfaceData = data.surfaces[ i ];
         if (surfaceData.primitive && getEntityType(surfaceData.primitive) === BODY_TYPES.sheet) {
             var sheetFunction = sheetPrimitives[surfaceData.primitive];
-            mesh.add( sheetFunction( data.surfaces[ i ], material ) );
+            mesh.add( sheetFunction( data.surfaces[ i ], material.clone() ) );
         } else {
             throw new FluxGeometryError( 'Found non sheet body in a polysurface' );
         }

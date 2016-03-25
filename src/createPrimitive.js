@@ -227,8 +227,7 @@ export function createPrimitive ( data, geomResult ) {
  * Then the meshes can share a single material with per vertex color.
  *
  * @precondition The color object on the material should not be shared with other materials.
- * @param {THREE.Geometry} geom The geometry to color (buffered or not)
- * @param {THREE.Color} color Pointer to the color in a material to apply (and modify)
+ * @param {THREE.Geometry} mesh The mesh containing geometry and material to manipulate
  * @private
  */
 function _moveMaterialColorToGeom(mesh) {
@@ -237,6 +236,7 @@ function _moveMaterialColorToGeom(mesh) {
     var color2 = color.clone();
     if (geom) {
         if (geom.type.indexOf('BufferGeometry') !== -1) {
+            // Set the color as a buffer attribute
             var attrLen = geom.attributes.position.array.length;
             var colors = [];
             for (var i=0;i<attrLen;i+=3) {
@@ -245,9 +245,15 @@ function _moveMaterialColorToGeom(mesh) {
                 colors.push(color.b);
             }
             geom.addAttribute( 'color', new THREE.BufferAttribute( new Float32Array(colors), 3 ) );
-        } else {
+        } else if (geom.faces.length > 0) {
+            // Set the color per face
             for (var f=0;f<geom.faces.length;f++) {
                 geom.faces[f].color = color2;
+            }
+        } else {
+            // Lines have a colors array since they don't have faces
+            for (var c=0;c<geom.vertices.length;c++) {
+                geom.colors[c] = color2;
             }
         }
         // Reset the color since it is now on the points.
@@ -268,9 +274,11 @@ function _moveMaterialColorToGeom(mesh) {
  */
 export function cleanupMesh(mesh, data) {
     // Only convert the color for objects with material
-    if (mesh.material) {
-        _moveMaterialColorToGeom(mesh);
-    }
+    mesh.traverse(function (child) {
+        if (child.material) {
+            _moveMaterialColorToGeom(child);
+        }
+    });
 
     _convertToZUp( mesh );
 
