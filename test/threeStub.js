@@ -215,7 +215,7 @@ THREE.NURBSCurve = function () {
 };
 
 THREE.TextHelper = function () {
-
+    THREE.Mesh.call(this);
     this.position = new THREE.Vector3();
     this.up = new THREE.Vector3();
     this.rotation = new THREE.Euler();
@@ -223,5 +223,5 @@ THREE.TextHelper = function () {
     this.lookAt = function () {};
     this.type = 'textHelper';
 };
-THREE.TextHelper.prototype = Object.create(THREE.Object3D.prototype);
+THREE.TextHelper.prototype = Object.create(THREE.Mesh.prototype);
 THREE.TextHelper.prototype.constructor = THREE.TextHelper;

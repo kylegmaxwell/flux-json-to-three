@@ -116,7 +116,7 @@ export var vector = {
         "primitive": "vector"
     },
     "result": {
-        "type": "Object3D"
+        "type": "Line"
     }
 };
 

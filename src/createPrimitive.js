@@ -9,7 +9,7 @@ import * as sheetPrimitives from './sheetPrimitives.js';
 import * as solidPrimitives from './solidPrimitives.js';
 import * as primitiveHelpers from './primitives.js';
 import * as constants from './constants.js';
-import materialToJson from './materials.js';
+import * as materials from './materials.js';
 import FluxGeometryError from './geometryError.js';
 
 /**
@@ -24,6 +24,8 @@ export function resolveType (primitive) {
     var materialType = constants.MATERIAL_TYPES.PHONG;
     if (resolvedName === 'point') {
         materialType = constants.MATERIAL_TYPES.POINT;
+    } else if (resolvedName === 'vector') {
+        materialType = constants.MATERIAL_TYPES.LINE;
     }
 
     if (!primFunction) {
@@ -70,45 +72,6 @@ export function listValidPrims ( ) {
                         Object.keys(wirePrimitives),
                         Object.keys(constants.LEGACY_NAMES_MAP));
     return validPrimsList;
-}
-
-/**
- * Convert a color string or array to an object
- * @param {String|Array} color The html color
- * @returns {THREE.Color} The color object
- * @private
- */
-function _convertColor(color) {
-    if (color == null) {
-        color = constants.DEFAULT_MATERIAL_PROPERTIES.phong.color;
-    }
-    var newColor = new THREE.Color();
-    if (typeof color === 'object' &&
-        color.r !== undefined && color.g !== undefined && color.b !== undefined) {
-        newColor.copy(color);
-    } else if (typeof color === 'object' && color instanceof Array && color.length === 3) {
-        newColor.setRGB(color[0], color[1], color[2]);
-    } else {
-        newColor.set(color);
-    }
-    return newColor;
-}
-
-/**
- * Get the color from a given entity
- * @param {Object} prim The primitive with the material
- * @returns {Array.<Number>} Color array
- * @private
- */
-function _getColor(prim) {
-    var color = constants.DEFAULT_POINT_COLOR;
-    if (!prim) return;
-    var materialProperties = prim.materialProperties || (prim.attributes && prim.attributes.materialProperties);
-    if (materialProperties && materialProperties.color) {
-        color = materialProperties.color;
-    }
-    var threeColor = _convertColor(color);
-    return [threeColor.r, threeColor.g, threeColor.b];
 }
 
 /**
@@ -166,10 +129,10 @@ export function createPoints (prims) {
         positions[i*3+1] = prim.point[1];
         positions[i*3+2] = prim.point[2]||0;
         // Get color or default color
-        var color = _getColor(prim);
-        colors[i*3] = color[0];
-        colors[i*3+1] = color[1];
-        colors[i*3+2] = color[2];
+        var color = materials._convertColor(materials._getEntityData(prim, 'color', constants.DEFAULT_POINT_COLOR));
+        colors[i*3] = color.r;
+        colors[i*3+1] = color.g;
+        colors[i*3+2] = color.b;
     }
     var geometry = new THREE.BufferGeometry();
 
@@ -255,6 +218,7 @@ function _moveMaterialColorToGeom(mesh) {
             for (var c=0;c<geom.vertices.length;c++) {
                 geom.colors[c] = color2;
             }
+            geom.colorsNeedUpdate = true;
         }
         // Reset the color since it is now on the points.
         // In three.js color is multiplicative, so:
@@ -273,12 +237,16 @@ function _moveMaterialColorToGeom(mesh) {
  * @returns {THREE.Mesh} The processed mesh
  */
 export function cleanupMesh(mesh, data) {
-    // Only convert the color for objects with material
-    mesh.traverse(function (child) {
-        if (child.material) {
-            _moveMaterialColorToGeom(child);
-        }
-    });
+    // Text helper is ignored, due to it's own special materials.
+    if (mesh.type !== "textHelper") {
+        // Convert all geometry in the object tree
+        mesh.traverse(function (child) {
+            // Only convert the color for objects with material
+            if (child.material) {
+                _moveMaterialColorToGeom(child);
+            }
+        });
+    }
 
     _convertToZUp( mesh );
 
@@ -400,7 +368,7 @@ function _createMaterial ( type, materialProperties, cubeArray ) {
 
         _addKnownProps(constants.DEFAULT_MATERIAL_PROPERTIES.phong, materialProperties, props);
         material = new THREE.MeshPhongMaterial( props );
-        material.color = _convertColor(materialProperties.color||constants.DEFAULT_PHONG_COLOR);
+        material.color = materials._convertColor(materialProperties.color||constants.DEFAULT_PHONG_COLOR);
 
         // Apply roughness (modifies color and other material object properties)
         _applyRoughness(materialProperties.roughness, material, cubeArray);
@@ -410,17 +378,17 @@ function _createMaterial ( type, materialProperties, cubeArray ) {
 
         _addKnownProps(constants.DEFAULT_MATERIAL_PROPERTIES.point, materialProperties, props);
         material = new THREE.PointsMaterial( props );
-        material.color = _convertColor(materialProperties.color||constants.DEFAULT_POINT_COLOR);
+        material.color = materials._convertColor(materialProperties.color||constants.DEFAULT_POINT_COLOR);
 
     } else if ( type === constants.MATERIAL_TYPES.LINE ) {
 
         props.vertexColors = THREE.VertexColors;
         _addKnownProps(constants.DEFAULT_MATERIAL_PROPERTIES.line, materialProperties, props);
         material = new THREE.LineBasicMaterial( props );
-        material.color = _convertColor(materialProperties.color||constants.DEFAULT_LINE_COLOR);
+        material.color = materials._convertColor(materialProperties.color||constants.DEFAULT_LINE_COLOR);
     }
     // Use the material's name to track uniqueness of it's source
-    material.name = materialToJson(type, props);
+    material.name = materials.materialToJson(type, props);
 
     if (material.opacity < 1) {
         material.transparent = true;

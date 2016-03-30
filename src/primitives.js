@@ -8,6 +8,7 @@ import * as wirePrimitives from './wirePrimitives.js';
 import * as sheetPrimitives from './sheetPrimitives.js';
 import * as solidPrimitives from './solidPrimitives.js';
 import * as constants from './constants.js';
+import * as materials from './materials.js';
 import FluxGeometryError from './geometryError.js';
 
 var BODY_TYPES = {
@@ -82,14 +83,43 @@ export function point ( data, material ) {
  * @param { Object }           data     Parasolid data
  * @param { THREE.Material } material The material to give the THREE.Mesh
  */
-export function vector ( data ) {
-    var dir = new THREE.Vector3( data.coords[ 0 ], data.coords[ 1 ], data.coords[ 2 ] ),
-        origin = new THREE.Vector3( 0, 0, 0 );
+export function vector ( data, material ) {
+    var dir = new THREE.Vector3( data.coords[ 0 ], data.coords[ 1 ], data.coords[ 2 ] );
 
     if ( dir.length() > 0 ) dir.normalize();
     else throw new FluxGeometryError( 'Vector primitive has length zero' );
 
-    return new THREE.ArrowHelper( dir, origin, dir.length() );
+    // The half width of the arrow
+    var d = 0.05;
+    // The length of the arrow
+    var l = 1;
+    // This is the coordinate of the base of the head
+    var c = 0.9;
+    var verticesArr = [
+        // Main axis
+        0,0,0,
+        0,0,l,
+        // Cap the head
+        d,d,c,
+        d,-d,c,
+        0,0,1,
+        -d,d,c,
+        -d,-d,c,
+        0,0,l,
+        d,-d,c,
+        -d,-d,c,
+        0,0,l,
+        d,d,c,
+        -d,d,c
+    ];
+
+    var vertices = new Float32Array( verticesArr );
+    // Create geometry and material
+    var geometry = new THREE.BufferGeometry();
+    geometry.addAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
+    var mesh = new THREE.Line(geometry, material);
+    mesh.lookAt(dir);
+    return mesh;
 }
 
 /**
@@ -160,10 +190,11 @@ export function polysurface ( data, material ) {
  * @param { Object } data     Parasolid data
  */
 export function text ( data ) {
-    return new THREE.TextHelper( data.text, {
-        size: data.size,
-        resolution: data.resolution,
-        color: data.color,
-        align: data.align
+    var textHelper = new THREE.TextHelper( data.text, {
+        size:       materials._getEntityData(data, 'size', undefined),
+        resolution: materials._getEntityData(data, 'resolution', undefined),
+        align:      materials._getEntityData(data, 'align', undefined)
     });
+    textHelper.material.color = materials._convertColor(materials._getEntityData(data, 'color', 'black'));
+    return textHelper;
 }

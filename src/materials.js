@@ -14,7 +14,7 @@ import * as constants from './constants.js';
  * @param {THREE.material} m The material
  * @return {string} The result
  */
-export default function materialToJson(type, m) {
+export function materialToJson(type, m) {
     var knownProperties = constants.DEFAULT_MATERIAL_PROPERTIES;
     var propertyNames = [];
     var prop;
@@ -47,4 +47,47 @@ export default function materialToJson(type, m) {
     var result = JSON.stringify(type);
     result += JSON.stringify(orderedMaterial);
     return result;
+}
+
+/**
+ * Convert a color string or array to an object
+ * @param {String|Array} color The html color
+ * @returns {THREE.Color} The color object
+ * @private
+ */
+export function _convertColor(color) {
+    if (color == null) {
+        color = constants.DEFAULT_MATERIAL_PROPERTIES.phong.color;
+    }
+    var newColor = new THREE.Color();
+    if (typeof color === 'object' &&
+        color.r !== undefined && color.g !== undefined && color.b !== undefined) {
+        newColor.copy(color);
+    } else if (typeof color === 'object' && color instanceof Array && color.length === 3) {
+        newColor.setRGB(color[0], color[1], color[2]);
+    } else {
+        newColor.set(color);
+    }
+    return newColor;
+}
+
+/**
+ * Find a parameter on the entity object data
+ * @param {Object} data The entity parameters object
+ * @param {String} attr The name of the desired attribute
+ * @param {*} defaultAttr The default value for the attribute
+ * @returns {*} The found property or the default
+ * @private
+ */
+export function _getEntityData(data, attr, defaultAttr) {
+    if (!data) return defaultAttr;
+    var value = defaultAttr;
+    if (data[attr]) {
+        value = data[attr];
+    } else if (data.materialProperties && data.materialProperties[attr]) {
+        value = data.materialProperties[attr];
+    } else if (data.attributes && data.attributes.materialProperties && data.attributes.materialProperties[attr]) {
+        value = data.attributes.materialProperties[attr];
+    }
+    return value;
 }
