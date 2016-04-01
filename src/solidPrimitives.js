@@ -151,7 +151,9 @@ export function sphere ( data, material ) {
  * @param { THREE.Material } material The material to give the THREE.Mesh
  */
 export function torus ( data, material ) {
-    var geometry = new THREE.TorusGeometry( data.major_radius, data.minor_radius, 24, 24 );
+    var majorRadius = data.majorRadius || data.major_radius;
+    var minorRadius = data.minorRadius || data.minor_radius;
+    var geometry = new THREE.TorusGeometry( majorRadius, minorRadius, 24, 24 );
     return new THREE.Mesh( geometry, material );
 }
 
