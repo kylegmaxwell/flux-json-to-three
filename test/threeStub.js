@@ -214,6 +214,14 @@ THREE.NURBSCurve = function () {
     this.getPoints = function () {};
 };
 
+THREE.EllipseCurve = function () {
+    this.getPoints = function () {};
+};
+
+THREE.Path = function () {
+    this.createPointsGeometry = function () { return new THREE.Line();};
+};
+
 THREE.TextHelper = function () {
     THREE.Mesh.call(this);
     this.position = new THREE.Vector3();

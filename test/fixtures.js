@@ -79,6 +79,19 @@ export var circle = {
      }
 };
 
+export var ellipse = {
+    "input": {
+        "axis":[1,1,1],
+        "majorRadius":4,
+        "minorRadius":1.1,
+        "origin":[1,1,1],
+        "primitive":"ellipse"
+    },
+    "result": {
+        "type": "Line"
+    }
+};
+
 export var rectangle = {
     "input": {
         "dimensions": [2,2],

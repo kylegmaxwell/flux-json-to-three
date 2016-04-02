@@ -380,3 +380,28 @@ export function rectangle ( data, material ) {
 
     return new THREE.Line(geometry, material);
 }
+
+/**
+ * Creates a elliptic curve
+ *
+ * @function ellipse
+ *
+ * @return { THREE.Line } The shape
+ *
+ * @param { Object }           data     Parasolid entity data
+ * @param { THREE.Material } material The material to give the mesh
+ */
+export function ellipse ( data, material ) {
+    // Origin and axis are ignored here and applied later in cleanupMesh
+    var curve = new THREE.EllipseCurve(
+        0,  0,                              // center x, center y
+        data.majorRadius, data.minorRadius, // xRadius, yRadius
+        0,  2 * Math.PI,                    // aStartAngle, aEndAngle
+        false,                              // aClockwise
+        0                                   // aRotation
+    );
+
+    var path = new THREE.Path( curve.getPoints( constants.CIRCLE_RES ) );
+    var geometry = path.createPointsGeometry( constants.CIRCLE_RES );
+    return new THREE.Line( geometry, material );
+}
