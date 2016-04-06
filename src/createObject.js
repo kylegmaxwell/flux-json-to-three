@@ -44,8 +44,8 @@ export function isKnownGeom (data) {
  */
 export function createObject ( data, geomResult ) {
 
-    if (geomResult.constructor !== GeometryResults) {
-        throw new Error('Root must have class GeometryResults');
+    if (!geomResult || geomResult.constructor !== GeometryResults) {
+        throw new Error('Second argument must have class GeometryResults');
     }
 
     if (data && Object.keys(data).length > 0) {
