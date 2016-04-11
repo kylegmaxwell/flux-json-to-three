@@ -7,5 +7,6 @@
 /*
  * Imports
  */
-export { createObject, isKnownGeom } from './src/createObject.js';
+export { createObject, isKnownGeom, hasRoughness } from './src/createObject.js';
 export { default as GeometryResults } from './src/geometryResults.js';
+export { default as ErrorMap } from './src/errorMap.js';

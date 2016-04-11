@@ -164,6 +164,11 @@ export function createPoints (prims) {
 export function createPrimitive ( data, geomResult ) {
     var type = resolveType(data.primitive);
 
+    // Check that the entity matches a schema, otherwise return no geometry
+    if (!geomResult.checkSchema(data)) {
+        return;
+    }
+
     var materialProperties = _findMaterialProperties( data );
     var material = _createMaterial( type.material, materialProperties, geomResult.cubeArray );
 

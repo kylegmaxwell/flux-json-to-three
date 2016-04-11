@@ -5,12 +5,11 @@
 
 export var cone = {
     "input": {
-        "direction":[1,1,1],
         "height":10,
         "origin":[0,0,0],
         "primitive":"cone",
         "radius":10,
-        "semi-angle":10
+        "semiAngle":10
     },
     "result": {
         "type": "Mesh"

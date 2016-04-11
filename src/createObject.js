@@ -9,8 +9,29 @@
  */
 import * as createPrimitive from './createPrimitive.js';
 import * as constants from './constants.js';
+import * as materials from './materials.js';
 import GeometryResults from './geometryResults.js';
+import ErrorMap from './errorMap.js';
 
+/**
+ * Helper function to run a callback on each entity in the nested array
+ * @param {Array} arr Array of arrays or entities
+ * @param {Function} cb Callbck function returning boolean
+ * @returns {boolean} Reduced return value of the callback
+ * @private
+ */
+function _recursiveReduce (arr, cb) {
+    if (!arr) return false;
+    var isValid = false;
+    if (arr.primitive) {
+        isValid = cb(arr);
+    } else if (arr.constructor === Array) {
+        isValid = arr.reduce(function(prev, curr) {
+            return prev || _recursiveReduce(curr, cb);
+        }, false);
+    }
+    return isValid;
+}
 /**
  * Determine if the given data contains geometry.
  *
@@ -20,18 +41,25 @@ import GeometryResults from './geometryResults.js';
  * @return {Boolean}      Whether the data is geometry.
  */
 export function isKnownGeom (data) {
-    if (!data) return false;
-    var isValid = false;
-    if (data.primitive) {
-        isValid = createPrimitive.listValidPrims().indexOf(data.primitive) !== -1;
-    } else if (data.constructor === Array) {
-        isValid = data.reduce(function(prev, curr) {
-            return prev || isKnownGeom(curr);
-        }, false);
-    }
-    return isValid;
+    var prims = createPrimitive.listValidPrims();
+    return _recursiveReduce(data, function (item) {
+        return prims.indexOf(item.primitive) !== -1;
+    });
 }
 
+/**
+ * Determine if the given data contains materials with roughness.
+ *
+ * Then it is necessary to load the related textures
+ *
+ * @param  {Object}  entities Flux JSON formatted object.
+ * @return {Boolean}      Whether the materials have roughness.
+ */
+export function hasRoughness(entities) {
+    return _recursiveReduce(entities, function (item) {
+        return materials._getEntityData(item, 'roughness', undefined) != null;
+    });
+}
 /**
  * Creates THREE scene and geometries from parasolid output.
  * The method is called recursively for each array and entities
@@ -110,10 +138,18 @@ function _handlePoints(geomResult) {
     var prims = geomResult.pointPrims;
     if (prims.length === 0) return;
 
-    var mesh = createPrimitive.createPoints(prims);
+    var validPoints = true;
+    for (var i=0;i<prims.length; i++) {
+        if (!geomResult.checkSchema(prims[i])) {
+            validPoints = false;
+        }
+    }
+    if (validPoints) {
+        var mesh = createPrimitive.createPoints(prims);
+        geomResult.invalidPrims.appendError('point', ErrorMap.NO_ERROR);
+        geomResult.mesh.add(mesh);
+    }
 
-    geomResult.invalidPrims.point  = false;
-    geomResult.mesh.add(mesh);
 }
 
 /**
@@ -185,20 +221,19 @@ function _handlePrimitives( prims, geomResult ) {
  */
 function _tryCreatePrimitive(data, geomResult) {
     var mesh;
+    var errorMessage = ErrorMap.NO_ERROR;
     try {
         mesh = createPrimitive.createPrimitive( data, geomResult );
     }
     catch(err) {
         if (err.name !== "FluxGeometryError") {
             throw err;
+        } else {
+            errorMessage = err.message;
         }
     }
-    if ( !mesh ) {
-        geomResult.invalidPrims[ data.primitive ] = true;
-    }
-    else {
-        geomResult.invalidPrims[ data.primitive ] = false;
-    }
+    // Get the error message that exists, and add to it if it exists, or set it
+    geomResult.invalidPrims.appendError(data.primitive, errorMessage);
     return mesh;
 }
 

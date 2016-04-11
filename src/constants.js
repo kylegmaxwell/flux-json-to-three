@@ -32,6 +32,9 @@ export var LEGACY_NAMES_MAP = {
     'point-2d': 'point',
     'polygon-set': 'polygonSet'
 };
+// These entities are not official Flux Entities, but can be rendered
+export var NON_STANDARD_ENTITIES = 'stl obj text';
+
 // For a face compare the angle between it's normals and those of
 // it's neighbors. If all the angles are smaller than the limit,
 // the face will be rendered smooth.
@@ -59,3 +62,5 @@ export var DEFAULT_MATERIAL_PROPERTIES = {
         linewidth: 1.0
     }
 };
+
+

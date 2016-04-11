@@ -7,25 +7,30 @@
   "repository": "git@bitbucket.org:vannevartech/flux-json-to-three.git",
   "scripts": {
     "test": "npm run clean; npm run init; npm run run-test --silent",
-    "postinstall" : "npm run clean; npm run init; npm run build",
+    "postinstall": "npm run clean; npm run init; npm run build",
     "init": "mkdir build",
     "run-test": "npm run clean; npm run init; npm run lint; npm run build-test; npm run assemble; tape ./build/test_stubbed.js;",
     "build-test": "node scripts/rollupTest.js;",
     "assemble": "cat ./test/threeStub.js > ./build/test_stubbed.js; cat ./build/test_suite.js >> ./build/test_stubbed.js;",
     "lint": "eslint index.js src/**;",
     "build": "npm run clean; npm run init; npm run build-common; npm run build-amd; npm run build-globals",
-    "build-common": "rollup -f=cjs -e=three.js -o=./build/index.common.js -i=./index.js; uglifyjs ./build/index.common.js -c -o ./build/index.common.min.js",
-    "build-amd": "rollup -f=amd -e=three.js -o=./build/index.amd.js -i=./index.js; uglifyjs ./build/index.amd.js -c -o ./build/index.amd.min.js",
-    "build-globals": "rollup -f=iife -e=three,three.js -o=./build/index.global.js -i=./index.js -n=FluxJsonToThree",
+    "build-common": "rollup -c rollup.config.js -f=cjs > ./build/index.common.js; uglifyjs ./build/index.common.js -c -o ./build/index.common.min.js",
+    "build-amd": "rollup -c rollup.config.js -f=amd > ./build/index.amd.js; uglifyjs ./build/index.amd.js -c -o ./build/index.amd.min.js",
+    "build-globals": "rollup -c rollup.config.js -f=iife -n=FluxJsonToThree > ./build/index.global.js",
     "clean": "rm -rf build"
   },
   "author": "Flux Factory Inc.",
   "license": "ISC",
-  "dependencies": {},
+  "dependencies": {
+    "ajv": "^3.8.10",
+    "flux-modelingjs": "git+ssh://git@bitbucket.org/vannevartech/flux-modelingjs.git#45cb2550d1da7f5c3e5f09642e9c6d98627258ae"
+  },
   "devDependencies": {
     "eslint": "^1.9.0",
     "rollup": "^0.20.5",
     "rollup-plugin-commonjs": "^1.4.0",
+    "rollup-plugin-json": "^2.0.0",
+    "rollup-plugin-node-resolve": "^1.5.0",
     "rollup-plugin-npm": "^1.1.0",
     "tape": "^4.2.2",
     "uglify-js": "^2.5.0"

@@ -36,7 +36,7 @@ test( 'Geometry translation', function ( t ) {
                     'The mesh should be of type ' +
                     fixtures[ key ].result.type + ' for data ' + key );
         } else {
-            t.ok( root.invalidPrims[ input.primitive ], 'if the data is invalid, createObject' +
+            t.ok( !root.invalidPrims.validKey(input.primitive) , 'if the data is invalid, createObject' +
                                                        ' should return it as part of' +
                                                        ' the set of invalid primitives' );
         }

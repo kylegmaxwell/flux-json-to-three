@@ -2,7 +2,8 @@
 
 var rollup = require( 'rollup' ),
     npm = require( 'rollup-plugin-npm' ),
-    commonjs = require( 'rollup-plugin-commonjs' );
+    commonjs = require( 'rollup-plugin-commonjs' ),
+    json = require( 'rollup-plugin-json' );
 
 console.log( 'testing js' );
 console.log( 'start' );
@@ -11,7 +12,8 @@ rollup.rollup({
     entry: './test/test.js',
     plugins: [
         npm({ jsnext: true }),
-        commonjs({ include: 'node_modules/**' })
+        commonjs({ include: 'node_modules/**' }),
+        json({ include: 'node_modules/**' })
     ],
     external: [ 'tape' ]
 }).catch(function ( err ) {
