@@ -123,6 +123,7 @@ function _handlePoints(geomResult) {
  */
 function _handleLines(geomResult) {
     var prims = geomResult.linePrims;
+    if (prims.length === 0) return;
     _handlePrimitives(prims, geomResult);
 }
 
@@ -133,6 +134,7 @@ function _handleLines(geomResult) {
  */
 function _handlePhongs(geomResult) {
     var prims = geomResult.phongPrims;
+    if (prims.length === 0) return;
     _handlePrimitives(prims, geomResult);
 }
 
@@ -221,9 +223,18 @@ function _maybeMergeModels ( mesh, geomResult ) {
 
         var children = geomResult.mesh.children;
         var index = children.length-1;
+        var baseMesh = children[index];
 
-        if ( _objectCanMerge( children[index])) {
-            merged = _conditionalMerge(children[index].geometry, mesh.geometry, mesh.matrixWorld, geomResult._geometryMaterialMap);
+        if ( _objectCanMerge( baseMesh)) {
+            // Let's move the geometry from mesh to base mesh
+            baseMesh.updateMatrixWorld();
+            // Remember matrix multiplication applies in reverse
+            var matXform = new THREE.Matrix4();
+            // Apply the inverse of baseMesh transform to put the vertices from world space into it's local space
+            matXform.getInverse(baseMesh.matrixWorld);
+            // Apply the mesh transform to get verts from mesh in world space
+            matXform.multiply(mesh.matrixWorld);
+            merged = _conditionalMerge(baseMesh.geometry, mesh.geometry, matXform, geomResult._geometryMaterialMap);
         }
     }
     if (merged) {
