@@ -321,23 +321,17 @@ export function stl (data, material) {
 }
 
 /**
- * Creates a THREE.Mesh from parasolid brep with THREE.Mesh information
+ * Creates a planar THREE.Mesh from parasolid data and a material
  *
- * @function brep
+ * @function plane
  *
- * @return { THREE.Mesh } The THREE.Mesh
-
- * @throws FluxGeometryError if brep is missing faces or vertices properties
+ * @return { THREE.Mesh } The planar THREE.Mesh
  *
  * @param { Object }           data     Parasolid data
  * @param { THREE.Material } material The material to give the THREE.Mesh
-
  */
-export function brep ( data, material ) {
-    // If we define both faces and points, then treat the primitive as
-    // a THREE.Mesh for rendering purposes;
-    if (data.faces != null && data.vertices != null) {
-        return mesh(data, material);
-    }
-    throw new FluxGeometryError('Brep not supported.');
+export function plane ( data, material ) {
+    var geometry = new THREE.PlaneBufferGeometry( constants.PLANE_DEFAULTS.WIDTH, constants.PLANE_DEFAULTS.HEIGHT,
+        constants.PLANE_DEFAULTS.WIDTH_SEGMENTS, constants.PLANE_DEFAULTS.HEIGHT_SEGMENTS );
+    return new THREE.Mesh( geometry, material );
 }

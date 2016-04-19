@@ -21,6 +21,10 @@ THREE.Vector3.prototype.angleTo = function () { return 0.1; };
 THREE.Vector3.prototype.applyAxisAngle = function () { return 0.1; };
 THREE.Vector3.prototype.distanceToSquared = function () { return 0.1; };
 
+THREE.Matrix4 = function () {};
+THREE.Matrix4.prototype.getInverse = function () { return this; };
+THREE.Matrix4.prototype.multiply = function () { return this; };
+
 THREE.Euler = function () {
     this.order = '';
 };
@@ -99,11 +103,13 @@ THREE.PlaneBufferGeometry.prototype.constructor = THREE.PlaneBufferGeometry;
 THREE.Geometry = function () {
     this.vertices = [];
     this.faces = [];
+    this.faceVertexUvs = [];
     this.computeBoundingSphere = function () {};
     this.computeFaceNormals = function () {};
     this.computeVertexNormals = function () {};
     this.applyMatrix = function () {};
     this.dispose = function() {};
+    this.merge = function() {};
     this.type = 'Geometry';
 };
 

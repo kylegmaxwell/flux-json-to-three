@@ -405,3 +405,54 @@ export function ellipse ( data, material ) {
     var geometry = path.createPointsGeometry( constants.CIRCLE_RES );
     return new THREE.Line( geometry, material );
 }
+
+/**
+ * Creates a vector THREE.Mesh from parasolid data and a material
+ *
+ * @function vector
+ *
+ * @return { THREE.Mesh } The vector THREE.Mesh
+ *
+ * @throws FluxGeometryError if vector has zero length
+ *
+ * @param { Object }           data     Parasolid data
+ * @param { THREE.Material } material The material to give the THREE.Mesh
+ */
+export function vector ( data, material ) {
+    var dir = new THREE.Vector3( data.coords[ 0 ], data.coords[ 1 ], data.coords[ 2 ] );
+
+    if ( dir.length() > 0 ) dir.normalize();
+    else throw new FluxGeometryError( 'Vector primitive has length zero' );
+
+    // The half width of the arrow
+    var d = 0.03;
+    // The length of the arrow
+    var l = 1;
+    // This is the coordinate of the base of the head
+    var c = 0.85;
+    var verticesArr = [
+        // Main axis
+        0,0,0,
+        0,0,l,
+        // Cap the head
+        d,d,c,
+        d,-d,c,
+        0,0,1,
+        -d,d,c,
+        -d,-d,c,
+        0,0,l,
+        d,-d,c,
+        -d,-d,c,
+        0,0,l,
+        d,d,c,
+        -d,d,c
+    ];
+
+    var vertices = new Float32Array( verticesArr );
+    // Create geometry and material
+    var geometry = new THREE.BufferGeometry();
+    geometry.addAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
+    var mesh = new THREE.Line(geometry, material);
+    mesh.lookAt(dir);
+    return mesh;
+}

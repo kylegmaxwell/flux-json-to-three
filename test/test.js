@@ -3,7 +3,9 @@
 import test from 'tape';
 import * as index from '../index.js';
 import * as fixtures from './fixtures.js';
+import * as fixturesUnits from './fixturesUnits.js';
 import FluxGeometryError from '../src/geometryError.js';
+import normalizeUnits from '../src/unitConverter.js';
 
 test( 'Error handling', function ( t ) {
     var hasError = false;
@@ -53,17 +55,61 @@ test( 'Geometry with attributes', function ( t ) {
     t.end();
 });
 
-
 test( 'Schema for geometry', function ( t ) {
     var root = new index.GeometryResults();
-    var data = {'x':5,
-    "attributes":{"materialProperties":{"color":[0.25,1,0.639],"size":4}},
-        "curves":[
-        {"controlPoints":[[0,0,0],[1,0,0],[1,1,0],[0,1,0]],"degree":3,
-            "knots":[0,0,0,1,2,3,3,3],"primitive":"curve"},
-            {"start":[1,0,0],"middle":[0,1,0],"end":[-1,0,0],"primitive":"arc"}],"primitive":"polycurve"};
+    var data = {
+        "x":5,
+        "units":{
+            "/controlPoints":"meters"
+        },
+        "attributes":{"materialProperties":{"color":[0.25,1,0.639],"size":4}},
+        "controlPoints":[[0,0,0],[1,0,0],[1,1,0],[0,1,0]],
+        "degree":3,
+        "knots":[0,0,0,1,2,3,3,3],"primitive":"curve"
+    };
     var matchesSchema = root.checkSchema(data);
-    t.ok(matchesSchema, true);
+    t.ok(matchesSchema, "Should match schema");
     t.end();
 });
 
+test( 'Invalid schema for polycurve', function ( t ) {
+    var root = new index.GeometryResults();
+    var data = {"x":5,
+        "attributes":{"materialProperties":{"color":[0.25,1,0.639],"size":4}},
+        "curves":[
+        {"controlPoints":[[0,0,0],[1,0,0],[1,1,0],[0,1,0]],"degree":3,
+            "knots":[0,0,0,1,2,3,3,3],"primitive":"curve"},
+            {"start":[1,0,0],"middle":[0,1,0],"end":[-1,0,0],
+            "units":{"start":12}, // unit key is missing slash
+            "primitive":"arc"}],
+        "primitive":"polycurve"
+    };
+    var matchesSchema = root.checkSchema(data);
+    t.ok(!matchesSchema, "Should not match schema");
+    t.ok(root.invalidPrims.invalidKeySummary().indexOf('units') !== -1, "Should contain message about units");
+    t.end();
+});
+
+test( 'Units translation', function ( t ) {
+    var root = new index.GeometryResults();
+    Object.keys(fixturesUnits).forEach(function (key) {
+        var entity = fixturesUnits[key].start;
+        entity = JSON.parse(JSON.stringify(entity));
+        var succeedStr = fixturesUnits[key].succeed ? 'pass' : 'fail';
+        var hasException = false;
+        try {
+            var matchesSchema = root.checkSchema(entity);
+            t.ok(matchesSchema, "Should match schema");
+            var entityNormalized = normalizeUnits(entity);
+            t.deepEqual(entityNormalized, fixturesUnits[key].end, 'Convert '+key+' to meters.');
+        } catch (err) {
+            hasException = true;
+            t.equal(err.constructor, FluxGeometryError);
+            if (fixturesUnits[key].succeed) {
+                console.error(err.message);
+            }
+        }
+        t.equal(!hasException, fixturesUnits[key].succeed, 'Unit normalization should '+succeedStr+' for '+key+'.');
+    });
+    t.end();
+});

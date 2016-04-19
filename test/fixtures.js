@@ -170,7 +170,7 @@ export var polycurve = {
         "primitive":"polycurve"
     },
     "result": {
-        "type": "Object3D"
+        "type": "Line"
     }
 };
 
@@ -266,7 +266,7 @@ export var polysurface = {
         "primitive":"polysurface"
     },
     "result": {
-        "type": "Object3D"
+        "type": "Mesh"
     }
 };
 

@@ -31,8 +31,8 @@ function _initSchema() {
 /**
  * Compile the schema for the given primitive
  * @param {String} primitive The name of the primitive
+ * @returns {Function} Ajv validator function
  * @private
- * @returns {Function} The validator
  */
 function _findValidator(primitive) {
     _initSchema();
@@ -83,8 +83,6 @@ GeometryResults.prototype.clear = function () {
     // Map from geometry id to material
     // Used to detect shared materials when merging
     this._geometryMaterialMap = {};
-
-
 };
 
 /**

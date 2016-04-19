@@ -96,19 +96,25 @@ function _flattenData(data, geomResult) {
     if (data.primitive === 'brep' && (data.faces == null || data.vertices == null)) {
         geomResult.asyncPrims.push(data);
     } else if (data.primitive) {
-        var type = createPrimitive.resolveType(data.primitive).material;
-        switch(type) {
-            case constants.MATERIAL_TYPES.POINT: {
-                geomResult.pointPrims.push(data);
-                break;
-            }
-            case constants.MATERIAL_TYPES.LINE: {
-                geomResult.linePrims.push(data);
-                break;
-            }
-            case constants.MATERIAL_TYPES.PHONG: {
-                geomResult.phongPrims.push(data);
-                break;
+        if (data.primitive === 'polycurve') {
+            Array.prototype.push.apply(geomResult.linePrims,data.curves);
+        } else if (data.primitive === 'polysurface') {
+            Array.prototype.push.apply(geomResult.phongPrims,data.surfaces);
+        } else {
+            var type = createPrimitive.resolveType(data.primitive).material;
+            switch (type) {
+                case constants.MATERIAL_TYPES.POINT: {
+                    geomResult.pointPrims.push(data);
+                    break;
+                }
+                case constants.MATERIAL_TYPES.LINE: {
+                    geomResult.linePrims.push(data);
+                    break;
+                }
+                case constants.MATERIAL_TYPES.PHONG: {
+                    geomResult.phongPrims.push(data);
+                    break;
+                }
             }
         }
     }

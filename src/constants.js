@@ -63,4 +63,6 @@ export var DEFAULT_MATERIAL_PROPERTIES = {
     }
 };
 
+export var DEFAULT_UNITS = 'meters';
+
 

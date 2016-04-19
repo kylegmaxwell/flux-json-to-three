@@ -11,6 +11,7 @@ import * as primitiveHelpers from './primitives.js';
 import * as constants from './constants.js';
 import * as materials from './materials.js';
 import FluxGeometryError from './geometryError.js';
+import normalizeUnits from './unitConverter.js';
 
 /**
  * Determine the material type that would be used for a given primitive
@@ -24,8 +25,6 @@ export function resolveType (primitive) {
     var materialType = constants.MATERIAL_TYPES.PHONG;
     if (resolvedName === 'point') {
         materialType = constants.MATERIAL_TYPES.POINT;
-    } else if (resolvedName === 'vector') {
-        materialType = constants.MATERIAL_TYPES.LINE;
     }
 
     if (!primFunction) {
@@ -39,15 +38,6 @@ export function resolveType (primitive) {
     if (!primFunction) {
         primFunction = solidPrimitives[ resolvedName ];
         materialType = constants.MATERIAL_TYPES.PHONG;
-    }
-
-    // special cases
-    if (primitive === 'polysurface' || primitive === 'plane') {
-        materialType = constants.MATERIAL_TYPES.PHONG;
-    }
-
-    if (primitive === 'polycurve') {
-        materialType = constants.MATERIAL_TYPES.LINE;
     }
 
     return { func: primFunction, material: materialType};
@@ -124,7 +114,7 @@ export function createPoints (prims) {
     var positions = new Float32Array(prims.length*3);
     var colors = new Float32Array(prims.length*3);
     for (var i=0;i<prims.length;i++) {
-        var prim = prims[i];
+        var prim = normalizeUnits(prims[i]);
         positions[i*3] = prim.point[0];
         positions[i*3+1] = prim.point[1];
         positions[i*3+2] = prim.point[2]||0;
@@ -168,23 +158,25 @@ export function createPrimitive ( data, geomResult ) {
     if (!geomResult.checkSchema(data)) {
         return;
     }
+    // Get a new clone of the data with different units for rendering
+    var dataNormalized = normalizeUnits(data);
 
-    var materialProperties = _findMaterialProperties( data );
+    var materialProperties = _findMaterialProperties( dataNormalized );
     var material = _createMaterial( type.material, materialProperties, geomResult.cubeArray );
 
     var primFunction = type.func;
     if (!primFunction) return;
 
-    var mesh = primFunction( data, material );
+    var mesh = primFunction( dataNormalized, material );
 
     if ( mesh ) {
         if (mesh.geometry) {
             geomResult._geometryMaterialMap[mesh.geometry.id] = material.name;
         }
-        return cleanupMesh(mesh, data, materialProperties);
+        return cleanupMesh(mesh, dataNormalized, materialProperties);
     }
 
-    throw new FluxGeometryError( 'Unsupported geometry type: ' + data.primitive );
+    throw new FluxGeometryError( 'Unsupported geometry type: ' + dataNormalized.primitive );
 
 }
 
