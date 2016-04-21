@@ -30,8 +30,9 @@ function _initSchema() {
 
 /**
  * Compile the schema for the given primitive
- * @param {String} The name of the primitive
+ * @param {String} primitive The name of the primitive
  * @private
+ * @returns {Function} The validator
  */
 function _findValidator(primitive) {
     _initSchema();

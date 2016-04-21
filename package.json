@@ -23,7 +23,7 @@
   "license": "ISC",
   "dependencies": {
     "ajv": "^3.8.10",
-    "flux-modelingjs": "git+ssh://git@bitbucket.org/vannevartech/flux-modelingjs.git#45cb2550d1da7f5c3e5f09642e9c6d98627258ae"
+    "flux-modelingjs": "git+ssh://git@bitbucket.org/vannevartech/flux-modelingjs.git#7bc277d9a1f5078900012f9266a34aba4d794e87"
   },
   "devDependencies": {
     "eslint": "^1.9.0",

@@ -47,8 +47,23 @@ test( 'Geometry translation', function ( t ) {
 test( 'Geometry with attributes', function ( t ) {
     var root = new index.GeometryResults();
     var data = {"attributes":{ "foo": 123 },
-    "origin": [0,0,0],"primitive": "sphere","radius": 10}
+    "origin": [0,0,0],"primitive": "sphere","radius": 10};
     index.createObject(data, root);
     t.ok(root.mesh.children[0], 'createobject should create a mesh despite attributes');
     t.end();
 });
+
+
+test( 'Schema for geometry', function ( t ) {
+    var root = new index.GeometryResults();
+    var data = {'x':5,
+    "attributes":{"materialProperties":{"color":[0.25,1,0.639],"size":4}},
+        "curves":[
+        {"controlPoints":[[0,0,0],[1,0,0],[1,1,0],[0,1,0]],"degree":3,
+            "knots":[0,0,0,1,2,3,3,3],"primitive":"curve"},
+            {"start":[1,0,0],"middle":[0,1,0],"end":[-1,0,0],"primitive":"arc"}],"primitive":"polycurve"};
+    var matchesSchema = root.checkSchema(data);
+    t.ok(matchesSchema, true);
+    t.end();
+});
+
