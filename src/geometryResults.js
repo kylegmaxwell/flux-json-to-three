@@ -3,8 +3,8 @@
  */
 'use strict';
 
-import * as schemaJson from '../node_modules/flux-modelingjs/schemas/psworker.json';
-import Ajv from '../node_modules/ajv/dist/ajv.min.js';
+import * as schemaJson from 'flux-modelingjs/schemas/psworker.json';
+import Ajv from 'ajv/dist/ajv.min.js';
 import * as constants from './constants.js';
 import ErrorMap from './errorMap.js';
 
