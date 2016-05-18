@@ -11,7 +11,7 @@ import * as createPrimitive from './createPrimitive.js';
 import * as constants from './constants.js';
 import * as materials from './materials.js';
 import GeometryResults from './geometryResults.js';
-import ErrorMap from './errorMap.js';
+import StatusMap from './statusMap.js';
 
 /**
  * Helper function to run a callback on each entity in the nested array
@@ -152,7 +152,7 @@ function _handlePoints(geomResult) {
     }
     if (validPoints) {
         var mesh = createPrimitive.createPoints(prims);
-        geomResult.invalidPrims.appendError('point', ErrorMap.NO_ERROR);
+        geomResult.primStatus.appendValid('point');
         geomResult.mesh.add(mesh);
     }
 
@@ -227,7 +227,7 @@ function _handlePrimitives( prims, geomResult ) {
  */
 function _tryCreatePrimitive(data, geomResult) {
     var mesh;
-    var errorMessage = ErrorMap.NO_ERROR;
+    var errorMessage = StatusMap.NO_ERROR;
     try {
         mesh = createPrimitive.createPrimitive( data, geomResult );
     }
@@ -239,7 +239,7 @@ function _tryCreatePrimitive(data, geomResult) {
         }
     }
     // Get the error message that exists, and add to it if it exists, or set it
-    geomResult.invalidPrims.appendError(data.primitive, errorMessage);
+    geomResult.primStatus.appendError(data.primitive, errorMessage);
     return mesh;
 }
 

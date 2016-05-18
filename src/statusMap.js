@@ -1,39 +1,48 @@
 /**
- * Custom error class for geometry related issues.
+ * Custom message class for geometry related errors and statuses.
  */
 'use strict';
 
-export default function ErrorMap() {
+export default function StatusMap() {
     // Container for all errors
     // Map from string to list of strings
     this.errors = {};
 }
 
 // Static variable to initialize key with no error
-ErrorMap.NO_ERROR = '';
+StatusMap.NO_ERROR = '';
 
 /**
  * Clear / initialize all temporary arrays
  */
-ErrorMap.prototype.clear = function () {
+StatusMap.prototype.clear = function () {
     this.errors = {};
 };
 
 /**
  * Add a new error to the map.
- * If the error is ErrorMap.NO_ERROR the entry will be added, but the list will
+ * If the error is StatusMap.NO_ERROR the entry will be added, but the list will
  * be empty, which allows the user to get a list of valid keys if needed.
  * @param {String} key The name of the error
  * @param {String} newError The error message
  */
-ErrorMap.prototype.appendError = function (key, newError) {
-    // Make sure the entry exists so we can track what keys are valid
-    if (!this.errors[key]) {
-        this.errors[key] = [];
-    }
+StatusMap.prototype.appendError = function (key, newError) {
+    // Make sure the entry exists
+    this.appendValid(key);
     // Add the error if it exists and is not a duplicate
     if (newError && this.errors[key].indexOf(newError) === -1) {
         this.errors[key].push(newError);
+    }
+};
+
+/**
+ * Add a key to indicate that an item was processed with no errors
+ * @param  {String} key The item to store
+ */
+StatusMap.prototype.appendValid = function (key) {
+    // Make sure the entry exists so we can track what keys are valid
+    if (!this.errors[key]) {
+        this.errors[key] = [];
     }
 };
 
@@ -42,7 +51,7 @@ ErrorMap.prototype.appendError = function (key, newError) {
  * @param {String} key Where to look in the map
  * @returns {boolean} True if the key is valid, meaning no errors
  */
-ErrorMap.prototype.validKey = function (key) {
+StatusMap.prototype.validKey = function (key) {
     return !this.errors[key] || this.errors[key].length === 0;
 };
 
@@ -51,7 +60,7 @@ ErrorMap.prototype.validKey = function (key) {
  * @param {String} key The entry to look for
  * @returns {boolean} True if the key is NOT valid, meaning has an error
  */
-ErrorMap.prototype.invalidKey = function (key) {
+StatusMap.prototype.invalidKey = function (key) {
     return !this.validKey(key);
 };
 
@@ -59,7 +68,7 @@ ErrorMap.prototype.invalidKey = function (key) {
  * Create a human readable summary of all the errors.
  * @returns {string} The summary
  */
-ErrorMap.prototype.invalidKeySummary = function () {
+StatusMap.prototype.invalidKeySummary = function () {
     var _this = this;
     var errors = Object.keys(this.errors).reduce(function (prev, key) {
         if (_this.invalidKey(key)) {

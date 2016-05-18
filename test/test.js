@@ -38,7 +38,7 @@ test( 'Geometry translation', function ( t ) {
                     'The mesh should be of type ' +
                     fixtures[ key ].result.type + ' for data ' + key );
         } else {
-            t.ok( !root.invalidPrims.validKey(input.primitive) , 'if the data is invalid, createObject' +
+            t.ok( !root.primStatus.validKey(input.primitive) , 'if the data is invalid, createObject' +
                                                        ' should return it as part of' +
                                                        ' the set of invalid primitives' );
         }
@@ -86,7 +86,7 @@ test( 'Invalid schema for polycurve', function ( t ) {
     };
     var matchesSchema = root.checkSchema(data);
     t.ok(!matchesSchema, "Should not match schema");
-    t.ok(root.invalidPrims.invalidKeySummary().indexOf('units') !== -1, "Should contain message about units");
+    t.ok(root.primStatus.invalidKeySummary().indexOf('units') !== -1, "Should contain message about units");
     t.end();
 });
 

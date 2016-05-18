@@ -28,10 +28,6 @@ export var NURBS_SURFACE_QUALITY = 2.5;
 var degreesFlatLimit = 1.0;
 export var NURBS_FLAT_LIMIT = degreesFlatLimit/180.0;
 
-export var LEGACY_NAMES_MAP = {
-    'point-2d': 'point',
-    'polygon-set': 'polygonSet'
-};
 // These entities are not official Flux Entities, but can be rendered
 export var NON_STANDARD_ENTITIES = 'stl obj text';
 

@@ -29,7 +29,7 @@
     "rollup-plugin-node-resolve": "^1.5.0",
     "rollup-plugin-npm": "^1.1.0",
     "uglify-js": "^2.5.0",
-    "flux-modelingjs": "git+ssh://git@bitbucket.org/vannevartech/flux-modelingjs.git#e4c7d70d4ab4e9dc04cfd0054543e0ca1d132f75"
+    "flux-modelingjs": "git+ssh://git@bitbucket.org/vannevartech/flux-modelingjs.git#57ba062174f3f93102cede8a5231dda4b4897bbc"
   },
   "devDependencies": {
     "eslint": "^1.9.0",

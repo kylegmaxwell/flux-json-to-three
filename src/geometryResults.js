@@ -6,7 +6,7 @@
 import * as schemaJson from 'flux-modelingjs/schemas/psworker.json';
 import Ajv from 'ajv/dist/ajv.min.js';
 import * as constants from './constants.js';
-import ErrorMap from './errorMap.js';
+import StatusMap from './statusMap.js';
 
 //---- Singletons
 
@@ -56,7 +56,7 @@ export default function GeometryResults() {
     this.mesh = new THREE.Object3D();
 
     // Map from primitive name to error string or empty string when no error
-    this.invalidPrims = new ErrorMap();
+    this.primStatus = new StatusMap();
 
     // Array of THREE.Texture objects used for image based lighting
     this.cubeArray = null;
@@ -86,6 +86,26 @@ GeometryResults.prototype.clear = function () {
 };
 
 /**
+ * Determine if there is any geometry in the mesh object
+ * @return {Boolean} True when empty
+ */
+GeometryResults.prototype.meshIsEmpty = function () {
+    return this.mesh == null || this.mesh.children.length === 0;
+};
+
+/**
+ * Get the mesh or null if it's empty.
+ * @return {Object3D} The mesh container or null
+ */
+GeometryResults.prototype.getMesh = function () {
+    if (this.meshIsEmpty()) {
+        return null;
+    } else {
+        return this.mesh;
+    }
+};
+
+/**
  * Check if the entities match the parasolid entity schema
  * @param {Array} entity Array of arrays or entities
  * @param {GeometryResults} geomResult Object container for errors
@@ -101,11 +121,11 @@ GeometryResults.prototype.checkSchema = function (entity) {
         // Warning this assumes validate is synchronous so that we can
         // call validate on a singleton, and read the results safely from it's properties
         if (!validate) {
-            this.invalidPrims.appendError(entity.primitive,"Unknown primitive type.");
+            this.primStatus.appendError(entity.primitive,"Unknown primitive type.");
             return false;
         }
         if (!validate(entity)) {
-            this.invalidPrims.appendError(entity.primitive, _serializeErrors(validate.errors));
+            this.primStatus.appendError(entity.primitive, _serializeErrors(validate.errors));
             return false;
         }
         return true;

@@ -15,28 +15,27 @@ import normalizeUnits from './unitConverter.js';
 
 /**
  * Determine the material type that would be used for a given primitive
- * @param {Object} primitive The geometry object parameters
+ * @param {String} primitive The name of the entity type
  * @returns {{func: *, material: number}} A function to convert a prim to geomtry and a material type
  */
 export function resolveType (primitive) {
-    var resolvedName = _resolveLegacyNames( primitive );
 
-    var primFunction = primitiveHelpers[ resolvedName ];
+    var primFunction = primitiveHelpers[ primitive ];
     var materialType = constants.MATERIAL_TYPES.PHONG;
-    if (resolvedName === 'point') {
+    if (primitive === 'point') {
         materialType = constants.MATERIAL_TYPES.POINT;
     }
 
     if (!primFunction) {
-        primFunction = wirePrimitives[ resolvedName ];
+        primFunction = wirePrimitives[ primitive ];
         materialType = constants.MATERIAL_TYPES.LINE;
     }
     if (!primFunction) {
-        primFunction = sheetPrimitives[ resolvedName ];
+        primFunction = sheetPrimitives[ primitive ];
         materialType = constants.MATERIAL_TYPES.PHONG;
     }
     if (!primFunction) {
-        primFunction = solidPrimitives[ resolvedName ];
+        primFunction = solidPrimitives[ primitive ];
         materialType = constants.MATERIAL_TYPES.PHONG;
     }
 
@@ -59,8 +58,7 @@ export function listValidPrims ( ) {
     validPrimsList = Object.keys(primitiveHelpers).concat(
                         Object.keys(solidPrimitives),
                         Object.keys(sheetPrimitives),
-                        Object.keys(wirePrimitives),
-                        Object.keys(constants.LEGACY_NAMES_MAP));
+                        Object.keys(wirePrimitives));
     return validPrimsList;
 }
 
@@ -393,24 +391,6 @@ function _createMaterial ( type, materialProperties, cubeArray ) {
 
     return material;
 
-}
-
-/**
- * A helper to resolve legacy names to present names. This prevents deprication
- * of some of our user's parasolid data.
- *
- * @function _resolveLegacyNames
- * @private
- *
- * @return { String } the current name
- *
- * @param { String } name a name that may be legacy
- */
-function _resolveLegacyNames ( name ) {
-    var legacyMap = constants.LEGACY_NAMES_MAP;
-    if (Object.keys(legacyMap).indexOf(name) !== -1)
-        return legacyMap[name];
-    return name;
 }
 
 /**
