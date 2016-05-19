@@ -171,19 +171,19 @@ export var mesh = {
 export var badUnitsPath1 = {
     "start": {
         "units":{
-            "/vertices/x":"um"
+            "/vertices/x":"mmmm"
         },
         "vertices": [[-1,0,0],[0,1,2],[1,0,0],[0,-1,2]],
         "faces":[[0,3,1],[1,3,2]], "primitive":"mesh"
     },
     "end": {
         "units":{
-            "/vertices/x":"meters"
+            "/vertices/x":"mmmm"
         },
-        "vertices": [[-0.000001,0,0],[0,1,2],[1,0,0],[0,-1,2]],
+        "vertices": [[-1,0,0],[0,1,2],[1,0,0],[0,-1,2]],
         "faces":[[0,3,1],[1,3,2]], "primitive":"mesh"
     },
-    "succeed":false
+    "succeed":true
 };
 
 export var badUnitsPath2 = {
@@ -214,12 +214,12 @@ export var badUnitsType = {
     },
     "end": {
         "units":{
-            "/stuff/thing":"meters"
+            "/vertices":"not a unit"
         },
-        "vertices": [[-0.000001,0,0],[0,1,2],[1,0,0],[0,-1,2]],
+        "vertices": [[-1,0,0],[0,1,2],[1,0,0],[0,-1,2]],
         "faces":[[0,3,1],[1,3,2]], "primitive":"mesh"
     },
-    "succeed":false
+    "succeed":true
 };
 
 export var noUnits = {

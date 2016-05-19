@@ -62,7 +62,10 @@ UnitRegistry.prototype.unitConversionFactor = function (from, to) {
     if (this.units[standardFrom] && this.units[to]) {
         return 1.0;
     }
-    throw new FluxGeometryError('Could not convert units from "'+from+'" to '+to);
+    // TODO(Kyle): This should be a warning
+    // https://vannevar.atlassian.net/browse/LIB3D-709
+    // throw new FluxGeometryError('Could not convert units from "'+from+'" to '+to);
+    return null;
 };
 
 /**

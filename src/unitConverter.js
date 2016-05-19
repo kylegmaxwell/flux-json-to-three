@@ -78,11 +78,17 @@ export default function convertUnits (entity) {
         }
         var unitValue = _lookupPropIgnoreCase(prop,unitPath[j]);
         if (unitValue == null) {
-            throw new FluxGeometryError('Invalid unit path ' + unitString);
+            // TODO(Kyle): This should be a warning
+            // https://vannevar.atlassian.net/browse/LIB3D-709
+            // throw new FluxGeometryError('Invalid unit path ' + unitString);
+            continue;
         }
         var func = registry.unitConversionFunc(unitMeasure, constants.DEFAULT_UNITS);
         if (!func) {
-            throw new FluxGeometryError('Invalid units specified');
+            // TODO(Kyle): This should be a warning
+            // https://vannevar.atlassian.net/browse/LIB3D-709
+            // throw new FluxGeometryError('Invalid units specified');
+            continue;
         }
         _setPropIgnoreCase(prop, unitPath[j], func(unitValue));
         entityClone.units[unitString] = constants.DEFAULT_UNITS;
