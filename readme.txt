@@ -1,11 +1,21 @@
-
 To use this repo clone it and install the dependencies.
+npm install
+npm run build
 
-There are prebuilt files under build/ but they will still need
-access to Three.js which must be installed.
+You can run the test with npm. This uses a stubbed version of three.js.
+npm test
 
-If this module is loaded with npm everything will work automatically.
+Extended Developer Setup
 
-To Build: npm run build
-To Test: npm test
-To Install Deps: npm i
+To setup gerrit for code review run
+
+# Update remotes
+git remote rename origin bitbucket
+git remote add gerrit ssh://${USER}@cr.flux.io:29418/flux-json-to-three
+
+# Add Commit hook
+curl https://cr.flux.io/tools/hooks/commit-msg > `git rev-parse --git-dir`/hooks/commit-msg
+chmod +x `git rev-parse --git-dir`/hooks/commit-msg
+
+If you are working in Flux genie follow the instructions here:
+https://docs.google.com/document/d/1qf6PGJN54buSGFcrcRCZnruY4yTAsNRzoMtEpyE2VFY/edit#heading=h.owqmh4p4ruch

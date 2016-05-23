@@ -1,7 +1,7 @@
 'use strict';
 
 import test from 'tape';
-import * as index from '../index.js';
+import * as index from '../src/index.js';
 import * as fixtures from './fixtures.js';
 import * as fixturesUnits from './fixturesUnits.js';
 import FluxGeometryError from '../src/geometryError.js';
