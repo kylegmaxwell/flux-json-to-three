@@ -4,6 +4,8 @@
 'use strict';
 
 import FluxGeometryError from './geometryError.js';
+// Source for registry: genie/backend/src/bitbucket.org/vannevartech/flux-measure/measure/src/measure.cpp
+import * as unitRegistryData from '../data/unitRegistry.json';
 
 export default function UnitRegistry() {
     // Dimension (string) -> bool
@@ -150,71 +152,22 @@ UnitRegistry.prototype.addConversion = function (from, to, scale) {
  */
 UnitRegistry.newStandardRegistry = function () {
     var r = new UnitRegistry();
-    r.addConcreteDimension("length");
 
-    r.addUnit("microns", "length", ["um", "micron"]);
-    r.addUnit("millimeters", "length", ["mm", "millimeter"]);
-    r.addUnit("centimeters", "length", ["cm", "centimeter"]);
-    r.addUnit("meters", "length", ["m", "meter"]);
-    r.addUnit("kilometers", "length", ["km", "kilometer"]);
+    // Add dimensions, units and aliases
+    var dimensions = unitRegistryData.dimensions;
+    for (var d in dimensions) {
+        r.addConcreteDimension(dimensions[d]);
+        var units = dimensions[d].units;
+        for (var u in units) {
+            r.addUnit(units[u][0], dimensions[d], units[u].splice(1));
+        }
+    }
 
-    r.addUnit("inches", "length", ["inch", "in"]);
-    r.addUnit("feet", "length", ["ft", "foot"]);
-    r.addUnit("miles", "length", ["mile"]);
-
-    r.addConversion("microns", "meters", 1e-6);
-    r.addConversion("millimeters", "meters", 1e-3);
-    r.addConversion("centimeters", "meters", 1e-2);
-    r.addConversion("kilometers", "meters", 1e3);
-    r.addConversion("feet", "meters", 0.30480);
-    r.addConversion("inches", "meters", 0.0254);
-
-
-    //---- The rest of these units don't actually work, but we want to register that they exist
-    r.addConcreteDimension("area");
-
-    r.addUnit("acres", "area", []);
-    r.addUnit("hectares", "area", []);
-
-    r.addConcreteDimension("volume");
-    r.addUnit("liters", "volume", ["liter", "l"]);
-    r.addUnit("gallons", "volume", ["gallon", "gal"]);
-
-    r.addConcreteDimension("temperature");
-    r.addUnit("farenheit", "temperature", ["F"]);
-    r.addUnit("celsius", "temperature", ["C"]);
-    r.addUnit("kelvin", "temperature", ["K"]);
-
-    r.addConcreteDimension("time");
-    r.addUnit("nanoseconds", "time", ["nanosecond", "ns"]);
-    r.addUnit("microseconds", "time", ["microsecond", "us"]);
-    r.addUnit("milliseconds", "time", ["milisecond", "ms"]);
-    r.addUnit("seconds", "time", ["second", "s"]);
-    r.addUnit("minutes", "time", ["minute"]);
-    r.addUnit("hours", "time", ["hour", "h"]);
-    r.addUnit("days", "time", ["day"]);
-    r.addUnit("weeks", "time", ["week"]);
-    r.addUnit("years", "time", ["year"]);
-
-    r.addConcreteDimension("angle");
-    r.addUnit("radians", "angle", ["radian", "rad"]);
-    r.addUnit("degrees", "angle", ["degree", "deg"]);
-
-    r.addConcreteDimension("mass");
-    r.addUnit("grams", "mass", ["gram", "g"]);
-    r.addUnit("kilograms", "mass", ["kilogram", "kg"]);
-    r.addUnit("pounds", "mass", ["pound", "lb"]); // Use 'pounds' to refer to mass.
-
-    r.addConcreteDimension("force");
-    r.addUnit("newtons", "force", ["newton"]);
-    r.addUnit("pound-force", "force", ["lbf"]);
-
-    r.addConcreteDimension("energy");
-    r.addUnit("joules", "energy", ["joule"]);
-    r.addUnit("kwh", "energy", ["kilowatt hour"]);
-
-    r.addConcreteDimension("luminous-intensity");
-    r.addUnit("candelas", "luminous-intensity", ["candela"]);
+    // Add conversions between units
+    var conversions = unitRegistryData.conversions;
+    for (var c in conversions) {
+        r.addConversion(conversions[c].from, conversions[c].to, conversions[c].factor);
+    }
 
     return r;
 };

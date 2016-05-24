@@ -12,8 +12,8 @@
     "assemble": "cat ./test/threeStub.js > ./build/test_stubbed.js; cat ./build/test.js >> ./build/test_stubbed.js;",
     "lint": "eslint src/**;",
     "build": "npm run clean; npm run init; npm run build-common; npm run build-amd; npm run build-globals",
-    "build-common":  "rollup -c rollup.config.js -f=cjs -o=./build/index.common.js; uglifyjs ./build/index.common.js -c -o ./build/index.common.min.js",
-    "build-amd":     "rollup -c rollup.config.js -f=amd -o=./build/index.amd.js; uglifyjs ./build/index.amd.js -c -o ./build/index.amd.min.js",
+    "build-common": "rollup -c rollup.config.js -f=cjs -o=./build/index.common.js; uglifyjs ./build/index.common.js -c -o ./build/index.common.min.js",
+    "build-amd": "rollup -c rollup.config.js -f=amd -o=./build/index.amd.js; uglifyjs ./build/index.amd.js -c -o ./build/index.amd.min.js",
     "build-globals": "rollup -c rollup.config.js -f=iife -n=FluxJsonToThree -o=./build/index.global.js",
     "postinstall": "npm run build",
     "clean": "rm -rf build"
@@ -22,13 +22,14 @@
   "license": "ISC",
   "dependencies": {
     "ajv": "^3.8.10",
+    "flux-modelingjs": "git+ssh://git@bitbucket.org/vannevartech/flux-modelingjs.git#b149301af029c26e9d521616bf6e5a9e68d44979",
+    "json-pointer": "^0.5.0",
     "rollup": "^0.20.5",
     "rollup-plugin-commonjs": "^1.4.0",
     "rollup-plugin-json": "^2.0.0",
     "rollup-plugin-node-resolve": "^1.5.0",
     "rollup-plugin-npm": "^1.1.0",
-    "uglify-js": "^2.5.0",
-    "flux-modelingjs": "git+ssh://git@bitbucket.org/vannevartech/flux-modelingjs.git#b149301af029c26e9d521616bf6e5a9e68d44979"
+    "uglify-js": "^2.5.0"
   },
   "devDependencies": {
     "eslint": "^1.9.0",

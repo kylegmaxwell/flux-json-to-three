@@ -6,10 +6,10 @@
 export var cone = {
     "start": {
         "units":{
-            "ORIGIN": "km",
+            "origin": "km",
             "height": "cm",
             "radius": "in",
-            "semiangle": "m"
+            "semiAngle": "m"
         },
         "height":10,
         "origin":[0,0,0],
@@ -19,16 +19,92 @@ export var cone = {
     },
     "end": {
         "units":{
-            "ORIGIN": "meters", // should be case insensitive
+            "origin": "meters",
             "height": "meters",
             "radius": "meters",
-            "semiangle": "meters" // should be case insensitive
+            "semiAngle": "meters"
         },
         "height":0.1,
         "origin":[0,0,0],
         "primitive":"cone",
         "radius":0.254,
         "semiAngle":10
+    },
+    "succeed":true
+};
+
+export var caseSensitiveUnitKeys = {
+    "start": {
+        "units":{
+            "ORIGIN": "km",
+            "height": "cm",
+            "radius": "in",
+            "semiAngle": "m"
+        },
+        "height":10,
+        "origin":[0,0,0],
+        "primitive":"cone",
+        "radius":10,
+        "semiAngle":10
+    },
+    "end": {
+        "units":{
+            "ORIGIN": "km", // should ignore unmatched units (case sensitive)
+            "height": "meters",
+            "radius": "meters",
+            "semiAngle": "meters"
+        },
+        "height":0.1,
+        "origin":[0,0,0],
+        "primitive":"cone",
+        "radius":0.254,
+        "semiAngle":10
+    },
+    "succeed":true
+};
+
+export var sphere = {
+    "start": {
+        "height": 10,
+        "origin": [0,0,0],
+        "primitive": "sphere",
+        "radius": 60,
+        "units": {
+            "origin": "m",
+            "radius": "shrekles"
+        }
+    },
+    "end": {
+        "height": 10,
+        "origin": [0,0,0],
+        "primitive": "sphere",
+        "radius": 1.8288,
+        "units": {
+            "origin": "meters",
+            "radius": "meters"
+        }
+    },
+    "succeed":true
+};
+
+export var caseSensitiveMeasure = {
+    "start": {
+        "height": 10,
+        "origin": [0,0,0],
+        "primitive": "sphere",
+        "radius": 60,
+        "units": {
+            "radius": "Mm"
+        }
+    },
+    "end": {
+        "height": 10,
+        "origin": [0,0,0],
+        "primitive": "sphere",
+        "radius": 60000000,
+        "units": {
+            "radius": "meters"
+        }
     },
     "succeed":true
 };
@@ -153,14 +229,14 @@ export var polycurve1 = {
 export var mesh = {
     "start": {
         "units":{
-            "/vertices":"um"
+            "vertices":"um"
         },
         "vertices": [[-1,0,0],[0,1,2],[1,0,0],[0,-1,2]],
         "faces":[[0,3,1],[1,3,2]], "primitive":"mesh"
     },
     "end": {
         "units":{
-            "/vertices":"meters"
+            "vertices":"meters"
         },
         "vertices": [[-0.000001,0,0],[0,0.000001,0.000002],[0.000001,0,0],[0,-0.000001,0.000002]],
         "faces":[[0,3,1],[1,3,2]], "primitive":"mesh"
@@ -171,14 +247,14 @@ export var mesh = {
 export var badUnitsPath1 = {
     "start": {
         "units":{
-            "/vertices/x":"mmmm"
+            "vertices/x":"mmmm"
         },
         "vertices": [[-1,0,0],[0,1,2],[1,0,0],[0,-1,2]],
         "faces":[[0,3,1],[1,3,2]], "primitive":"mesh"
     },
     "end": {
         "units":{
-            "/vertices/x":"mmmm"
+            "vertices/x":"mmmm"
         },
         "vertices": [[-1,0,0],[0,1,2],[1,0,0],[0,-1,2]],
         "faces":[[0,3,1],[1,3,2]], "primitive":"mesh"
@@ -189,32 +265,32 @@ export var badUnitsPath1 = {
 export var badUnitsPath2 = {
     "start": {
         "units":{
-            "/stuff/thing":"um"
+            "stuff/thing":"um"
         },
         "vertices": [[-1,0,0],[0,1,2],[1,0,0],[0,-1,2]],
         "faces":[[0,3,1],[1,3,2]], "primitive":"mesh"
     },
     "end": {
         "units":{
-            "/stuff/thing":"meters"
+            "stuff/thing":"um"
         },
-        "vertices": [[-0.000001,0,0],[0,1,2],[1,0,0],[0,-1,2]],
+        "vertices": [[-1,0,0],[0,1,2],[1,0,0],[0,-1,2]],
         "faces":[[0,3,1],[1,3,2]], "primitive":"mesh"
     },
-    "succeed":false
+    "succeed":true
 };
 
 export var badUnitsType = {
     "start": {
         "units":{
-            "/vertices":"not a unit"
+            "vertices":"not a unit"
         },
         "vertices": [[-1,0,0],[0,1,2],[1,0,0],[0,-1,2]],
         "faces":[[0,3,1],[1,3,2]], "primitive":"mesh"
     },
     "end": {
         "units":{
-            "/vertices":"not a unit"
+            "vertices":"not a unit"
         },
         "vertices": [[-1,0,0],[0,1,2],[1,0,0],[0,-1,2]],
         "faces":[[0,3,1],[1,3,2]], "primitive":"mesh"
@@ -253,7 +329,7 @@ export var noSpecificUnits = {
 export var nonLengthUnits = {
     "start": {
         "units":{
-            "/attributes/energy":"kwh"
+            "attributes/energy":"kwh"
         },
         "attributes":{
             "energy":5
@@ -263,7 +339,7 @@ export var nonLengthUnits = {
     },
     "end": {
         "units":{
-            "/attributes/energy":"meters"
+            "attributes/energy":"meters"
         },
         "attributes":{
             "energy":5
