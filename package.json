@@ -6,7 +6,6 @@
   "repository": "git@bitbucket.org:vannevartech/flux-json-to-three.git",
   "scripts": {
     "test": "npm run clean; npm run init; npm run run-test --silent",
-    "postinstall": "npm run clean; npm run init; npm run build",
     "init": "mkdir build",
     "run-test": "npm run clean; npm run init; npm run lint && npm run build-test && npm run assemble && tape ./build/test_stubbed.js;",
     "build-test": "rollup -c rollup-test.config.js -f=cjs > ./build/test.js",
@@ -16,6 +15,7 @@
     "build-common":  "rollup -c rollup.config.js -f=cjs -o=./build/index.common.js; uglifyjs ./build/index.common.js -c -o ./build/index.common.min.js",
     "build-amd":     "rollup -c rollup.config.js -f=amd -o=./build/index.amd.js; uglifyjs ./build/index.amd.js -c -o ./build/index.amd.min.js",
     "build-globals": "rollup -c rollup.config.js -f=iife -n=FluxJsonToThree -o=./build/index.global.js",
+    "postinstall": "npm run build",
     "clean": "rm -rf build"
   },
   "author": "Flux Factory Inc.",
@@ -28,7 +28,7 @@
     "rollup-plugin-node-resolve": "^1.5.0",
     "rollup-plugin-npm": "^1.1.0",
     "uglify-js": "^2.5.0",
-    "flux-modelingjs": "git+ssh://git@bitbucket.org/vannevartech/flux-modelingjs.git#57ba062174f3f93102cede8a5231dda4b4897bbc"
+    "flux-modelingjs": "git+ssh://git@bitbucket.org/vannevartech/flux-modelingjs.git#b149301af029c26e9d521616bf6e5a9e68d44979"
   },
   "devDependencies": {
     "eslint": "^1.9.0",

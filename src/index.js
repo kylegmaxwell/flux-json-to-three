@@ -7,5 +7,5 @@
 /*
  * Imports
  */
-export { createObject, isKnownGeom, hasRoughness } from './createObject.js';
-export { default as GeometryResults } from './geometryResults.js';
+export { isKnownGeom } from './createObject.js';
+export { default as GeometryBuilder } from './geometryBuilder.js';

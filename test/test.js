@@ -1,7 +1,9 @@
 'use strict';
 
 import test from 'tape';
-import * as index from '../src/index.js';
+
+import * as Create from '../src/createObject.js';
+import GeometryResults from '../src/geometryResults.js';
 import * as fixtures from './fixtures.js';
 import * as fixturesUnits from './fixturesUnits.js';
 import FluxGeometryError from '../src/geometryError.js';
@@ -24,11 +26,11 @@ test( 'Geometry translation', function ( t ) {
     var key,
         input,
         obj;
-    var root = new index.GeometryResults();
+    var root = new GeometryResults();
 
     for ( key in fixtures ) {
         input = fixtures[ key ].input;
-        index.createObject( input, root );
+        Create.createObject( input, root );
 
         if ( fixtures[ key ].result ) {
             t.ok( root.mesh, 'createObject should create a mesh for parasolid data of ' + key  );
@@ -47,16 +49,16 @@ test( 'Geometry translation', function ( t ) {
 });
 
 test( 'Geometry with attributes', function ( t ) {
-    var root = new index.GeometryResults();
+    var root = new GeometryResults();
     var data = {"attributes":{ "foo": 123 },
     "origin": [0,0,0],"primitive": "sphere","radius": 10};
-    index.createObject(data, root);
+    Create.createObject(data, root);
     t.ok(root.mesh.children[0], 'createobject should create a mesh despite attributes');
     t.end();
 });
 
 test( 'Schema for geometry', function ( t ) {
-    var root = new index.GeometryResults();
+    var root = new GeometryResults();
     var data = {
         "x":5,
         "units":{
@@ -73,7 +75,7 @@ test( 'Schema for geometry', function ( t ) {
 });
 
 test( 'Invalid schema for polycurve', function ( t ) {
-    var root = new index.GeometryResults();
+    var root = new GeometryResults();
     var data = {"x":5,
         "attributes":{"materialProperties":{"color":[0.25,1,0.639],"size":4}},
         "curves":[
@@ -91,7 +93,7 @@ test( 'Invalid schema for polycurve', function ( t ) {
 });
 
 test( 'Units translation', function ( t ) {
-    var root = new index.GeometryResults();
+    var root = new GeometryResults();
     Object.keys(fixturesUnits).forEach(function (key) {
         var entity = fixturesUnits[key].start;
         entity = JSON.parse(JSON.stringify(entity));
