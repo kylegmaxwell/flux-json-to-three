@@ -22,7 +22,7 @@
   "license": "ISC",
   "dependencies": {
     "ajv": "^3.8.10",
-    "flux-modelingjs": "git+ssh://git@bitbucket.org/vannevartech/flux-modelingjs.git#b149301af029c26e9d521616bf6e5a9e68d44979",
+    "flux-modelingjs": "0.0.1",
     "json-pointer": "^0.5.0",
     "rollup": "^0.20.5",
     "rollup-plugin-commonjs": "^1.4.0",
