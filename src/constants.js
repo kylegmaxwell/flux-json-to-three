@@ -42,6 +42,7 @@ export var DEFAULT_POINT_COLOR = [0.5,0.5,0.8];
 export var DEFAULT_LINE_COLOR =  [0.5,0.5,0.8];
 export var DEFAULT_PHONG_COLOR = [  1,  1,  1];
 
+export var POINT_PIXEL_SIZE = 2.0;
 export var DEFAULT_MATERIAL_PROPERTIES = {
     // color is per point
     phong: {
@@ -51,7 +52,7 @@ export var DEFAULT_MATERIAL_PROPERTIES = {
         side: THREE.DoubleSide
     },
     point: {
-        size: 5.0,
+        size: 0.001,// This default helps with very small points coming from grasshopper in millimeters
         sizeAttenuation: true
     },
     line: {

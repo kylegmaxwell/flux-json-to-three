@@ -118,7 +118,7 @@ export var point = {
         "primitive":"point"
     },
     "result": {
-        "type":"Points"
+        "type":"Object3D"
     }
 };
 

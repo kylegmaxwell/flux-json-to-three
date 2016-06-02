@@ -84,29 +84,6 @@ function _getPointSize(prims) {
 }
 
 /**
- * Get the point size attenuation from a given entity
- * Determines whether the points change size based on distance to camera
- * @param {Array} prims Array of point data
- * @returns {Boolean} True when points change apparent size
- * @private
- */
-function _getPointSizeAttenuation(prims) {
-    // default to fixed size for 1 point, and attenuate for multiples
-    var sizeAttenuation = prims.length !== 1;
-    // Just use the first point for now, can't set attenuation per point.
-    var prim = prims[0];
-
-    if (!prim) {
-        return sizeAttenuation;
-    }
-    var materialProperties = prim.materialProperties || (prim.attributes && prim.attributes.materialProperties);
-    if (materialProperties && materialProperties.sizeAttenuation) {
-        sizeAttenuation = materialProperties.sizeAttenuation;
-    }
-    return sizeAttenuation;
-}
-
-/**
  * Create the point cloud mesh for all the input primitives
  * @param {Object} prims List of point primitive objects
  * @returns {THREE.Points} An Object3D containing points
@@ -129,15 +106,30 @@ export function createPoints (prims) {
 
     geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
     geometry.addAttribute( 'color', new THREE.BufferAttribute( colors, 3 ) );
+
+    // First create a point cloud with world space size
     var materialProperties = {
-        size: _getPointSize(prims),
-        sizeAttenuation: _getPointSizeAttenuation(prims),
+        size: _getPointSize(prims),// user can set world space size
+        sizeAttenuation: true,
         vertexColors: THREE.VertexColors
     };
     var material = new THREE.PointsMaterial(materialProperties);
     var mesh = new THREE.Points( geometry, material );
 
-    return mesh;
+    // Second create a point cloud with pixel size, to ensure they always render at least a few pixels
+    var materialProperties2 = {
+        size: constants.POINT_PIXEL_SIZE, //pixels
+        sizeAttenuation: false,
+        vertexColors: THREE.VertexColors
+    };
+    var material2 = new THREE.PointsMaterial(materialProperties2);
+    var mesh2 = new THREE.Points( geometry, material2 );
+
+    var obj = new THREE.Object3D();
+    obj.add(mesh);
+    obj.add(mesh2);
+
+    return obj;
 }
 
 /**
