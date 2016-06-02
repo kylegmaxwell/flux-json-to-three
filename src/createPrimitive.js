@@ -62,6 +62,9 @@ export function listValidPrims ( ) {
     return validPrimsList;
 }
 
+var UP = new THREE.Vector3(0,0,1);
+var RIGHT = new THREE.Vector3(1, 0, 0);
+
 /**
  * Get the point size from a given entity
  * @param {Array} prims Array of point data
@@ -133,8 +136,6 @@ export function createPoints (prims) {
     };
     var material = new THREE.PointsMaterial(materialProperties);
     var mesh = new THREE.Points( geometry, material );
-
-    _convertToZUp( mesh );
 
     return mesh;
 }
@@ -243,24 +244,34 @@ export function cleanupMesh(mesh, data) {
         });
     }
 
-    _convertToZUp( mesh );
+    if (!data) {
+        return;
+    }
 
-    if (!data) return;
+    if ( data.origin ) {
+        _applyOrigin( mesh, data.origin );
+    }
 
-    if ( data.origin ) _applyOrigin( mesh, data.origin );
-
+    var reference = data.reference;
     var axis = data.axis || data.direction || data.normal;
+    if (reference || axis) {
+        var axisVec = UP.clone();
+        if ( axis ) {
+            axisVec.set(axis[0], axis[1], axis[2]);
+        }
 
-    if ( axis )
-        mesh.lookAt( mesh.position.clone().add(
-            new THREE.Vector3(
-                axis[ 0 ],
-                axis[ 1 ],
-                axis[ 2 ]
-            )
-        ));
+        var referenceVec = RIGHT.clone();
+        if (reference) {
+            referenceVec.set(reference[0], reference[1], reference[2]);
+        }
+        mesh.up = referenceVec.cross(axisVec);
 
-    if ( data.attributes && data.attributes.tag ) mesh.userData.tag = data.attributes.tag;
+        mesh.lookAt( mesh.position.clone().add(axisVec));
+    }
+
+    if (data.attributes && data.attributes.tag) {
+        mesh.userData.tag = data.attributes.tag;
+    }
 
     return mesh;
 }
@@ -391,20 +402,6 @@ function _createMaterial ( type, materialProperties, cubeArray ) {
 
     return material;
 
-}
-
-/**
- * A helper to convert geometry to z-up world by setting ups axis and rotation
- * order
- *
- * @function _convertToZUp
- * @private
- *
- * @param { THREE.Object3D } object The object to convert to z-up
- */
-function _convertToZUp ( object ) {
-    object.up.set( 0, 0, 1 );
-    object.rotation.order = 'YXZ';
 }
 
 /**
