@@ -3,6 +3,7 @@
  */
 
 'use strict';
+import THREE from 'three';
 
 export var HALF_PI = Math.PI * 0.5;
 export var TOLERANCE = 0.000001;

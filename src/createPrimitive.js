@@ -4,14 +4,15 @@
 
 'use strict';
 
-import * as wirePrimitives from './wirePrimitives.js';
-import * as sheetPrimitives from './sheetPrimitives.js';
-import * as solidPrimitives from './solidPrimitives.js';
-import * as primitiveHelpers from './primitives.js';
+import THREE from 'three';
+import * as wirePrimitives from './primitives/wirePrimitives.js';
+import * as sheetPrimitives from './primitives/sheetPrimitives.js';
+import * as solidPrimitives from './primitives/solidPrimitives.js';
+import * as primitiveHelpers from './primitives/primitives.js';
 import * as constants from './constants.js';
 import * as materials from './materials.js';
 import FluxGeometryError from './geometryError.js';
-import normalizeUnits from './unitConverter.js';
+import normalizeUnits from './units/unitConverter.js';
 
 /**
  * Determine the material type that would be used for a given primitive

@@ -1,5 +1,6 @@
 'use strict';
 
+import THREE from 'three';
 import * as Create from './createObject.js';
 import GeometryResults from './geometryResults.js';
 import modeling from 'flux-modelingjs/modeling-core.js';
@@ -10,7 +11,7 @@ import setHeaders from './fluxRequest.js';
 */
 var READY_STATE_FINISHED = 4;
 
-// Array of enviroment textures for image-based lighting.
+// Array of environment textures for image-based lighting.
 // Singleton
 // Cubemap textures are pre-filtered to simulate different levels of light diffusion.
 // More about the technique:
@@ -244,7 +245,10 @@ GeometryBuilder.prototype._handleBrepResults = function (resultObj, geometryResu
             var primitive = tessResponse.primitives[key];
             geometryResults.primStatus.appendValid(primitive);
             var primObj = data[key];
-            var stlAscii = window.atob(primObj.content);
+            var stlAscii = primObj.content;
+            if ('${ENVIRONMENT}' === 'BROWSER') {
+                stlAscii = window.atob(stlAscii);
+            }
             var stlData = {
                 primitive:primObj.format,
                 data:stlAscii

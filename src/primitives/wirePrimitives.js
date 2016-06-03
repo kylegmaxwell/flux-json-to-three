@@ -7,12 +7,11 @@
 /*
  * imports
  */
-
-import VectorManager from './vectorManager.js';
-
-import * as constants from './constants.js';
-
-import FluxGeometryError from './geometryError.js';
+import THREE from 'three';
+import VectorManager from '../vectorManager.js';
+import * as constants from '../constants.js';
+import FluxGeometryError from '../geometryError.js';
+import NURBSCurve from '../nurbs/NURBSCurve.js';
 
 /*
  * helpers
@@ -122,7 +121,7 @@ export function curve ( data, material ) {
     var numPoints = Math.max(Math.floor(nurbsControlPoints.length * data.degree * constants.NURBS_CURVE_QUALITY),
         nurbsControlPoints.length-1);
     geometry.vertices = data.degree > 1 ?
-        new THREE.NURBSCurve( data.degree, data.knots, nurbsControlPoints ).getPoints( numPoints ) :
+        new NURBSCurve( data.degree, data.knots, nurbsControlPoints ).getPoints( numPoints ) :
         nurbsControlPoints;
 
     return new THREE.Line( geometry, material );

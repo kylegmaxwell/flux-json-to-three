@@ -7,12 +7,11 @@
 /*
  * imports
  */
-
-import VectorManager from './vectorManager.js';
-
-import * as constants from './constants.js';
-
-import FluxGeometryError from './geometryError.js';
+import THREE from 'three';
+import VectorManager from '../vectorManager.js';
+import * as constants from '../constants.js';
+import FluxGeometryError from '../geometryError.js';
+import NURBSSurface from '../nurbs/NURBSSurface.js';
 
 /*
  * helpers
@@ -358,7 +357,7 @@ export function surface ( data, material ) {
         throw new FluxGeometryError( 'Number of vKnots in a NURBS surface should equal vDegree + N + 1' +
                          ', where N is the number of control points along V direction' );
 
-    var nurbsSurface = new THREE.NURBSSurface( data.vDegree, data.uDegree, data.vKnots, data.uKnots, nsControlPoints );
+    var nurbsSurface = new NURBSSurface( data.vDegree, data.uDegree, data.vKnots, data.uKnots, nsControlPoints );
     var getPointFunction = nurbsSurface.getPoint.bind(nurbsSurface);
 
     // Tessellate the NURBS at the minimum level to get the polygon control hull

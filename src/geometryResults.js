@@ -3,6 +3,7 @@
  */
 'use strict';
 
+import THREE from 'three';
 import * as schemaJson from 'flux-modelingjs/schemas/psworker.json';
 import Ajv from 'ajv/dist/ajv.min.js';
 import * as constants from './constants.js';

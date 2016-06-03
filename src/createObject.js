@@ -7,6 +7,7 @@
 /*
  * Imports
  */
+import THREE from 'three';
 import * as createPrimitive from './createPrimitive.js';
 import * as constants from './constants.js';
 import * as materials from './materials.js';

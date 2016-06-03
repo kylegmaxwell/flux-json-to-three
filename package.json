@@ -1,38 +1,41 @@
 {
   "name": "flux-json-to-three",
-  "version": "0.0.4",
+  "version": "0.1.2",
   "description": "A module that takes parasolid data and produces Three.js objects",
-  "main": "build/index.common.min.js",
+  "main": "build/index.common.js",
   "repository": "git@bitbucket.org:vannevartech/flux-json-to-three.git",
+  "author": "Flux Factory Inc.",
+  "keywords": [
+    "3D"
+  ],
+  "license": "ISC",
   "scripts": {
-    "test": "npm run clean; npm run init; npm run build; npm run run-test --silent",
-    "init": "mkdir build",
-    "run-test": "npm run clean; npm run init; npm run lint && npm run build-test && npm run assemble && tape ./build/test_stubbed.js;",
-    "build-test": "rollup -c rollup-test.config.js -f=cjs > ./build/test.js",
-    "assemble": "cat ./test/threeStub.js > ./build/test_stubbed.js; cat ./build/test.js >> ./build/test_stubbed.js;",
+    "test": "npm run init; npm run lint && npm run tests",
+    "tests": "npm run build-common-fixtures-units && npm run build-common-test && npm run run-test",
+    "init": "mkdir -p build",
+    "run-test": "tape test/test.js",
     "lint": "eslint src/**;",
     "build": "npm run clean; npm run init; npm run build-common; npm run build-amd; npm run build-globals",
-    "build-common": "rollup -c rollup.config.js -f=cjs -o=./build/index.common.js; uglifyjs ./build/index.common.js -c -o ./build/index.common.min.js",
-    "build-amd": "rollup -c rollup.config.js -f=amd -o=./build/index.amd.js; uglifyjs ./build/index.amd.js -c -o ./build/index.amd.min.js",
+    "build-common-fixtures-units": "rollup -i test/fixturesUnits.js -f=cjs -o=./build/fixturesUnits.common.js;",
+    "build-common-test": "rollup -c rollup-test.config.js -f=cjs -o=./build/index-test.common.js;",
+    "build-common": "rollup -c rollup.config.js -f=cjs -o=./build/index.common.js;",
+    "build-amd": "rollup -c rollup.config.js -f=amd -o=./build/index.amd.js;",
     "build-globals": "rollup -c rollup.config.js -f=iife -n=FluxJsonToThree -o=./build/index.global.js",
-    "postinstall": "npm run build",
     "clean": "rm -rf build"
   },
-  "author": "Flux Factory Inc.",
-  "license": "ISC",
   "dependencies": {
     "ajv": "^3.8.10",
     "flux-modelingjs": "0.0.1",
     "json-pointer": "^0.5.0",
-    "rollup": "^0.20.5",
-    "rollup-plugin-commonjs": "^1.4.0",
-    "rollup-plugin-json": "^2.0.0",
-    "rollup-plugin-node-resolve": "^1.5.0",
-    "rollup-plugin-npm": "^1.1.0",
-    "uglify-js": "^2.5.0"
+    "three": "^0.72.0"
   },
   "devDependencies": {
     "eslint": "^1.9.0",
+    "rollup": "^0.26.7",
+    "rollup-plugin-commonjs": "^2.2.1",
+    "rollup-plugin-json": "^2.0.0",
+    "rollup-plugin-node-resolve": "^1.5.0",
+    "rollup-plugin-replace": "^1.1.0",
     "tape": "^4.2.2"
   }
 }

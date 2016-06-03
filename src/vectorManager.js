@@ -8,7 +8,7 @@
 
 'use strict';
 
-
+import THREE from 'three';
 
 /**
  * The VectorManager class. It is an ObjectPool

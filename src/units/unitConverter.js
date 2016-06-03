@@ -4,7 +4,7 @@
 'use strict';
 
 import UnitRegistry from './unitRegistry.js';
-import * as constants from './constants.js';
+import * as constants from '../constants.js';
 // import FluxGeometryError from './geometryError.js';
 import pointer from 'json-pointer';
 

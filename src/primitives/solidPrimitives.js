@@ -7,10 +7,11 @@
 /*
  * imports
  */
-
-import * as constants from './constants.js';
-
-import FluxGeometryError from './geometryError.js';
+import THREE from 'three';
+import * as constants from '../constants.js';
+import FluxGeometryError from '../geometryError.js';
+import OBJLoader from '../loaders/OBJLoader.js';
+import STLLoader from '../loaders/STLLoader.js';
 
 /**
  * Moves a geometry by a vector
@@ -290,7 +291,7 @@ export function mesh (data, material) {
   }
 
 // Singleton loader object
-var objLoader = new THREE.OBJLoader();
+var objLoader = new OBJLoader();
 /**
  * Convert stl data into geometry
  * @param {object} data The stl primitive
@@ -302,7 +303,7 @@ export function obj (data) {
 }
 
 // Singleton loader object
-var stlLoader = new THREE.STLLoader();
+var stlLoader = new STLLoader();
 /**
  * Convert stl data into geometry
  * @param {object} data The stl primitive

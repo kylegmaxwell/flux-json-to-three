@@ -4,8 +4,9 @@
 
 'use strict';
 
-import * as materials from './materials.js';
-import FluxGeometryError from './geometryError.js';
+import * as materials from '../materials.js';
+import FluxGeometryError from '../geometryError.js';
+import TextHelper from '../helpers/TextHelper.js';
 
 /**
  * Placeholder used to determine list of valid entity names
@@ -60,7 +61,7 @@ export function brep ( ) {
  * @param { Object } data     Parasolid data
  */
 export function text ( data ) {
-    var textHelper = new THREE.TextHelper( data.text, {
+    var textHelper = new TextHelper( data.text, {
         size:       materials._getEntityData(data, 'size', undefined),
         resolution: materials._getEntityData(data, 'resolution', undefined),
         align:      materials._getEntityData(data, 'align', undefined)

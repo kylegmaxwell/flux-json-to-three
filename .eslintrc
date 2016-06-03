@@ -19,6 +19,7 @@
             "requireReturn": false
         }],
         dot-notation: 2,
+        no-constant-condition: 0,
         semi: [2, "always"]
     }
 }

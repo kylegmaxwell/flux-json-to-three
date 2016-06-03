@@ -10,6 +10,7 @@
  * @param {String} contentType The content type that should be set
  */
 export default function setHeaders(request, contentType) {
+    if ('${ENVIRONMENT}' !== 'BROWSER') return;
     request.setRequestHeader('Content-Type', contentType);
     request.setRequestHeader('Flux-Request-Marker', '1');
     var token = _parseCookies(document.cookie).flux_token;

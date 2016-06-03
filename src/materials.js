@@ -4,6 +4,7 @@
 
 'use strict';
 
+import THREE from 'three';
 import * as constants from './constants.js';
 
 /**
