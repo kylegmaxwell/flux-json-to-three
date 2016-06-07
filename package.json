@@ -5,7 +5,7 @@
   "main": "build/index.common.min.js",
   "repository": "git@bitbucket.org:vannevartech/flux-json-to-three.git",
   "scripts": {
-    "test": "npm run clean; npm run init; npm run run-test --silent",
+    "test": "npm run clean; npm run init; npm run build; npm run run-test --silent",
     "init": "mkdir build",
     "run-test": "npm run clean; npm run init; npm run lint && npm run build-test && npm run assemble && tape ./build/test_stubbed.js;",
     "build-test": "rollup -c rollup-test.config.js -f=cjs > ./build/test.js",

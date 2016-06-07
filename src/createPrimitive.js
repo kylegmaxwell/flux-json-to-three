@@ -62,8 +62,9 @@ export function listValidPrims ( ) {
     return validPrimsList;
 }
 
-var UP = new THREE.Vector3(0,0,1);
 var RIGHT = new THREE.Vector3(1, 0, 0);
+var IN    = new THREE.Vector3(0, 1, 0);
+var UP    = new THREE.Vector3(0, 0, 1);
 
 /**
  * Get the point size from a given entity
@@ -250,11 +251,15 @@ export function cleanupMesh(mesh, data) {
         var axisVec = UP.clone();
         if ( axis ) {
             axisVec.set(axis[0], axis[1], axis[2]);
+            axisVec.normalize();
         }
 
         var referenceVec = RIGHT.clone();
         if (reference) {
             referenceVec.set(reference[0], reference[1], reference[2]);
+            referenceVec.normalize();
+        } else if (referenceVec.distanceToSquared(axisVec) < constants.TOLERANCE) {
+            referenceVec = IN.clone();
         }
         mesh.up = referenceVec.cross(axisVec);
 
