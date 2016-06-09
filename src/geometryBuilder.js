@@ -249,10 +249,18 @@ GeometryBuilder.prototype._handleBrepResults = function (resultObj, geometryResu
             if ('${ENVIRONMENT}' === 'BROWSER') {
                 stlAscii = window.atob(stlAscii);
             }
+            if ('${ENVIRONMENT}' === 'TEST') {
+                // This implementation only works in node.js
+                stlAscii = new Buffer(stlAscii, 'base64').toString('binary');
+            }
             var stlData = {
                 primitive:primObj.format,
                 data:stlAscii
             };
+            // Preserve attributes if they exist
+            if (primObj.attributes) {
+                stlData.attributes = primObj.attributes;
+            }
             // This function adds the results as children of geometryResults.mesh
             Create.createObject(stlData, geometryResults);
         }

@@ -7,3 +7,4 @@ require('./geometryMaterialTests.js');
 require('./nurbsTests.js');
 require('./schemaTests.js');
 require('./unitsTests.js');
+require('./brepTests.js');

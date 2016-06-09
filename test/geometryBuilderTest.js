@@ -11,33 +11,8 @@ var sphereSurface = require('../data/sphere-surface.json');
 
 var TOLERANCE = 0.000001;
 
-// List of xhr requests made per test
-var requests = [];
-
-// Mock out xhr for brep async tessellation request
-global.XMLHttpRequest = function () {
-    console.log("xhr");
-    this.method='';
-    this.url='';
-    this.requestBody='';
-};
-XMLHttpRequest.prototype.open = function (method, url) {
-    this.method = method;
-    this.url = url;
-};
-XMLHttpRequest.prototype.setRequestHeader = function () {};
-XMLHttpRequest.prototype.send = function (data) {
-    this.requestBody = data;
-    requests.push(this);
-};
-XMLHttpRequest.prototype.respond = function (status, headers, body) {
-    this.status = status;
-    this.readyState = 4;
-    this.responseText = body;
-    this.onreadystatechange();
-};
-
 var builder = new GeometryBuilder('parasolid','ibl');
+
 test('should create a model when value is changed', function (t) {
     // When value is set it should be parsed, and model will be updated
     builder.convert({"origin":[0,0,0],"primitive":"sphere","radius":10}).then(function (result) {
@@ -198,64 +173,6 @@ normalsTests.forEach(function (elem) {
         });
     });
 }); // end for each
-
-test('should make requests for brep', function (t) {
-    requests = [];
-    // When value is set it should be parsed, and model will be updated
-    builder.convert({"content":"some base64 encoded stuff","format":"x_b","primitive":"brep"}).then(function(result) {
-        // Result was of type stl, but the vertices will be empty since it was fake
-        t.equal(result.mesh.children[0].type,'Mesh','Should create mesh');
-        t.end();
-    });
-        // Wait for async convert internals
-    setTimeout(function() {
-        t.equal(requests.length,1,'Should make a request');
-        var fakeXhr = requests[0];
-        t.ok(fakeXhr.url.indexOf('parasolid')!==-1,'Should call parasolid');
-
-        t.ok(fakeXhr.requestBody.indexOf('brep')!==-1,'Should contain brep');
-
-        var headers = "HTTP/1.1 200 OK";
-        var body = '{"Output":{"Results":{"type":"PARASOLID/ResultSet","value":{"result0":{"content":"","format":"stl","primitive":"brep"}}}},"Errors":null}';
-        fakeXhr.respond(200, headers, body);
-    });
-
-});
-
-test('should handle server errors', function (t) {
-    requests = [];
-    // When value is set it should be parsed, and model will be updated
-    builder.convert({"content":"some base64 encoded stuff","format":"x_b","primitive":"brep"}).then(function (result) {
-            t.ok(result.primStatus.invalidKeySummary().indexOf("ERROR")!==-1, 'Should handle an error');
-            t.end();
-        });
-        // Wait for async convert internals
-    setTimeout(function() {
-        t.equal(requests.length,1,'Should have a result');
-        var fakeXhr = requests[0];
-        var headers = "HTTP/1.1 200 OK";
-        var body ='{"Output":{},"Errors":{"7d986a8b64":{"Name":"Block Worker Sent Error Packet.","ElementIds":[],"Message":"ERROR\\n at Inputs/0/Value/Entities/result0\\n","Severity":"critical"}}}';
-        fakeXhr.respond(200, headers, body);
-    });
-});
-
-test('should handle errored servers', function (t) {
-    requests = [];
-    // When value is set it should be parsed, and model will be updated
-    builder.convert({"content":"some base64 encoded stuff","format":"x_b","primitive":"brep"}).then(function (result) {
-        t.ok(Object.keys(result.primStatus.errors).length > 0, 'Should have at least 1 error');
-        t.ok(typeof(result.primStatus.invalidKeySummary())==='string','Summary should be a string');
-        t.ok(result.primStatus.invalidKeySummary().toLowerCase().indexOf('server')!==-1,'Should describe server error');
-        t.end();
-    });
-    // Wait for async convert internals
-    setTimeout(function() {
-        t.equal(requests.length,1,'Should have a result');
-        var fakeXhr = requests[0];
-        var headers = "HTTP/1.1 504 Gateway Timeout";
-        fakeXhr.respond(504, headers,'It should have a server error!');
-    });
-});
 
 test('should make round nurbs spheres', function (t) {
     // When value is set it should be parsed, and model will be updated
