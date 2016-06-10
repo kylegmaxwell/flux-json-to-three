@@ -1,6 +1,6 @@
 {
   "name": "flux-json-to-three",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "A module that takes parasolid data and produces Three.js objects",
   "main": "build/index.common.js",
   "repository": "git@bitbucket.org:vannevartech/flux-json-to-three.git",

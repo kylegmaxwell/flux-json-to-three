@@ -12,6 +12,7 @@ import VectorManager from '../vectorManager.js';
 import * as constants from '../constants.js';
 import FluxGeometryError from '../geometryError.js';
 import NURBSSurface from '../nurbs/NURBSSurface.js';
+import computeNormals from '../primitives/normals.js';
 
 /*
  * helpers
@@ -229,7 +230,7 @@ function _makeShapeGeometry(polygon) {
     var geometry = new THREE.ShapeGeometry( shape );
 
     geometry.computeBoundingSphere();
-    geometry.computeFaceNormals();
+    computeNormals(geometry);
 
     return geometry;
 }
@@ -364,7 +365,7 @@ export function surface ( data, material ) {
     var minSlices = nsControlPoints.length-1;
     var minStacks = nsControlPoints[0].length-1;
     var geometry = new THREE.ParametricGeometry(getPointFunction, minSlices, minStacks);
-    geometry.computeFaceNormals();
+    computeNormals(geometry);
 
     // Determine the appropriate resolution for the surface based on the curvature of the control hull
     var curvature = _calcMaxCurvature(geometry);
@@ -384,7 +385,7 @@ export function surface ( data, material ) {
         // Build the final geometry using the dynamic resolution
         geometry.dispose();
         geometry = new THREE.ParametricGeometry(getPointFunction, slices, stacks);
-        geometry.computeFaceNormals();
+        computeNormals(geometry);
     }
 
     return new THREE.Mesh( geometry, material );

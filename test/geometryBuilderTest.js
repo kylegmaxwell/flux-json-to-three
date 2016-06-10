@@ -6,6 +6,8 @@ var index = require('../build/index-test.common.js');
 var FluxGeometryError = index.FluxGeometryError;
 var GeometryBuilder = index.GeometryBuilder;
 var fixtures = require('./fixtures.js');
+var sphereRound = require('../data/sphere-round.json');
+var sphereSurface = require('../data/sphere-surface.json');
 
 var TOLERANCE = 0.000001;
 
@@ -163,7 +165,7 @@ var normalsTests = [
     "name": "dataFlatSplit",
     "input": {"vertices": [[-1,0,0],[0,1,-0.2],[1,0,0],[0,-1,-0.2],
     [0,1,-0.2], [0,-1,-0.2]],"faces":[[0,5,4],[1,3,2]],"primitive":"mesh"},
-    "faceNormals": true,
+    "faceNormals": false,
     }
 ];
 // Iterate over all the fixtures for normals testing
@@ -182,7 +184,7 @@ normalsTests.forEach(function (elem) {
                     var n3 = new THREE.Vector3(nArr[i+6], nArr[i + 7], nArr[i + 8]);
                     var isFlat = n1.distanceToSquared(n2) + n2.distanceToSquared(n3) < TOLERANCE*2;
                     var flatWord = elem.faceNormals ? '' : 'not';
-                    t.equal(isFlat,elem.faceNormals, 'Should'+flatWord+'have face normals');
+                    t.equal(isFlat,elem.faceNormals, 'Face '+(i/9)+' should '+flatWord+'have face normals');
                 }
             } else {
                 for (var i = 0; i < geom.faces.length; i++) {
@@ -256,47 +258,8 @@ test('should handle errored servers', function (t) {
 });
 
 test('should make round nurbs spheres', function (t) {
-    var sphere = {"controlPoints":[[[-6.123233995736766e-17,0,-1],[-1,0,-0.9999999999999999],
-    [-1,0,0],[-1,0,0.9999999999999999],[-6.123233995736766e-17,0,1]],
-    [[-6.123233995736765e-17,-6.123233995736765e-17,-1],[-0.9999999999999998,
-    -0.9999999999999998,-0.9999999999999999],[-0.9999999999999998,
-    -0.9999999999999998,0],[-0.9999999999999998,-0.9999999999999998,
-    0.9999999999999999],[-6.123233995736765e-17,-6.123233995736765e-17,1]],
-    [[0,-6.123233995736766e-17,-1],[0,-1,-0.9999999999999999],[0,-1,0],
-    [0,-1,0.9999999999999999],[0,-6.123233995736766e-17,1]],
-    [[6.123233995736765e-17,-6.123233995736765e-17,-1],[0.9999999999999998,
-    -0.9999999999999998,-0.9999999999999999],[0.9999999999999998,
-    -0.9999999999999998,0],[0.9999999999999998,-0.9999999999999998,
-    0.9999999999999999],[6.123233995736765e-17,-6.123233995736765e-17,1]],
-    [[6.123233995736766e-17,0,-1],[1,0,-0.9999999999999999],[1,0,0],
-    [1,0,0.9999999999999999],[6.123233995736766e-17,0,1]],
-    [[6.123233995736765e-17,6.123233995736765e-17,-1],[0.9999999999999998,
-    0.9999999999999998,-0.9999999999999999],[0.9999999999999998,0.9999999999999998,
-    0],[0.9999999999999998,0.9999999999999998,0.9999999999999999],
-    [6.123233995736765e-17,6.123233995736765e-17,1]],[[0,6.123233995736766e-17,-1],
-    [0,1,-0.9999999999999999],[0,1,0],[0,1,0.9999999999999999],
-    [0,6.123233995736766e-17,1]],[[-6.123233995736765e-17,6.123233995736765e-17,-1],
-    [-0.9999999999999998,0.9999999999999998,-0.9999999999999999],
-    [-0.9999999999999998,0.9999999999999998,0],[-0.9999999999999998,
-    0.9999999999999998,0.9999999999999999],[-6.123233995736765e-17,
-    6.123233995736765e-17,1]],[[-6.123233995736766e-17,0,-1],[-1,0,
-    -0.9999999999999999],[-1,0,0],[-1,0,0.9999999999999999],
-    [-6.123233995736766e-17,0,1]]],"primitive":"surface","uDegree":2,
-    "uKnots":[-1.5707963267948966,-1.5707963267948966,-1.5707963267948966,
-    0,0,1.5707963267948966, 1.5707963267948966,1.5707963267948966],
-    "vDegree":2,"vKnots":[-3.141592653589793,-3.141592653589793,
-    -3.141592653589793,-1.5707963267948966,-1.5707963267948966,
-    0,0,1.5707963267948966,1.5707963267948966,3.141592653589793,
-    3.141592653589793,3.141592653589793],"weights":[1,0.7071067811865476,1,
-    0.7071067811865476,1,0.7071067811865476,1,0.7071067811865476,1,
-    0.7071067811865475,0.5,0.7071067811865475,0.5,0.7071067811865475,0.5,
-    0.7071067811865475,0.5,0.7071067811865475,1,0.7071067811865476,1,
-    0.7071067811865476,1,0.7071067811865476,1,0.7071067811865476,1,
-    0.7071067811865475,0.5,0.7071067811865475,0.5,0.7071067811865475,0.5,
-    0.7071067811865475,0.5,0.7071067811865475,1,0.7071067811865476,1,
-    0.7071067811865476,1,0.7071067811865476,1,0.7071067811865476,1]};
     // When value is set it should be parsed, and model will be updated
-    builder.convert(sphere).then(function (result) {
+    builder.convert(sphereRound).then(function (result) {
         t.ok(result.mesh, 'sphere made a mesh');
         var geom = result.mesh.children[0].geometry;
         var isRound = true;
@@ -309,6 +272,33 @@ test('should make round nurbs spheres', function (t) {
             }
         }
         t.ok(isRound,'Sphere is round');
+        t.end();
+    }); // end then
+});
+
+// This test renders a sphere which has many disjoint points at the top.
+// It passes when those points are merged together which results in a
+// normal vector that points up due to the average orientation of those faces.
+test('should merge vertices on surfaces', function (t) {
+    // When value is set it should be parsed, and model will be updated
+    builder.convert(sphereSurface).then(function (result) {
+        t.ok(result.mesh, 'sphere made a mesh');
+        var geom = result.mesh.children[0].geometry;
+        var upCount = 0;
+        var nAttr = geom.attributes.normal.array;
+        var up = new THREE.Vector3(0,0,1);
+        // For each point (points always have 3 components)
+        for (var i=0; i<nAttr.length; i+=3) {
+            var n = new THREE.Vector3(nAttr[i],nAttr[i+1],nAttr[i+2]);
+            if (Math.abs(n.distanceTo(up)) < 0.001) {
+                upCount++;
+            }
+        }
+        t.ok(upCount > 10,'Up vector exits on sphere');
+        t.end();
+    }).catch(function (err) {
+        console.log(err);
+        t.fail('Failed to test sphere surface');
         t.end();
     }); // end then
 });
