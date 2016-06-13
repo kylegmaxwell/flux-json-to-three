@@ -78,3 +78,13 @@ StatusMap.prototype.invalidKeySummary = function () {
     },[]);
     return errors.join(', ');
 };
+
+/**
+ * Merge the errors in this map with that of another
+ * @param  {StatusMap} other The other one
+ */
+StatusMap.prototype.merge = function (other) {
+    for (var key in other.errors) {
+        this.errors[key] = other.errors[key];
+    }
+};

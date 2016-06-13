@@ -12,36 +12,32 @@ var sphereSurface = require('../data/sphere-surface.json');
 var TOLERANCE = 0.000001;
 
 var builder = new GeometryBuilder('parasolid','ibl');
+var printError = require('./printError.js').init('geometry builder');
 
 test('should create a model when value is changed', function (t) {
     // When value is set it should be parsed, and model will be updated
     builder.convert({"origin":[0,0,0],"primitive":"sphere","radius":10}).then(function (result) {
-        t.ok(result.mesh, "has a mesh");
-        t.equal(result.mesh.children.length, 1, "has one child");
+        t.ok(result.object, "has a mesh");
+        t.equal(result.object.children.length, 1, "has one child");
         t.end();
-    }).catch(function (err) {
-        //TODO
-        console.log(err.message);
-        console.log(err.stack);
-    });
+    }).catch(printError(t));
 });
-
 
 test('should ignore non geometric types', function (t) {
     builder.convert(3).then(function (result) {
-        t.ok(result.meshIsEmpty(),'mesh should be empty');
+        t.equal(result.object.children.length,0,'mesh should be empty');
         t.end();
-    });
+    }).catch(printError(t));
 });
 
 test('should collapse points into point clouds', function (t) {
     builder.convert([{"point": [0, 0, 0], "primitive": "point"},
         {"point": [0.5, 0.8, 195], "primitive": "point"},
         {"point": [-0.8, 1, 275]}]).then(function (result) {
-        t.ok(result.mesh, 'mesh should exist');
-        t.equal(result.mesh.children.length, 1, 'length should be 1');
+        t.ok(result.object, 'mesh should exist');
+        t.equal(result.object.children.length, 1, 'length should be 1');
         t.end();
-    });
+    }).catch(printError(t));
 });
 
 test('should handle polygons with many sides', function (t) {
@@ -49,10 +45,10 @@ test('should handle polygons with many sides', function (t) {
         [64.87668454306318,111.66932246077474,0],[2.4623122570067366,
         18.985144722492265,0],[0,88.0005815039231,0],[68.86078946581554,
         0,0],[107.43499292508791,57.281972061594935,0]]}]).then(function (result) {
-        t.ok(result.mesh, 'mesh should exist');
-        t.equal(result.mesh.children[0].geometry.attributes.position.array.length, 27, 'should have 9 points');
+        t.ok(result.object, 'mesh should exist');
+        t.equal(result.object.children[0].geometry.attributes.position.array.length, 27, 'should have 9 points');
         t.end();
-    });
+    }).catch(printError(t));
 });
 
 // Iterate over all the primitive types, and test each one
@@ -63,9 +59,9 @@ fixtures.tests.forEach(function (elem) {
         builder.convert(prim).then(function (result) {
             // If an object is expected for the result
             if (elem.result) {
-                t.ok(result.mesh, 'Should create an object');
+                t.ok(result.object, 'Should create an object');
                 // Check that the object has the right type
-                var obj = result.mesh.children[0];
+                var obj = result.object.children[0];
                 t.equal(obj.type, elem.result.type, 'Created object has type '+elem.result.type);
                 if (elem.result.type === 'Mesh') {
                     t.ok(obj.geometry.type.indexOf('Buffer')!==-1, 'Meshes should be buffer geometry');
@@ -75,11 +71,7 @@ fixtures.tests.forEach(function (elem) {
                 t.ok(result.primStatus.invalidKeySummary().indexOf(primType)!==-1, 'Invalid primitive reports correctly');
             }
             t.end();
-        }).catch(function (err) {
-            console.log(err);
-            t.fail(err.text);
-            t.end();
-        });
+        }).catch(printError(t));
 
     });
 
@@ -106,23 +98,23 @@ test('should handle complicated lists', function (t) {
     "primitive":"plane"}]];
     // When value is set it should be parsed, and model will be updated
     builder.convert(data).then(function (result) {
-        t.ok(result.mesh, 'Result exists');
+        t.ok(result.object, 'Result exists');
         t.end();
-    });
+    }).catch(printError(t));
 });
 
 test('should handle lists of curves', function (t) {
     var data = [{"controlPoints":[[0,0,0],[20,0,0],[20,20,0],[0,20,0]],"degree":3,"knots":[0,0,0,1,2,3,3,3],"primitive":"curve"}];
     // When value is set it should be parsed, and model will be updated
     builder.convert(data).then(function(result) {
-        t.ok(result.mesh, 'mesh exists');
-        if (result.mesh.children[0].geometry.type.indexOf('BufferGeometry') !== -1) {
-            t.ok(result.mesh.children[0].geometry.attributes.position.length !== 0, 'Should have positions');
+        t.ok(result.object, 'Object exists');
+        if (result.object.children[0].geometry.type.indexOf('BufferGeometry') !== -1) {
+            t.ok(result.object.children[0].geometry.attributes.position.length !== 0, 'Should have positions');
         } else {
-            t.ok(result.mesh.children[0].geometry.vertices.length !== 0, 'Should have vertices');
+            t.ok(result.object.children[0].geometry.vertices.length !== 0, 'Should have vertices');
         }
         t.end();
-    });
+    }).catch(printError(t));
 });
 
 var normalsTests = [
@@ -148,8 +140,8 @@ normalsTests.forEach(function (elem) {
     var word = elem.faceNormals?'':'not';
     test('Should '+word+' use face normals for '+elem.name, function (t) {
         builder.convert(elem.input).then(function(result) {
-            t.ok(result.mesh, 'mesh exists');
-            var geom = result.mesh.children[0].geometry;
+            t.ok(result.object, 'Object exists');
+            var geom = result.object.children[0].geometry;
             if (geom.type.indexOf('BufferGeometry') !== -1) {
                 var nArr = geom.attributes.normal.array;
                 // We assume all faces are triangles with 3 normal vectors with 3 components
@@ -167,18 +159,15 @@ normalsTests.forEach(function (elem) {
                 }
             }
             t.end();
-        }).catch(function (err) {
-            console.log("ERROR");
-            console.log(err);
-        });
+        }).catch(printError(t));
     });
 }); // end for each
 
 test('should make round nurbs spheres', function (t) {
     // When value is set it should be parsed, and model will be updated
     builder.convert(sphereRound).then(function (result) {
-        t.ok(result.mesh, 'sphere made a mesh');
-        var geom = result.mesh.children[0].geometry;
+        t.ok(result.object, 'sphere made a mesh');
+        var geom = result.object.children[0].geometry;
         var isRound = true;
         var pAttr = geom.attributes.position.array;
         // For each point (points always have 3 components)
@@ -190,7 +179,7 @@ test('should make round nurbs spheres', function (t) {
         }
         t.ok(isRound,'Sphere is round');
         t.end();
-    }); // end then
+    }).catch(printError(t));
 });
 
 // This test renders a sphere which has many disjoint points at the top.
@@ -199,8 +188,8 @@ test('should make round nurbs spheres', function (t) {
 test('should merge vertices on surfaces', function (t) {
     // When value is set it should be parsed, and model will be updated
     builder.convert(sphereSurface).then(function (result) {
-        t.ok(result.mesh, 'sphere made a mesh');
-        var geom = result.mesh.children[0].geometry;
+        t.ok(result.object, 'sphere made a mesh');
+        var geom = result.object.children[0].geometry;
         var upCount = 0;
         var nAttr = geom.attributes.normal.array;
         var up = new THREE.Vector3(0,0,1);
@@ -213,11 +202,7 @@ test('should merge vertices on surfaces', function (t) {
         }
         t.ok(upCount > 10,'Up vector exits on sphere');
         t.end();
-    }).catch(function (err) {
-        console.log(err);
-        t.fail('Failed to test sphere surface');
-        t.end();
-    }); // end then
+    }).catch(printError(t));
 });
 
 test('should merge multi colored objects', function (t) {
@@ -227,9 +212,9 @@ test('should merge multi colored objects', function (t) {
         [0,1,0],[1,0,0],[0,-1,0]],"faces":[[0,3,1],[1,3,2]],"primitive":"mesh"}];
     // When value is set it should be parsed, and model will be updated
     builder.convert(coloredPanels).then(function (result) {
-        t.ok(result.mesh,'Create a mesh');
-        t.equal(result.mesh.children.length,1,'One child');
-        var color = result.mesh.children[0].geometry.attributes.color.array;
+        t.ok(result.object,'Create a mesh');
+        t.equal(result.object.children.length,1,'One child');
+        var color = result.object.children[0].geometry.attributes.color.array;
         t.ok(color,'Color exists');
 
         // Check for red
@@ -243,7 +228,7 @@ test('should merge multi colored objects', function (t) {
         t.equal(color[color.length-1],1,'Last color component b');
 
         t.end();
-    }); // end then
+    }).catch(printError(t));
 });
 
 test('should merge non consecutive objects', function (t) {
@@ -254,10 +239,10 @@ test('should merge non consecutive objects', function (t) {
         [0,1,0],[1,0,0],[0,-1,0]],"faces":[[0,3,1],[1,3,2]],"primitive":"mesh"} ];
     // When value is set it should be parsed, and model will be updated
     builder.convert(coloredPanels).then(function (result) {
-        t.ok(result.mesh,'Mesh exists');
-        t.equal(result.mesh.children.length,2,'has two children');
+        t.ok(result.object,'Object exists');
+        t.equal(result.object.children.length,2,'has two children');
         t.end();
-    }); // end then
+    }).catch(printError(t));
 });
 
 test('should support torus parms', function (t) {
@@ -265,7 +250,7 @@ test('should support torus parms', function (t) {
         "primitive":"torus"};
     // When value is set it should be parsed, and model will be updated
     builder.convert(torus).then(function (result) {
-        var pos = result.mesh.children[0].geometry.attributes.position.array;
+        var pos = result.object.children[0].geometry.attributes.position.array;
         var maxX = 0;
         for (var i=0;i<pos.length;i+=3) {
             if (pos[i] > maxX) {
@@ -274,7 +259,7 @@ test('should support torus parms', function (t) {
         }
         t.equal(maxX,8,'Torus max x is 8');
         t.end();
-    }); // end then
+    }).catch(printError(t));
 });
 
 test('should merge transformed geometry', function (t) {
@@ -283,8 +268,8 @@ test('should merge transformed geometry', function (t) {
 
     // When value is set it should be parsed, and model will be updated
     builder.convert(boxes).then(function (result) {
-        t.equal(result.mesh.children.length,1,'Has one child');
-        var pos = result.mesh.children[0].geometry.attributes.position.array;
+        t.equal(result.object.children.length,1,'Has one child');
+        var pos = result.object.children[0].geometry.attributes.position.array;
         var minX = pos[0];
         var maxX = pos[0];
         for (var i=3;i<pos.length;i+=3) {
@@ -299,7 +284,7 @@ test('should merge transformed geometry', function (t) {
         t.equal(minX,-0.5,'minX');
         t.equal(maxX,0.5,'maxX');
         t.end();
-    }); // end then
+    }).catch(printError(t));
 });
 
 test('schema allow extra attributes', function (t) {
@@ -310,7 +295,7 @@ test('schema allow extra attributes', function (t) {
     builder.convert(line).then(function (result) {
         t.ok(result.primStatus.invalidKeySummary().indexOf("additional properties")===-1,'Not contain additional properties');
         t.end();
-    }); // end then
+    }).catch(printError(t));
 });
 
 test('schema should allow anything inside attributes', function (t) {
@@ -321,7 +306,7 @@ test('schema should allow anything inside attributes', function (t) {
     // When value is set it should be parsed, and model will be updated
     builder.convert(line).then(function (result) {
         t.equal(result.primStatus.invalidKeySummary(),'','No invalid keys');
-        t.equal(result.mesh.children.length,1,'One child');
+        t.equal(result.object.children.length,1,'One child');
         t.end();
-    }); // end then
+    }).catch(printError(t));
 });

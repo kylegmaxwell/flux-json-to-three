@@ -6,7 +6,7 @@ var index = require('../build/index-test.common.js');
 var GeometryResults = index.GeometryResults;
 
 test( 'Schema for geometry', function ( t ) {
-    var root = new GeometryResults();
+    var results = new GeometryResults();
     var data = {
         "x":5,
         "units":{
@@ -17,13 +17,13 @@ test( 'Schema for geometry', function ( t ) {
         "degree":3,
         "knots":[0,0,0,1,2,3,3,3],"primitive":"curve"
     };
-    var matchesSchema = root.checkSchema(data);
+    var matchesSchema = index.checkSchema(data, results.primStatus);
     t.ok(matchesSchema, "Should match schema");
     t.end();
 });
 
 test( 'Invalid schema for polycurve', function ( t ) {
-    var root = new GeometryResults();
+    var results = new GeometryResults();
     var data = {"x":5,
         "attributes":{"materialProperties":{"color":[0.25,1,0.639],"size":4}},
         "curves":[
@@ -34,8 +34,8 @@ test( 'Invalid schema for polycurve', function ( t ) {
             "primitive":"arc"}],
         "primitive":"polycurve"
     };
-    var matchesSchema = root.checkSchema(data);
+    var matchesSchema = index.checkSchema(data, results.primStatus);
     t.ok(!matchesSchema, "Should not match schema");
-    t.ok(root.primStatus.invalidKeySummary().indexOf('units') !== -1, "Should contain message about units");
+    t.ok(results.primStatus.invalidKeySummary().indexOf('units') !== -1, "Should contain message about units");
     t.end();
 });

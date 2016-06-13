@@ -13,6 +13,7 @@ import * as constants from './constants.js';
 import * as materials from './materials.js';
 import GeometryResults from './geometryResults.js';
 import StatusMap from './statusMap.js';
+import checkSchema from './schemaValidator.js';
 
 /**
  * Helper function to run a callback on each entity in the nested array
@@ -72,13 +73,11 @@ export function hasRoughness(entities) {
  * @param { Object } geomResult Object containing properties for categorizing primitives
  */
 export function createObject ( data, geomResult ) {
-
     if (!geomResult || geomResult.constructor !== GeometryResults) {
         throw new Error('Second argument must have class GeometryResults');
     }
 
     if (data && Object.keys(data).length > 0) {
-        geomResult.clear();
         _flattenData(data, geomResult);
         _createObject(geomResult);
     }
@@ -147,14 +146,14 @@ function _handlePoints(geomResult) {
 
     var validPoints = true;
     for (var i=0;i<prims.length; i++) {
-        if (!geomResult.checkSchema(prims[i])) {
+        if (!checkSchema(prims[i], geomResult.primStatus)) {
             validPoints = false;
         }
     }
     if (validPoints) {
         var mesh = createPrimitive.createPoints(prims);
         geomResult.primStatus.appendValid('point');
-        geomResult.mesh.add(mesh);
+        geomResult.object.add(mesh);
     }
 
 }
@@ -216,7 +215,7 @@ function _handlePrimitives( prims, geomResult ) {
         _maybeMergeModels(primMeshes[i], geomResult);
     }
 
-    if (geomResult.mesh) _upgradeChildrenToBuffer(geomResult.mesh);
+    if (geomResult.object) _upgradeChildrenToBuffer(geomResult.object);
 }
 
 /**
@@ -256,14 +255,14 @@ function _tryCreatePrimitive(data, geomResult) {
  * @param { Object }       geomResult The object being built
  */
 function _maybeMergeModels ( mesh, geomResult ) {
-    if ( !geomResult.mesh ) geomResult.mesh = new THREE.Object3D();
+    if ( !geomResult.object ) geomResult.object = new THREE.Object3D();
 
     if (!mesh) return;
     mesh.updateMatrixWorld(true);
     var merged = false;
     if (_objectCanMerge(mesh)) {
 
-        var children = geomResult.mesh.children;
+        var children = geomResult.object.children;
         var index = children.length-1;
         var baseMesh = children[index];
 
@@ -282,7 +281,7 @@ function _maybeMergeModels ( mesh, geomResult ) {
     if (merged) {
         mesh.geometry.dispose();
     } else {
-        geomResult.mesh.add(mesh);
+        geomResult.object.add(mesh);
     }
 }
 /**

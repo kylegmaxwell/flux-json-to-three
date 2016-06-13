@@ -32,6 +32,19 @@ export var NURBS_FLAT_LIMIT = degreesFlatLimit/180.0;
 // These entities are not official Flux Entities, but can be rendered
 export var NON_STANDARD_ENTITIES = 'stl obj text';
 
+// These are primitives that are recognized as geometry, but get special
+// treatment and do not have their own specific handler function in src/primitives
+export var KNOWN_PRIMITIVES = ['point', 'polycurve', 'polysurface', 'brep', 'scene'];
+
+// Enumeration of strings used as primitive types in scenes
+export var SCENE_PRIMITIVES = {
+    scene: 'scene',
+    layer: 'layer',
+    assembly: 'assembly',
+    instance: 'instance',
+    geometry: 'alphaGeometryContainer'
+};
+
 // For a face compare the angle between it's normals and those of
 // it's neighbors. If all the angles are smaller than the limit,
 // the face will be rendered smooth.

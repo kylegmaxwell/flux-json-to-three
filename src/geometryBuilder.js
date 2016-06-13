@@ -4,10 +4,10 @@ import THREE from 'three';
 import * as Create from './createObject.js';
 import GeometryResults from './geometryResults.js';
 import * as compatibility from './compatibility.js';
+import * as print from './debugConsole.js';
 
 import modelingFunc from 'flux-modelingjs/modeling.js';
 var modeling = modelingFunc({'skip':true});
-
 
 /**
 * Stand in for the finished status on an xhr
@@ -73,11 +73,6 @@ export default function GeometryBuilder(tessUrl, iblUrl, token) {
     this._imagesUrl = iblUrl;
     this._fluxToken = token;
 
-    // Flag to track whether a request is in the works
-    // This causes subsequent requests to this object to be ignored
-    // TODO(Kyle): This will no longer be necessary once we get rid of polymer and/or each request isn't set twice
-    this.running = false;
-
     // quality   - tesselation quality, ranges 0-4; the bigger, the better
     this.tessellateQuality = 2.0;
 }
@@ -85,17 +80,11 @@ export default function GeometryBuilder(tessUrl, iblUrl, token) {
 /**
 * Create a new model for the given entities.
 *
-* @precondition: !this.running
-* Note: The results of this function are stored as member variables,
-* so you must check running before calling convert repeatedly
-* on the same instance or race conditions can occur.
-*
 * @param {Object} entities The parameters objects
 * @return {Promise} A promise object that sets the model when it completes
 */
 GeometryBuilder.prototype.convert = function(entities) {
     var _this = this;
-    this.running = true;
     var hasRoughness = Create.hasRoughness(entities);
     if (hasRoughness && !imagesLoadingPromise && this._imagesUrl) {
         imagesLoadingPromise = loadImages(this._imagesUrl);
@@ -115,7 +104,6 @@ GeometryBuilder.prototype.convertHelper = function(entities) {
     geometryResults.cubeArray = iblCubeArray;
 
     if (entities == null || typeof entities != 'object') {
-        this.running = false;
         return Promise.resolve(geometryResults);
     }
 
@@ -123,16 +111,14 @@ GeometryBuilder.prototype.convertHelper = function(entities) {
     this._parasolidCreateObject(entities, geometryResults);
 
     // async - tessellate breps on the server
-    var _this = this;
     return Promise.resolve(this._handleAsyncGeom(geometryResults).then(function (results) { // resolve
         return results;
     }).catch(function (results) { // reject
         if (results instanceof Error) {
-            console.warn(results.stack); // eslint-disable-line no-console
+            print.warn(results.stack);
         }
         return geometryResults;
     })).then(function (results) { // resolve
-        _this.running = false;
         return results;
     });
 };
@@ -165,7 +151,6 @@ GeometryBuilder.prototype._parasolidCreateObject = function(data, geometryResult
 GeometryBuilder.prototype._handleInvalidPrims = function(data, err, geometryResults) {
     var errorMessage = 'Unknown error';
     if (err.name !== 'FluxGeometryError') {
-        this.running = false;
         // An unknown error occurred
         throw err;
     } else {
@@ -218,17 +203,17 @@ GeometryBuilder.prototype._handleAsyncGeom = function(geometryResults) {
             _this._tessellateValues(geometryResults).then(function (tessResponse) { // resolve
                 var resultObj = JSON.parse(tessResponse.result);
                 var errors = resultObj.Errors;
-                _this._handleBrepErrors(errors, geometryResults, tessResponse);
-                _this._handleBrepResults(resultObj, geometryResults, tessResponse);
+                _handleBrepErrors(errors, geometryResults, tessResponse);
+                _handleBrepResults(resultObj, geometryResults, tessResponse);
                 resolve(geometryResults);
             }).catch(function (response) { // reject
                 if (response instanceof Error) {
-                    console.warn(response.stack); // eslint-disable-line no-console
+                    print.warn(response.stack);
                     geometryResults.primStatus.appendError('brep', response.message);
                     reject(geometryResults);
                 } else {
                     if (response.readyState >= READY_STATE_FINISHED) {
-                        geometryResults.primStatus.appendError('brep', _this._interpretServerErrorCode(response.status, response.responseText));
+                        geometryResults.primStatus.appendError('brep', _interpretServerErrorCode(response.status, response.responseText));
                     } else {
                         geometryResults.primStatus.appendError('brep', 'Duplicate request was aborted.');
                     }
@@ -238,6 +223,11 @@ GeometryBuilder.prototype._handleAsyncGeom = function(geometryResults) {
         } else {
             resolve(geometryResults);
         }
+    }).catch(function(err) {
+        if (err.constructor===Error) {
+            print.warn(err);
+        }
+        return err;
     });
 };
 
@@ -247,16 +237,16 @@ GeometryBuilder.prototype._handleAsyncGeom = function(geometryResults) {
  * @param  {GeometryResults} geometryResults   Results container
  * @param  {Object} tessResponse    Server response
  */
-GeometryBuilder.prototype._handleBrepErrors = function (errors, geometryResults, tessResponse) {
+function _handleBrepErrors(errors, geometryResults, tessResponse) {
     // There were invalid breps or other server errors
     if (errors && Object.keys(errors).length > 0) {
         var fullErrorMessage = errors[Object.keys(errors)[0]].Message;
         // Set the server error as the invalid prim message
         geometryResults.primStatus.appendError(
-            tessResponse.primitives[this._findErroredPrim(fullErrorMessage)],
-            this._interpretServerError(fullErrorMessage));
+            tessResponse.primitives[_findErroredPrim(fullErrorMessage)],
+            _interpretServerError(fullErrorMessage));
     }
-};
+}
 
 /**
  * Take meshes as data objects from Parasolid and convert them to renderable geometry
@@ -264,7 +254,7 @@ GeometryBuilder.prototype._handleBrepErrors = function (errors, geometryResults,
  * @param  {GeometryResults} geometryResults   Results container
  * @param  {Object} tessResponse    Server response
  */
-GeometryBuilder.prototype._handleBrepResults = function (resultObj, geometryResults, tessResponse) {
+function _handleBrepResults(resultObj, geometryResults, tessResponse) {
     // There were valid breps that tessellated
     if (resultObj.Output.Results) {
         var data = resultObj.Output.Results.value;
@@ -282,11 +272,11 @@ GeometryBuilder.prototype._handleBrepResults = function (resultObj, geometryResu
             if (primObj.attributes) {
                 stlData.attributes = primObj.attributes;
             }
-            // This function adds the results as children of geometryResults.mesh
+            // This function adds the results as children of geometryResults.object
             Create.createObject(stlData, geometryResults);
         }
     }
-};
+}
 
 /**
  * Asynchronously request a tessellated model from the back end service.
@@ -331,12 +321,12 @@ GeometryBuilder.prototype._tessellateValues = function (geometryResults) {
 /**
  * Construct a scene object to format the request for brep tessellation
  * @param  {GeometryResults} geometryResults Results container
- * @param  {Array} values List of primitives to tessellate
+ * @param  {Array}  values List of primitives to tessellate
  * @param  {Object} primitives Keep track of the primitive names in the values array.
  *                             This is a map so that in the case of a server error the primitives
  *                             can be looked up based on server message which contains their
  *                             resultId string, which is a unique identifier
- * @return {String} Text describing the operations formatted for the query to be sent to parasolid
+ * @return {Object}     JSON object with parameters describing the operations to be sent to parasolid
  */
 GeometryBuilder.prototype._constructScene = function (geometryResults, values, primitives) {
     var scene = modeling.query();
@@ -351,9 +341,6 @@ GeometryBuilder.prototype._constructScene = function (geometryResults, values, p
         scene.add(resultId, tessOp);
         primitives[resultId] = value.primitive;
     }
-    if (Object.keys(primitives).length === 0) {
-        return Promise.resolve(geometryResults);
-    }
     return {'Scene':scene.toJSON()};
 };
 
@@ -364,7 +351,7 @@ GeometryBuilder.prototype._constructScene = function (geometryResults, values, p
  * @param    {String} text The full error text
  * @return {String}            The improved error message
  */
-GeometryBuilder.prototype._interpretServerError = function (text) {
+function _interpretServerError (text) {
     var errorMessage = text.slice(0, text.indexOf('\n'));
     // Add a more clear explanation for this specific error
     if (errorMessage === 'PK_ERROR_wrong_transf') {
@@ -378,7 +365,7 @@ GeometryBuilder.prototype._interpretServerError = function (text) {
                 'this resolved.';
     }
     return 'Server error: '+errorMessage;
-};
+}
 
 /**
  * Workaround for finding the prim associated with the error.
@@ -387,10 +374,10 @@ GeometryBuilder.prototype._interpretServerError = function (text) {
  * @param    {String} text The full error text
  * @return {String}            The primitive name
  */
-GeometryBuilder.prototype._findErroredPrim = function (text) {
+function _findErroredPrim(text) {
     var match = text.match(/\/result.*\n/);
     return match ? match[0].slice(1, match[0].length-1) : '';
-};
+}
 
 /**
  * Create a user error message based on status codes
@@ -398,10 +385,20 @@ GeometryBuilder.prototype._findErroredPrim = function (text) {
  * @param    {String} text The full error text
  * @return {String}            The error message
  */
-GeometryBuilder.prototype._interpretServerErrorCode = function (status, text) {
+function _interpretServerErrorCode(status, text) {
     if (status === 504) {
         return "Server error: Your request exceeded the maximum time limit for execution.";
     }
-    console.warn("Server error in tessellation. Status:",status,":",text); // eslint-disable-line no-console
+    print.warn("Server error in tessellation. Status:",status,":",text);
     return "Server error: The brep tessellation service is unavailable.";
+}
+
+/**
+ * Set the url of the tessellation service.
+ * This is required for rendering of breps.
+ * @param {String} newUrl The url of the tessellation server
+ */
+GeometryBuilder.prototype.setTessUrl = function(newUrl) {
+    this._parasolidUrl = newUrl;
 };
+

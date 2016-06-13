@@ -28,6 +28,8 @@ function floatEquals(a, b, tol) {
     return Math.abs(a-b) < tol;
 }
 
+var printError = require('./printError.js').init('nurbs test');
+
 // Module for converting parameter objects to geometry
 var builder = new GeometryBuilder();
 
@@ -35,8 +37,8 @@ var builder = new GeometryBuilder();
 tests.forEach(function (elem) {
     test('Should render \''+elem.name+'\' without artifacts', function (t) {
         builder.convert(elem.entity).then(function (result) {
-            t.ok(result.mesh,'Mesh exists');
-            var geom = result.mesh.children[0].geometry;
+            t.ok(result.object,'Object exists');
+            var geom = result.object.children[0].geometry;
             var verts = geom.vertices;
             var pArr = geom.type === 'BufferGeometry' ? geom.attributes.position.array : null;
             var center = new THREE.Vector3(0,0,0);
@@ -85,7 +87,7 @@ tests.forEach(function (elem) {
             t.ok(floatEquals(maxRadius, elem.maxRadius, TEST_TOLERANCE),'Max radius in tolerance');
 
             t.end();
-        });
+        }).catch(printError(t));
     }); // end it
 }); // end for each
 
@@ -127,19 +129,19 @@ test('should appropriately triangulate nurbs', function (t) {
     var faceCount = 0;
     var faceCountPrev = 0;
     builder.convert(panels[0]).then(function(result) {
-        t.ok(result.mesh,'Mesh exists');
-        faceCount = result.mesh.children[0].geometry.attributes.position.array.length/triangleComponents;
+        t.ok(result.object,'Object exists');
+        faceCount = result.object.children[0].geometry.attributes.position.array.length/triangleComponents;
         t.ok(faceCount,2,'Two faces');
         faceCountPrev = faceCount;
         builder.convert(panels[1]).then(function (result) {
-            faceCount = result.mesh.children[0].geometry.attributes.position.array.length/triangleComponents;
+            faceCount = result.object.children[0].geometry.attributes.position.array.length/triangleComponents;
             t.ok(faceCount >= faceCountPrev, 'Has more faces');
             faceCountPrev = faceCount;
             builder.convert(panels[2]).then(function (result) {
-                faceCount = result.mesh.children[0].geometry.attributes.position.array.length/triangleComponents;
+                faceCount = result.object.children[0].geometry.attributes.position.array.length/triangleComponents;
                 t.ok(faceCount >= faceCountPrev,'Has more more faces');
                 t.end();
             });
         });
-    });
+    }).catch(printError(t));
 }); // end it

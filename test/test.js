@@ -8,3 +8,4 @@ require('./nurbsTests.js');
 require('./schemaTests.js');
 require('./unitsTests.js');
 require('./brepTests.js');
+require('./sceneTests.js');

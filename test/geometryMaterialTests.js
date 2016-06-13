@@ -6,14 +6,16 @@ var GeometryBuilder = require('../build/index-test.common.js').GeometryBuilder;
 
 var builder = new GeometryBuilder();
 
+var printError = require('./printError.js').init('geometry material');
+
 test('should not share attributes between material types', function (t) {
     var lineAndPhong= [{"origin":[0,0,0],"primitive":"circle","radius":10},
         {"vertices": [[-1,0,0],[0,1,0],[1,0,0],[0,-1,0]],"faces":[[0,3,1],[1,3,2]],"primitive":"mesh"} ];
     // When value is set it should be parsed, and model will be updated
     builder.convert(lineAndPhong).then(function (result) {
-        t.ok(result.mesh,'Mesh exists');
-        t.equal(result.mesh.children.length,2,'Two children');
-        var children = result.mesh.children;
+        t.ok(result.object,'Object exists');
+        t.equal(result.object.children.length,2,'Two children');
+        var children = result.object.children;
         // ordering is not guaranteed
         // Default line color is blue
         // Default mesh color is white
@@ -37,7 +39,7 @@ test('should not share attributes between material types', function (t) {
         t.notEqual(vertColor0[2],vertColor1[2],'Color not same b');
 
         t.end();
-    }); // end then
+    }).catch(printError(t));
 });
 
 test('should not merge objects with different opacity', function (t) {
@@ -47,14 +49,14 @@ test('should not merge objects with different opacity', function (t) {
         [0,1,0],[1,0,0],[0,-1,0]],"faces":[[0,3,1],[1,3,2]],"primitive":"mesh"} ];
     // When value is set it should be parsed, and model will be updated
     builder.convert(twoPanels).then(function (result) {
-        t.ok(result.mesh,'Mesh exists');
-        t.equal(result.mesh.children.length,2,'Two children');
-        var children = result.mesh.children;
+        t.ok(result.object,'Object exists');
+        t.equal(result.object.children.length,2,'Two children');
+        var children = result.object.children;
         // ordering is not guaranteed
         // Thus we just check if opacity is not the same, since 0.5 !== 1
         t.notEqual(children[0].material.opacity,children[1].material.opacity,'Different opacity');
         t.end();
-    }); // end then
+    }).catch(printError(t));
 });
 
 test('should set reflectivity when roughness is set', function (t) {
@@ -63,30 +65,30 @@ test('should set reflectivity when roughness is set', function (t) {
         "vertices":[[-1,0,0],[0,1,2],[1,0,0],[0,-1,2]]};
     // When value is set it should be parsed, and model will be updated
     builder.convert(reflectivePanels).then(function (result) {
-        t.ok(result.mesh,'Mesh exists');
-        var mesh = result.mesh.children[0];
+        t.ok(result.object,'Object exists');
+        var mesh = result.object.children[0];
         t.notEqual(mesh.material.reflectivity,0,'Material nonzero reflectivity');
         t.end();
-    }); // end then
+    }).catch(printError(t));
 });
 
 test('should pass through line properties', function (t) {
     var line = {"attributes":{"materialProperties":{"linewidth":5}},"end":[2,2,2],"primitive":"line","start":[1,1,1]};
     // When value is set it should be parsed, and model will be updated
     builder.convert(line).then(function (result) {
-        t.ok(result.mesh,'Mesh exists');
-        var mesh = result.mesh.children[0];
+        t.ok(result.object,'Object exists');
+        var mesh = result.object.children[0];
         t.equal(mesh.material.linewidth,5,'Linewidth 5');
         t.end();
-    }); // end then
+    }).catch(printError(t));
 });
 
 test('should pass through point color', function (t) {
     var point = {"attributes":{"materialProperties":{"color":[0.25,1,0.639],"size":4}},"point":[0,0,8.35],"primitive":"point"};
     // When value is set it should be parsed, and model will be updated
     builder.convert(point).then(function (result) {
-        t.ok(result.mesh,'Mesh exists');
-        var mesh = result.mesh.children[0].children[0];
+        t.ok(result.object,'Object exists');
+        var mesh = result.object.children[0].children[0];
         // Material is white
         t.equal(mesh.material.color.r,1,'Red is 1');
         // Point color is not white
@@ -96,7 +98,7 @@ test('should pass through point color', function (t) {
         console.log(err);
         t.fail("Error caught");
         t.end();
-    }); // end then
+    }).catch(printError(t));
 });
 
 test('should color lines', function (t) {
@@ -107,7 +109,7 @@ test('should color lines', function (t) {
         {"start":[1,0,0],"middle":[0,1,0],"end":[-1,0,0],"primitive":"arc"}],"primitive":"polycurve"};
     // When value is set it should be parsed, and model will be updated
     builder.convert(line).then(function (result) {
-        var meshes = result.mesh.children[0].children;
+        var meshes = result.object.children[0].children;
         for (var i=0;i<meshes.length;i++) {
             var mesh = meshes[i];
             // Material is white
@@ -123,7 +125,7 @@ test('should color lines', function (t) {
         // geometry the attribute needs to be populated from the colors array.
         // I'm not sure, but it seems that the renderer does this automatically.
         t.end();
-    }); // end then
+    }).catch(printError(t));
 });
 
 test('should not modify text material', function (t) {
@@ -132,15 +134,11 @@ test('should not modify text material', function (t) {
         "primitive":"text","size":8,"text":"Text!"};
     // When value is set it should be parsed, and model will be updated
     builder.convert(text).then(function (result) {
-        var material = result.mesh.children[0].material;
+        var material = result.object.children[0].material;
         t.equal(material.color.r,1,'Red value');
         t.equal(material.color.g,0,'Green value');
         t.end();
-    }).catch(function (err) {
-        console.log(err);
-        t.fail('Error thrown');
-        t.end();
-    });
+    }).catch(printError(t));
 });
 
 test('should allow color on object itself (legacy)', function (t) {
@@ -148,14 +146,10 @@ test('should allow color on object itself (legacy)', function (t) {
         "primitive":"text","size":8,"color":"black","text":"Text!"};
     // When value is set it should be parsed, and model will be updated
     builder.convert(text).then(function (result) {
-        var material = result.mesh.children[0].material;
+        var material = result.object.children[0].material;
         t.equal(material.color.r,0,'Red value');
         t.end();
-    }).catch(function (err) {
-        console.log(err);
-        t.fail('Error thrown');
-        t.end();
-    });
+    }).catch(printError(t));
 });
 
 test('should allow color as an array', function (t) {
@@ -164,12 +158,8 @@ test('should allow color as an array', function (t) {
         "primitive":"text","size":8,"text":"Text!"};
     // When value is set it should be parsed, and model will be updated
     builder.convert(text).then(function (result) {
-        var material = result.mesh.children[0].material;
+        var material = result.object.children[0].material;
         t.equal(material.color.r,0.25,'Red value');
         t.end();
-    }).catch(function (err) {
-        console.log(err);
-        t.fail('Error thrown');
-        t.end();
-    });
+    }).catch(printError(t));
 });

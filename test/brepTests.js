@@ -6,6 +6,8 @@ var GeometryBuilder = require('../build/index-test.common.js').GeometryBuilder;
 
 var builder = new GeometryBuilder('parasolid','ibl','token');
 
+var printError = require('./printError.js').init('brep');
+
 // List of xhr requests made per test
 var requests = [];
 
@@ -43,9 +45,9 @@ test('should make requests for brep', function (t) {
     // When value is set it should be parsed, and model will be updated
     builder.convert({"content":"some base64 encoded stuff","format":"x_b","primitive":"brep"}).then(function(result) {
         // Result was of type stl, but the vertices will be empty since it was fake
-        t.equal(result.mesh.children[0].type,'Mesh','Should create mesh');
+        t.equal(result.object.children[0].type,'Mesh','Should create mesh');
         t.end();
-    });
+    }).catch(printError(t));
         // Wait for async convert internals
     setTimeout(function() {
         t.equal(requests.length,1,'Should make a request');
@@ -64,7 +66,7 @@ test('should handle server errors', function (t) {
     builder.convert({"content":"some base64 encoded stuff","format":"x_b","primitive":"brep"}).then(function (result) {
             t.ok(result.primStatus.invalidKeySummary().indexOf("ERROR")!==-1, 'Should handle an error');
             t.end();
-        });
+        }).catch(printError(t));
         // Wait for async convert internals
     setTimeout(function() {
         t.equal(requests.length,1,'Should have a result');
@@ -82,7 +84,7 @@ test('should handle errored servers', function (t) {
         t.ok(typeof(result.primStatus.invalidKeySummary())==='string','Summary should be a string');
         t.ok(result.primStatus.invalidKeySummary().toLowerCase().indexOf('server')!==-1,'Should describe server error');
         t.end();
-    });
+    }).catch(printError(t));
     // Wait for async convert internals
     setTimeout(function() {
         t.equal(requests.length,1,'Should have a result');
@@ -102,13 +104,13 @@ test('render breps with materials', function (t) {
     requests = [];
     // When value is set it should be parsed, and model will be updated
     builder.convert(stlQuery).then(function(result) {
-        var mesh = result.mesh.children[0];
+        var mesh = result.object.children[0];
         t.equal(mesh.type,'Mesh','Should create mesh');
         t.equal(mesh.geometry.attributes.position.array.length,9,'Should have 3 points');
         var c = mesh.geometry.attributes.color.array;
         t.deepEqual([c[0],c[1],c[2]],[1,0,0],'Should have red color');
         t.end();
-    });
+    }).catch(printError(t));
         // Wait for async convert internals
     setTimeout(function() {
         t.equal(requests.length,1,'Should make a request');

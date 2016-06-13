@@ -1,0 +1,57 @@
+{
+    "primitive": "scene",
+    "version":"0.0.1",
+    "elements":[
+        {
+            "id":"ball",
+            "origin":[0,0,10],
+            "radius":10,
+            "primitive":"sphere"
+        },
+        {
+            "id": "bush1",
+            "primitive": "instance",
+            "entity": "ball",
+            "matrix": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -20, 0, 0, 1]
+        },
+        {
+            "id": "bush2",
+            "primitive": "instance",
+            "entity": "ball",
+            "matrix": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+        },
+        {
+            "id": "bush3",
+            "primitive": "instance",
+            "entity": "ball",
+            "matrix": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 20, 0, 0, 1]
+        },
+        {
+            "id":"ground",
+            "origin": [0,0,0],
+            "dimensions": [80,80],
+            "materialProperties": {"color": "#AA5522"},
+            "primitive": "rectangle"
+        },
+        {
+            "id":"building",
+            "origin":[-50,50,40],
+            "dimensions":[40,40,80],
+            "axis":[0,0,1],
+            "reference":[0,1,0],
+            "primitive":"block"
+        },
+        {
+            "id": "plants",
+            "primitive": "layer",
+            "color": "green",
+            "elements": ["bush1", "bush2", "bush3"]
+        },
+        {
+            "id": "concrete",
+            "primitive": "layer",
+            "color": "pink",
+            "elements": ["building", "ground"]
+        }
+    ]
+}

@@ -9,7 +9,7 @@ var fixturesUnits = require('../build/fixturesUnits.common.js');
 
 
 test( 'Units translation', function ( t ) {
-    var root = new GeometryResults();
+    var results = new GeometryResults();
     Object.keys(fixturesUnits).forEach(function (key) {
         var entity = fixturesUnits[key].start;
         entity = JSON.parse(JSON.stringify(entity));
@@ -17,7 +17,7 @@ test( 'Units translation', function ( t ) {
         var hasException = false;
         try {
             var entityNormalized = index.normalizeUnits(entity);
-            var matchesSchema = root.checkSchema(entityNormalized);
+            var matchesSchema = index.checkSchema(entityNormalized, results.primStatus);
             t.ok(matchesSchema, "Should match schema");
             t.deepEqual(entityNormalized, fixturesUnits[key].end, 'Convert '+key+' to meters.');
         } catch (err) {

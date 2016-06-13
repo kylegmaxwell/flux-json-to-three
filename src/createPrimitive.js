@@ -13,6 +13,7 @@ import * as constants from './constants.js';
 import * as materials from './materials.js';
 import FluxGeometryError from './geometryError.js';
 import normalizeUnits from './units/unitConverter.js';
+import checkSchema from './schemaValidator.js';
 
 /**
  * Determine the material type that would be used for a given primitive
@@ -25,19 +26,19 @@ export function resolveType (primitive) {
     var materialType = constants.MATERIAL_TYPES.PHONG;
     if (primitive === 'point') {
         materialType = constants.MATERIAL_TYPES.POINT;
-    }
-
-    if (!primFunction) {
-        primFunction = wirePrimitives[ primitive ];
-        materialType = constants.MATERIAL_TYPES.LINE;
-    }
-    if (!primFunction) {
-        primFunction = sheetPrimitives[ primitive ];
-        materialType = constants.MATERIAL_TYPES.PHONG;
-    }
-    if (!primFunction) {
-        primFunction = solidPrimitives[ primitive ];
-        materialType = constants.MATERIAL_TYPES.PHONG;
+    } else {
+        if (!primFunction) {
+            primFunction = wirePrimitives[ primitive ];
+            materialType = constants.MATERIAL_TYPES.LINE;
+        }
+        if (!primFunction) {
+            primFunction = sheetPrimitives[ primitive ];
+            materialType = constants.MATERIAL_TYPES.PHONG;
+        }
+        if (!primFunction) {
+            primFunction = solidPrimitives[ primitive ];
+            materialType = constants.MATERIAL_TYPES.PHONG;
+        }
     }
 
     return { func: primFunction, material: materialType};
@@ -56,7 +57,8 @@ var validPrimsList = null;
 export function listValidPrims ( ) {
     if (validPrimsList) return validPrimsList;
 
-    validPrimsList = Object.keys(primitiveHelpers).concat(
+    validPrimsList =    constants.KNOWN_PRIMITIVES.concat(
+                        Object.keys(primitiveHelpers),
                         Object.keys(solidPrimitives),
                         Object.keys(sheetPrimitives),
                         Object.keys(wirePrimitives));
@@ -151,8 +153,8 @@ export function createPrimitive ( data, geomResult ) {
     var dataNormalized = normalizeUnits(data);
 
     // Check that the entity matches a schema, otherwise return no geometry
-    if (!geomResult.checkSchema(data)) {
-        return;
+    if (!checkSchema(data, geomResult.primStatus)) {
+        return; // Errors are already added to geomResult
     }
 
     var materialProperties = _findMaterialProperties( dataNormalized );

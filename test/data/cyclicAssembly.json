@@ -1,0 +1,30 @@
+{
+    "primitive": "scene",
+    "version":"0.0.1",
+    "elements":[
+        {
+            "id": "bush1",
+            "primitive": "assembly",
+            "children": ["bush2"],
+            "matrix": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -20, 0, 0, 1]
+        },
+        {
+            "id": "bush2",
+            "primitive": "assembly",
+            "children": ["bush3"],
+            "matrix": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+        },
+        {
+            "id": "bush3",
+            "primitive": "assembly",
+            "children": ["bush1"],
+            "matrix": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 20, 0, 0, 1]
+        },
+        {
+            "id": "plants",
+            "primitive": "layer",
+            "color": "green",
+            "elements": ["bush1"]
+        }
+    ]
+}
