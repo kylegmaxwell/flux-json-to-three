@@ -349,3 +349,16 @@ export var nonLengthUnits = {
     },
     "succeed":true
 };
+
+export var nullUnits = {
+    "start": {
+        "units":null,
+        "vertices": [[-1,0,0],[0,1,2],[1,0,0],[0,-1,2]],
+        "faces":[[0,3,1],[1,3,2]], "primitive":"mesh"
+    },
+    "end": {
+        "vertices": [[-1,0,0],[0,1,2],[1,0,0],[0,-1,2]],
+        "faces":[[0,3,1],[1,3,2]], "primitive":"mesh"
+    },
+    "succeed":true
+};

@@ -16,9 +16,9 @@ test( 'Units translation', function ( t ) {
         var succeedStr = fixturesUnits[key].succeed ? 'pass' : 'fail';
         var hasException = false;
         try {
-            var matchesSchema = root.checkSchema(entity);
-            t.ok(matchesSchema, "Should match schema");
             var entityNormalized = index.normalizeUnits(entity);
+            var matchesSchema = root.checkSchema(entityNormalized);
+            t.ok(matchesSchema, "Should match schema");
             t.deepEqual(entityNormalized, fixturesUnits[key].end, 'Convert '+key+' to meters.');
         } catch (err) {
             hasException = true;

@@ -16,6 +16,12 @@ var registry = UnitRegistry.newStandardRegistry();
  * @returns {Object} A copy of the entity with standardized units.
  */
 export default function convertUnits (entity) {
+
+    // Get rid of invalid units property commonly sent by plugins
+    if (entity.units === null) {
+        entity.units = undefined;
+    }
+
     // Create a clone so that we can modify the properties in place
     var entityClone = JSON.parse(JSON.stringify(entity));
     if (!entityClone.units) {

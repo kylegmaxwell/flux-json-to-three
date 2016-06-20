@@ -147,12 +147,13 @@ export function createPoints (prims) {
 export function createPrimitive ( data, geomResult ) {
     var type = resolveType(data.primitive);
 
+    // Get a new clone of the data with different units for rendering
+    var dataNormalized = normalizeUnits(data);
+
     // Check that the entity matches a schema, otherwise return no geometry
     if (!geomResult.checkSchema(data)) {
         return;
     }
-    // Get a new clone of the data with different units for rendering
-    var dataNormalized = normalizeUnits(data);
 
     var materialProperties = _findMaterialProperties( dataNormalized );
     var material = _createMaterial( type.material, materialProperties, geomResult.cubeArray );
