@@ -4,33 +4,39 @@ var test = require('tape');
 var THREE = require('three/three.js');
 var GeometryBuilder = require('../build/index-test.common.js').GeometryBuilder;
 
-var builder = new GeometryBuilder('parasolid','ibl');
+var builder = new GeometryBuilder('parasolid','ibl','token');
 
 // List of xhr requests made per test
 var requests = [];
 
 // Mock out xhr for brep async tessellation request
-global.XMLHttpRequest = function () {
-    this.method='';
-    this.url='';
-    this.requestBody='';
-};
-XMLHttpRequest.prototype.open = function (method, url) {
-    this.method = method;
+global.fluxFetchStub = function (url, opts) {
+    return new Promise(function (resolve, reject) {
+        opts.resolve = resolve;
+        opts.reject = reject;
+        requests.push(new FetchStub(url, opts));
+    });
+}
+
+function FetchStub(url, opts) {
+    this.method = opts.method;
     this.url = url;
-};
-XMLHttpRequest.prototype.setRequestHeader = function () {};
-XMLHttpRequest.prototype.send = function (data) {
-    this.requestBody = data;
-    requests.push(this);
-};
-XMLHttpRequest.prototype.respond = function (status, headers, body) {
-    this.status = status;
-    this.readyState = 4;
-    this.responseText = body;
-    this.onreadystatechange();
+    this.requestBody = opts.body;
+    this.resolve = opts.resolve;
+    this.reject = opts.reject;
+    this.status = 102;
 };
 
+FetchStub.prototype.respond = function (status, responseBody) {
+    this.status = status;
+    if (this.status === 200) {
+        this.body = Promise.resolve(responseBody);
+        this.resolve(this);
+    } else {
+        this.body = Promise.resolve(responseBody);
+        this.resolve(this);
+    }
+};
 
 test('should make requests for brep', function (t) {
     requests = [];
@@ -45,12 +51,10 @@ test('should make requests for brep', function (t) {
         t.equal(requests.length,1,'Should make a request');
         var fakeXhr = requests[0];
         t.ok(fakeXhr.url.indexOf('parasolid')!==-1,'Should call parasolid');
+        t.ok(JSON.stringify(fakeXhr.requestBody).indexOf('brep')!==-1,'Should contain brep');
 
-        t.ok(fakeXhr.requestBody.indexOf('brep')!==-1,'Should contain brep');
-
-        var headers = "HTTP/1.1 200 OK";
         var body = '{"Output":{"Results":{"type":"PARASOLID/ResultSet","value":{"result0":{"content":"","format":"stl","primitive":"brep"}}}},"Errors":null}';
-        fakeXhr.respond(200, headers, body);
+        fakeXhr.respond(200, body);
     });
 });
 
@@ -65,9 +69,8 @@ test('should handle server errors', function (t) {
     setTimeout(function() {
         t.equal(requests.length,1,'Should have a result');
         var fakeXhr = requests[0];
-        var headers = "HTTP/1.1 200 OK";
         var body ='{"Output":{},"Errors":{"7d986a8b64":{"Name":"Block Worker Sent Error Packet.","ElementIds":[],"Message":"ERROR\\n at Inputs/0/Value/Entities/result0\\n","Severity":"critical"}}}';
-        fakeXhr.respond(200, headers, body);
+        fakeXhr.respond(200, body);
     });
 });
 
@@ -84,8 +87,7 @@ test('should handle errored servers', function (t) {
     setTimeout(function() {
         t.equal(requests.length,1,'Should have a result');
         var fakeXhr = requests[0];
-        var headers = "HTTP/1.1 504 Gateway Timeout";
-        fakeXhr.respond(504, headers,'It should have a server error!');
+        fakeXhr.respond(504,'It should have a server error!');
     });
 });
 
@@ -113,10 +115,9 @@ test('render breps with materials', function (t) {
         var fakeXhr = requests[0];
         t.ok(fakeXhr.url.indexOf('parasolid')!==-1,'Should call parasolid');
 
-        t.ok(fakeXhr.requestBody.indexOf('brep')!==-1,'Should contain brep');
+        t.ok(JSON.stringify(fakeXhr.requestBody).indexOf('brep')!==-1,'Should contain brep');
 
-        var headers = "HTTP/1.1 200 OK";
         var body = JSON.stringify(stlResponse);
-        fakeXhr.respond(200, headers, body);
+        fakeXhr.respond(200, body);
     });
 });

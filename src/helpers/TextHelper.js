@@ -8,6 +8,7 @@
  */
 'use strict';
 import THREE from 'three';
+import * as compatibility from '../compatibility.js';
 
 export default function TextHelper ( label, options ) {
 
@@ -17,11 +18,9 @@ export default function TextHelper ( label, options ) {
     options.color = options.color || 'white';
     options.align = options.align || 'center';
 
-    var canvas;
+    var canvas = compatibility.createCanvas();
     var aspect = 1;
-    if ('${ENVIRONMENT}' === 'BROWSER') {
-        canvas = document.createElement( 'canvas' );
-
+    if (canvas) {
         var ctx = canvas.getContext( '2d' );
         ctx.font = options.resolution + 'px sans-serif';
 
