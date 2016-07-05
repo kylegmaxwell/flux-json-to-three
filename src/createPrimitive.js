@@ -12,7 +12,7 @@ import * as primitiveHelpers from './primitives/primitives.js';
 import * as constants from './constants.js';
 import * as materials from './materials.js';
 import FluxGeometryError from './geometryError.js';
-import normalizeUnits from './units/unitConverter.js';
+import convertUnits from './units/unitConverter.js';
 import checkSchema from './schemaValidator.js';
 
 /**
@@ -96,7 +96,7 @@ export function createPoints (prims) {
     var positions = new Float32Array(prims.length*3);
     var colors = new Float32Array(prims.length*3);
     for (var i=0;i<prims.length;i++) {
-        var prim = normalizeUnits(prims[i]);
+        var prim = convertUnits(prims[i]);
         positions[i*3] = prim.point[0];
         positions[i*3+1] = prim.point[1];
         positions[i*3+2] = prim.point[2]||0;
@@ -150,7 +150,7 @@ export function createPrimitive ( data, geomResult ) {
     var type = resolveType(data.primitive);
 
     // Get a new clone of the data with different units for rendering
-    var dataNormalized = normalizeUnits(data);
+    var dataNormalized = convertUnits(data);
 
     // Check that the entity matches a schema, otherwise return no geometry
     if (!checkSchema(data, geomResult.primStatus)) {

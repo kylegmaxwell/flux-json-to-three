@@ -11,6 +11,7 @@ import GeometryBuilder from './geometryBuilder.js';
 import SceneValidator from 'flux-modelingjs/SceneValidator.js';
 import * as constants from './constants.js';
 import setObjectColor from './sceneEdit.js';
+import cleanElement from './entityPrep.js';
 
 /**
  * Class to convert a Flux JSON scene to a three.js object hierarchy
@@ -30,7 +31,12 @@ export default function SceneBuilder(tessUrl, iblUrl, token) {
  */
 SceneBuilder.prototype.convert = function(data) {
     var sceneBuilderData = new SceneBuilderData();
-    var scene = _findTheScene(data, sceneBuilderData);
+    // Make sure data is JSON for an element of some sort
+    if (!data || !(data.constructor === Array || data.primitive)) {
+        return Promise.resolve(sceneBuilderData.getResults());
+    }
+    var dataClean = cleanElement(data);
+    var scene = _findTheScene(dataClean, sceneBuilderData);
     var builderPromise;
     if (scene) {
         var sceneValidator = new SceneValidator();
@@ -41,7 +47,7 @@ SceneBuilder.prototype.convert = function(data) {
         }
         builderPromise = this._convertScene(scene.elements, sceneBuilderData);
     } else {
-        builderPromise = this._createEntity(data);
+        builderPromise = this._createEntity(dataClean);
     }
 
     return builderPromise.then(function(newBuilderData) {

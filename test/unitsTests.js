@@ -11,14 +11,15 @@ var fixturesUnits = require('../build/fixturesUnits.common.js');
 test( 'Units translation', function ( t ) {
     var results = new GeometryResults();
     Object.keys(fixturesUnits).forEach(function (key) {
-        var entity = fixturesUnits[key].start;
+        console.log('Fixture: '+key);
+        var entity = index.cleanElement(fixturesUnits[key].start);
         entity = JSON.parse(JSON.stringify(entity));
         var succeedStr = fixturesUnits[key].succeed ? 'pass' : 'fail';
         var hasException = false;
         try {
             var entityNormalized = index.normalizeUnits(entity);
             var matchesSchema = index.checkSchema(entityNormalized, results.primStatus);
-            t.ok(matchesSchema, "Should match schema");
+            t.ok(matchesSchema, "Should match schema " + results.primStatus.invalidKeySummary());
             t.deepEqual(entityNormalized, fixturesUnits[key].end, 'Convert '+key+' to meters.');
         } catch (err) {
             hasException = true;
