@@ -1,7 +1,7 @@
 'use strict';
 
 var test = require('tape');
-var THREE = require('three/three.js');
+var THREE = require('three');
 var index = require('../build/index-test.common.js');
 var GeometryResults = index.GeometryResults;
 

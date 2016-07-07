@@ -1,7 +1,7 @@
 'use strict';
 
 var test = require('tape');
-var THREE = require('three/three.js');
+var THREE = require('three');
 var GeometryBuilder = require('../build/index-test.common.js').GeometryBuilder;
 
 var builder = new GeometryBuilder('parasolid','ibl','token');

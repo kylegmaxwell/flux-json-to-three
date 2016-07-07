@@ -34,7 +34,6 @@ var iblCubeArray = [
 // Loads pre-filtered textures
 function loadImages(path) {
     return new Promise(function (resolve) {
-        THREE.ImageUtils.crossOrigin = true;
         var loadedImageCount = 0;
         for (var i = 0; i <= 8; i++) {
             var iblCubeUrls = [
@@ -45,7 +44,9 @@ function loadImages(path) {
                 path + '_m0' + i + '_c04.png',
                 path + '_m0' + i + '_c05.png'
             ];
-            iblCubeArray[i] = THREE.ImageUtils.loadTextureCube(iblCubeUrls, undefined, function() {
+            var loader = new THREE.CubeTextureLoader();
+            loader.setCrossOrigin(true);
+            iblCubeArray[i] = loader.load(iblCubeUrls, function() {
                 loadedImageCount++;
                 if (loadedImageCount === 9) {
                     resolve();
