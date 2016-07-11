@@ -1,6 +1,6 @@
 'use strict';
 
-import * as materials from './materials.js';
+import * as materials from './utils/materials.js';
 
 /**
  * Replace the color of an object and it's children with the given color

@@ -12,7 +12,7 @@ import * as constants from '../constants.js';
 import FluxGeometryError from '../geometryError.js';
 import OBJLoader from '../loaders/OBJLoader.js';
 import STLLoader from '../loaders/STLLoader.js';
-import computeNormals from './normals.js';
+import computeNormals from '../utils/normals.js';
 
 /**
  * Moves a geometry by a vector
@@ -87,7 +87,7 @@ export function cone ( data, material ) {
     var geometry, mesh;
     var semiAngle = getSemiAngle(data);
     var topRadius = data.height * Math.tan(semiAngle);
-    geometry = new THREE.CylinderGeometry( topRadius+data.radius, data.radius, data.height, constants.CIRCLE_RES );
+    geometry = new THREE.CylinderBufferGeometry( topRadius+data.radius, data.radius, data.height, constants.CIRCLE_RES );
     mesh = new THREE.Mesh( geometry, material );
     moveGeometry( mesh, new THREE.Vector3( 0, data.height * 0.5, 0 ) );
     rotateGeometry( mesh, constants.DEFAULT_ROTATION );
@@ -108,7 +108,7 @@ export function cone ( data, material ) {
 export function cylinder ( data, material ) {
     var geometry, mesh;
 
-    geometry = new THREE.CylinderGeometry( data.radius, data.radius, data.height, constants.CIRCLE_RES );
+    geometry = new THREE.CylinderBufferGeometry( data.radius, data.radius, data.height, constants.CIRCLE_RES );
     mesh = new THREE.Mesh( geometry, material );
     moveGeometry( mesh, new THREE.Vector3( 0, data.height * 0.5, 0 ) );
     rotateGeometry( mesh, constants.DEFAULT_ROTATION );
@@ -136,9 +136,9 @@ export function sphere ( data, material ) {
     }
 
     geometry = new THREE.SphereBufferGeometry( data.radius, 12, 8 );
+    geometry = computeNormals(geometry);
     mesh = new THREE.Mesh( geometry, material );
     rotateGeometry( mesh, constants.DEFAULT_ROTATION );
-
     return mesh;
 }
 
@@ -155,7 +155,7 @@ export function sphere ( data, material ) {
 export function torus ( data, material ) {
     var majorRadius = data.majorRadius || data.major_radius;
     var minorRadius = data.minorRadius || data.minor_radius;
-    var geometry = new THREE.TorusGeometry( majorRadius, minorRadius, 24, 24 );
+    var geometry = new THREE.TorusBufferGeometry( majorRadius, minorRadius, 24, 24 );
     return new THREE.Mesh( geometry, material );
 }
 
@@ -170,7 +170,7 @@ export function torus ( data, material ) {
  * @param { THREE.Material } material The material to give the THREE.Mesh
  */
 export function block ( data, material ) {
-    var geometry = new THREE.BoxGeometry( data.dimensions[ 0 ], data.dimensions[ 1 ], data.dimensions[ 2 ] );
+    var geometry = new THREE.BoxBufferGeometry( data.dimensions[ 0 ], data.dimensions[ 1 ], data.dimensions[ 2 ] );
     return new THREE.Mesh( geometry, material );
 }
 
@@ -190,32 +190,37 @@ export function block ( data, material ) {
 
  */
 export function mesh (data, material) {
-    var geometry = new THREE.Geometry(),
-        face;
-
+    var positions = [];
     for ( var i = 0, len = data.vertices.length ; i < len ; i++ ) {
-        geometry.vertices.push(new THREE.Vector3(
-            data.vertices[i][0],
-            data.vertices[i][1],
-            data.vertices[i][2])
-        );
+        positions.push(data.vertices[i][0]);
+        positions.push(data.vertices[i][1]);
+        positions.push(data.vertices[i][2]);
     }
 
+    var face;
+    var triangles = [];
     for ( i = 0, len = data.faces.length ; i < len ; i++ ) {
         face = data.faces[ i ];
         if ( face.length === 3 ) {
-            geometry.faces.push(new THREE.Face3(face[0], face[1], face[2]));
+            triangles.push(face[0]);
+            triangles.push(face[1]);
+            triangles.push(face[2]);
         } else if ( face.length > 3 ) {
             for ( var j=0; j+2<face.length; j++) {
-                geometry.faces.push(new THREE.Face3(face[0], face[j+1], face[j+2]));
+                triangles.push(face[0]);
+                triangles.push(face[j+1]);
+                triangles.push(face[j+2]);
             }
         }
 
     }
 
-    geometry.computeBoundingSphere();
-    computeNormals(geometry);
+    var geometry = new THREE.BufferGeometry();
+    geometry.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array(positions), 3 ) );
+    geometry.setIndex( new THREE.BufferAttribute( new Uint32Array( triangles ), 1 ) );
 
+    geometry.computeBoundingSphere();
+    geometry = computeNormals(geometry);
     return new THREE.Mesh( geometry, material );
   }
 
@@ -244,8 +249,9 @@ export function stl (data, material) {
 
     geometry.computeBoundingSphere();
     computeNormals(geometry);
-
-    return new THREE.Mesh( geometry, material );
+    var bufferGeometry = new THREE.BufferGeometry().fromGeometry(geometry);
+    geometry.dispose();
+    return new THREE.Mesh( bufferGeometry, material );
 }
 
 /**

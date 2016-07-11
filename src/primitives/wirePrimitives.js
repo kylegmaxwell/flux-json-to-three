@@ -51,16 +51,16 @@ export function line ( data, material ) {
  */
 export function polyline ( data, material ) {
 
-    var geometry = new THREE.Geometry(),
-        point;
-
+    var point;
+    var pos = [];
     for ( var i = 0, len = data.points.length ; i < len ; i++ ) {
         point = data.points[ i ];
-        geometry.vertices.push(
-            new THREE.Vector3( point[ 0 ], point[ 1 ], point[ 2 ] )
-        );
+        pos.push(point[0]);
+        pos.push(point[1]);
+        pos.push(point[2]);
     }
-
+    var geometry = new THREE.BufferGeometry();
+    geometry.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array(pos), 3 ) );
     return new THREE.Line( geometry, material );
 }
 
@@ -111,8 +111,7 @@ export function curve ( data, material ) {
     if ( !data.knots || !data.controlPoints )
         throw new FluxGeometryError( 'Curve is missing knots or control points.');
 
-    var nurbsControlPoints = _createControlPoints( data ),
-        geometry = new THREE.Geometry();
+    var nurbsControlPoints = _createControlPoints( data );
 
     if ( data.knots.length !== nurbsControlPoints.length + data.degree + 1 )
         throw new FluxGeometryError( 'Number of uKnots in a NURBS curve should equal degree + N + 1, where N is the number ' +
@@ -120,13 +119,31 @@ export function curve ( data, material ) {
 
     var numPoints = Math.max(Math.floor(nurbsControlPoints.length * data.degree * constants.NURBS_CURVE_QUALITY),
         nurbsControlPoints.length-1);
-    geometry.vertices = data.degree > 1 ?
+    var vertices = data.degree > 1 ?
         new NURBSCurve( data.degree, data.knots, nurbsControlPoints ).getPoints( numPoints ) :
         nurbsControlPoints;
-
+    var geometry = _bufferFromVertices(vertices);
     return new THREE.Line( geometry, material );
+
 }
 
+/**
+ * Create a buffer geometry for a line from just it's vertices
+ * @param  {Array.<THREE.Vector3>} vertices The list of points
+ * @return {THREE.BufferGeometry}          Geometry containing the points
+ */
+function _bufferFromVertices(vertices) {
+    var pos = [];
+    for (var i=0;i<vertices.length;i++) {
+        var v = vertices[i];
+        pos.push(v.x);
+        pos.push(v.y);
+        pos.push(v.z);
+    }
+    var geometry = new THREE.BufferGeometry();
+    geometry.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array(pos), 3 ) );
+    return geometry;
+}
 /**
  * Helper to create a set of control points from parasolid data
  *
@@ -402,7 +419,9 @@ export function ellipse ( data, material ) {
 
     var path = new THREE.Path( curve.getPoints( constants.CIRCLE_RES ) );
     var geometry = path.createPointsGeometry( constants.CIRCLE_RES );
-    return new THREE.Line( geometry, material );
+    var bufferGeometry = _bufferFromVertices(geometry.vertices);
+    geometry.dispose();
+    return new THREE.Line( bufferGeometry, material );
 }
 
 /**

@@ -4,7 +4,7 @@
 
 'use strict';
 
-import * as materials from '../materials.js';
+import * as materials from '../utils/materials.js';
 import TextHelper from '../helpers/TextHelper.js';
 
 /**

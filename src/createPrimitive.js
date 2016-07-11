@@ -8,61 +8,87 @@ import THREE from 'three';
 import * as wirePrimitives from './primitives/wirePrimitives.js';
 import * as sheetPrimitives from './primitives/sheetPrimitives.js';
 import * as solidPrimitives from './primitives/solidPrimitives.js';
-import * as primitiveHelpers from './primitives/primitives.js';
+import * as otherPrimitives from './primitives/primitives.js';
 import * as constants from './constants.js';
-import * as materials from './materials.js';
+import * as materials from './utils/materials.js';
 import FluxGeometryError from './geometryError.js';
 import convertUnits from './units/unitConverter.js';
 import checkSchema from './schemaValidator.js';
 
+// Map from primitive name to material type
+var _primToMaterial = null;
+
+// Map from primitive name to creation function
+var _primToFunc = null;
+
+/**
+ * Create mappings from primitives to related data and cache for easy reuse
+ */
+function _makePrimMaps() {
+    if (_primToMaterial) return;
+    _primToMaterial = {
+        point: constants.MATERIAL_TYPES.POINT
+    };
+    _primToFunc = {};
+    var key;
+    for (key in wirePrimitives) {
+        _primToMaterial[key] = constants.MATERIAL_TYPES.LINE;
+        _primToFunc[key] = wirePrimitives[key];
+    }
+    for (key in sheetPrimitives) {
+        _primToMaterial[key] = constants.MATERIAL_TYPES.PHONG;
+        _primToFunc[key] = sheetPrimitives[key];
+    }
+    for (key in solidPrimitives) {
+        _primToMaterial[key] = constants.MATERIAL_TYPES.PHONG;
+        _primToFunc[key] = solidPrimitives[key];
+    }
+    for (key in otherPrimitives) {
+        _primToMaterial[key] = constants.MATERIAL_TYPES.PHONG;
+        _primToFunc[key] = otherPrimitives[key];
+    }
+}
+
+/**
+ * Determine what function can be used to construct this primitive
+ * @param  {String}     primitive   The name of the entity type
+ * @return {Function}               Construction function
+ */
+function _resolvePrimFunc (primitive) {
+    _makePrimMaps();
+    return _primToFunc[primitive];
+}
+
 /**
  * Determine the material type that would be used for a given primitive
  * @param {String} primitive The name of the entity type
- * @returns {{func: *, material: number}} A function to convert a prim to geomtry and a material type
+ * @returns {constants.MATERIAL_TYPES} A function to convert a prim to geomtry and a material type
  */
-export function resolveType (primitive) {
-
-    var primFunction = primitiveHelpers[ primitive ];
-    var materialType = constants.MATERIAL_TYPES.PHONG;
-    if (primitive === 'point') {
-        materialType = constants.MATERIAL_TYPES.POINT;
-    } else {
-        if (!primFunction) {
-            primFunction = wirePrimitives[ primitive ];
-            materialType = constants.MATERIAL_TYPES.LINE;
-        }
-        if (!primFunction) {
-            primFunction = sheetPrimitives[ primitive ];
-            materialType = constants.MATERIAL_TYPES.PHONG;
-        }
-        if (!primFunction) {
-            primFunction = solidPrimitives[ primitive ];
-            materialType = constants.MATERIAL_TYPES.PHONG;
-        }
-    }
-
-    return { func: primFunction, material: materialType};
+export function resolveMaterialType (primitive) {
+    _makePrimMaps();
+    return _primToMaterial[primitive];
 }
+
 /**
  * Cache to prevent repetitive munging of arrays.
  * Stores all the acceptable primitive types for geometry.
  * @type {Array.<String>}
  */
-var validPrimsList = null;
+var _validPrimsList = null;
 
 /**
  * Return a list of all the valid primitive strings
  * @return {Array.<String>} The list of primitives
  */
 export function listValidPrims ( ) {
-    if (validPrimsList) return validPrimsList;
+    if (_validPrimsList) return _validPrimsList;
 
-    validPrimsList =    constants.KNOWN_PRIMITIVES.concat(
-                        Object.keys(primitiveHelpers),
+    _validPrimsList =    constants.KNOWN_PRIMITIVES.concat(
+                        Object.keys(otherPrimitives),
                         Object.keys(solidPrimitives),
                         Object.keys(sheetPrimitives),
                         Object.keys(wirePrimitives));
-    return validPrimsList;
+    return _validPrimsList;
 }
 
 var RIGHT = new THREE.Vector3(1, 0, 0);
@@ -88,11 +114,31 @@ function _getPointSize(prims) {
 }
 
 /**
- * Create the point cloud mesh for all the input primitives
- * @param {Object} prims List of point primitive objects
- * @returns {THREE.Points} An Object3D containing points
+ * Check points against their schema
+ * @param  {Array.<Object>}     prims       List of points
+ * @param  {GeometryResults}    geomResult  The error message container
+ * @return {Boolean}                        True when all are valid
  */
-export function createPoints (prims) {
+function _validatePoints(prims, geomResult) {
+    var validPoints = true;
+    for (var i=0;i<prims.length; i++) {
+        if (!checkSchema(prims[i], geomResult.primStatus)) {
+            validPoints = false;
+        }
+    }
+    return validPoints;
+}
+
+/**
+ * Create the point cloud mesh for all the input primitives
+ * @param {Object}          prims       List of point primitive objects
+ * @param {GeometryResults} geomResult  Results object for errors and geometry
+ */
+export function createPoints (prims, geomResult) {
+    if (!_validatePoints(prims, geomResult)) {
+        return;
+    }
+
     var positions = new Float32Array(prims.length*3);
     var colors = new Float32Array(prims.length*3);
     for (var i=0;i<prims.length;i++) {
@@ -133,7 +179,8 @@ export function createPoints (prims) {
     obj.add(mesh);
     obj.add(mesh2);
 
-    return obj;
+    geomResult.primStatus.appendValid('point');
+    geomResult.object.add(obj);
 }
 
 /**
@@ -147,7 +194,7 @@ export function createPoints (prims) {
  * @param { GeometryResults } geomResult The container for the geometry and caches
  */
 export function createPrimitive ( data, geomResult ) {
-    var type = resolveType(data.primitive);
+    var materialType = resolveMaterialType(data.primitive);
 
     // Get a new clone of the data with different units for rendering
     var dataNormalized = convertUnits(data);
@@ -158,17 +205,14 @@ export function createPrimitive ( data, geomResult ) {
     }
 
     var materialProperties = _findMaterialProperties( dataNormalized );
-    var material = _createMaterial( type.material, materialProperties, geomResult.cubeArray );
+    var material = _createMaterial( materialType, materialProperties, geomResult.cubeArray );
 
-    var primFunction = type.func;
+    var primFunction = _resolvePrimFunc(data.primitive);
     if (!primFunction) return;
 
     var mesh = primFunction( dataNormalized, material );
 
     if ( mesh ) {
-        if (mesh.geometry) {
-            geomResult._geometryMaterialMap[mesh.geometry.id] = material.name;
-        }
         return cleanupMesh(mesh, dataNormalized, materialProperties);
     }
 
@@ -183,7 +227,7 @@ export function createPrimitive ( data, geomResult ) {
  * Then the meshes can share a single material with per vertex color.
  *
  * @precondition The color object on the material should not be shared with other materials.
- * @param {THREE.Geometry} mesh The mesh containing geometry and material to manipulate
+ * @param {THREE.Geometry|THREE.BufferGeometry} mesh The mesh containing geometry and material to manipulate
  * @private
  */
 function _moveMaterialColorToGeom(mesh) {

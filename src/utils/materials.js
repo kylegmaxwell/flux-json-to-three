@@ -5,7 +5,7 @@
 'use strict';
 
 import THREE from 'three';
-import * as constants from './constants.js';
+import * as constants from '../constants.js';
 
 /**
  * Convert a material to hash like string.

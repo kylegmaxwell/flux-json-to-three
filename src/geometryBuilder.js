@@ -259,13 +259,15 @@ function _handleBrepResults(resultObj, geometryResults, tessResponse) {
     // There were valid breps that tessellated
     if (resultObj.Output.Results) {
         var data = resultObj.Output.Results.value;
+        var dataArray = [];
         for (var key in data) {
             var primitive = tessResponse.primitives[key];
             geometryResults.primStatus.appendValid(primitive);
             var jsonData = data[key];
             // This function adds the results as children of geometryResults.object
-            Create.createObject(jsonData, geometryResults);
+            dataArray.push(jsonData);
         }
+        Create.createObject(dataArray, geometryResults);
     }
 }
 

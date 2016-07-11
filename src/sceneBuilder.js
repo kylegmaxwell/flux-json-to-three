@@ -11,7 +11,7 @@ import GeometryBuilder from './geometryBuilder.js';
 import SceneValidator from 'flux-modelingjs/SceneValidator.js';
 import * as constants from './constants.js';
 import setObjectColor from './sceneEdit.js';
-import cleanElement from './entityPrep.js';
+import cleanElement from './utils/entityPrep.js';
 
 /**
  * Class to convert a Flux JSON scene to a three.js object hierarchy

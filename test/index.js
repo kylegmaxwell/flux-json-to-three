@@ -13,4 +13,4 @@ export { default as FluxGeometryError } from '../src/geometryError.js';
 export { default as GeometryResults } from '../src/geometryResults.js';
 export { default as normalizeUnits } from '../src/units/unitConverter.js';
 export { default as checkSchema } from '../src/schemaValidator.js';
-export { default as cleanElement } from '../src/entityPrep.js';
+export { default as cleanElement } from '../src/utils/entityPrep.js';

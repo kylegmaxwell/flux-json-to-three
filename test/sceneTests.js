@@ -32,12 +32,18 @@ test('should create a scene with instanced geometry', function (t) {
 
 test('should create a scene with geometry elements', function (t) {
     // When value is set it should be parsed, and model will be updated
-    builder.convert(entitiesScene).then(function (result) {
-        var obj = result.getObject();
-        t.ok(obj,'Object exists '+result.getErrorSummary());
-        t.equal(obj.children.length,1,'One layer');
-        t.equal(obj.children[0].children.length,2,'Two spheres');
-        t.end();
+    var sphere = {"origin":[0,0,0],"primitive":"sphere","radius":10};
+    builder.convert(sphere).then(function (result) {
+        var obj = result.getObject().children[0];
+        var count = obj.geometry.attributes.position.count;
+        builder.convert(entitiesScene).then(function (result) {
+            obj = result.getObject();
+            t.ok(obj,'Object exists '+result.getErrorSummary());
+            t.equal(obj.children.length,1,'One layer');
+            t.equal(obj.children[0].children.length,1,'Merged spheres');
+            t.equal(obj.children[0].children[0].geometry.attributes.position.count,count*2,'Two spheres');
+            t.end();
+        }).catch(printError(t));
     }).catch(printError(t));
 });
 

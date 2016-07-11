@@ -12,7 +12,7 @@ import VectorManager from '../vectorManager.js';
 import * as constants from '../constants.js';
 import FluxGeometryError from '../geometryError.js';
 import NURBSSurface from '../nurbs/NURBSSurface.js';
-import computeNormals from '../primitives/normals.js';
+import computeNormals from '../utils/normals.js';
 
 /*
  * helpers
@@ -101,8 +101,9 @@ export function polygonSet ( data, material ) {
 
         _restoreCoordinates(geometry, p, u, v);
     }
-
-    return new THREE.Mesh( geometry, material );
+    var bufferGeometry = new THREE.BufferGeometry().fromGeometry(geometry);
+    geometry.dispose();
+    return new THREE.Mesh( bufferGeometry, material );
 }
 
 /**
@@ -165,9 +166,9 @@ function _reduceCoordinates(destPoints, srcPoints, u, v, p0) {
  * Convert 2D coordinates back to world space 3D.
  * This modifies the vertex positions in place.
  * @param  {THREE.Geometry} geometry The geometry to transform
- * @param  {[type]} p        The origin point on the polygon
- * @param  {[type]} u        The first basis direction.
- * @param  {[type]} v        The second basis direction.
+ * @param  {THREE.Vector3} p        The origin point on the polygon
+ * @param  {THREE.Vector3} u        The first basis direction.
+ * @param  {THREE.Vector3} v        The second basis direction.
  */
 function _restoreCoordinates(geometry, p, u, v) {
     var uTmp = vec.alloc();
@@ -219,7 +220,7 @@ function _computePointBasis(p, n, u, v, points) {
  * The polygon is like a flux JSON object, but actually
  * the points have all been converted from arrays to Vector3 objects.
  * @param  {Object} polygon Flux JSON polygon
- * @return {THREE.Geometry}         The renderable geometry.
+ * @return {THREE.ShapeGeometry}         The renderable geometry.
  */
 function _makeShapeGeometry(polygon) {
 
@@ -387,6 +388,7 @@ export function surface ( data, material ) {
         geometry = new THREE.ParametricGeometry(getPointFunction, slices, stacks);
         computeNormals(geometry);
     }
-
-    return new THREE.Mesh( geometry, material );
+    var bufferGeometry = new THREE.BufferGeometry().fromGeometry(geometry);
+    geometry.dispose();
+    return new THREE.Mesh( bufferGeometry, material );
 }
