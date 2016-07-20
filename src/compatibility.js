@@ -26,23 +26,6 @@ export function fluxFetch(url, options) {
 }
 
 /**
- * Convert base64 data to binary (which is usually a binary encoded string)
- * @param  {String} str64 Base 64 encoded data
- * @return {String}       Decoded result
- */
-export function atob(str64) {
-    var strAscii;
-    if ('${ENVIRONMENT}' === 'BROWSER') {
-        strAscii = window.atob(str64);
-    }
-    if ('${ENVIRONMENT}' === 'TEST') {
-        // This implementation only works in node.js
-        strAscii = new Buffer(str64, 'base64').toString('binary');
-    }
-    return strAscii;
-}
-
-/**
  * Create a canvas element if possible
  * @return {DOMElement} The canvas or null
  */

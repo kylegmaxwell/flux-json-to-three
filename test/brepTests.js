@@ -55,7 +55,7 @@ test('should make requests for brep', function (t) {
         t.ok(fakeXhr.url.indexOf('parasolid')!==-1,'Should call parasolid');
         t.ok(JSON.stringify(fakeXhr.requestBody).indexOf('brep')!==-1,'Should contain brep');
 
-        var body = '{"Output":{"Results":{"type":"PARASOLID/ResultSet","value":{"result0":{"content":"","format":"stl","primitive":"brep"}}}},"Errors":null}';
+        var body = '{"Output":{"Results":{"type":"PARASOLID/ResultSet","value":{"result0":{"attributes":{"materialProperties":{"color":"gold","wireframe":false}},"faces":[[0,1,2]],"primitive":"mesh","units":{"vertices":"meters"},"vertices":[[-30,0,-10],[-29.0,-2.4,-9.9],[-29.0,-0.1,-9.9]]}}}},"Errors":null}';
         fakeXhr.respond(200, body);
     });
 });
@@ -93,11 +93,7 @@ test('should handle errored servers', function (t) {
     });
 });
 
-var stlB64 = "c29saWQgMQogZmFjZXQgbm9ybWFsIDAuMjgyMTk2ICAtMC45NTg1IC0wLjA0MDU0MzMKICBvdXRlciBsb29wCiAgIHZlcnRleCAgNjQyNTYuNyAgODQ4Mi4zNiAgMTMyMDguOAogICB2ZXJ0ZXggIDY0NzU5LjMgIDg2NDQuNDYgIDEyODc0LjcKICAgdmVydGV4ICA2NDgwOC40ICA4NjE4LjI3ICAxMzgzNS41CiAgZW5kbG9vcAogZW5kZmFjZXQ=";
-var stlResponse = {"Output":{"Results":{"type":"PARASOLID/ResultSet","value":{"result0":{
-    "attributes":{"materialProperties":{"color":"red","wireframe":false}},
-    "content":stlB64,
-    "format":"stl","primitive":"brep"}}}},"Errors":null};
+var stlResponse = {"Output":{"Results":{"type":"PARASOLID/ResultSet","value":{"result0":{"attributes":{"materialProperties":{"color":[1,0,0],"wireframe":false}},"faces":[[0,1,2]],"primitive":"mesh","units":{"vertices":"meters"},"vertices":[[-30,0,-10],[-29.0,-2.4,-9.9],[-29.0,-0.1,-9.9]]}}}},"Errors":null};
 var stlQuery = {"attributes":{"materialProperties":{"color":"red","wireframe":false}},"content":"some base64 encoded stuff","format":"x_b","primitive":"brep"}
 
 test('render breps with materials', function (t) {

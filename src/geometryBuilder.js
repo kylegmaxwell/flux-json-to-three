@@ -262,19 +262,9 @@ function _handleBrepResults(resultObj, geometryResults, tessResponse) {
         for (var key in data) {
             var primitive = tessResponse.primitives[key];
             geometryResults.primStatus.appendValid(primitive);
-            var primObj = data[key];
-            var stlAscii = primObj.content;
-            stlAscii = compatibility.atob(stlAscii);
-            var stlData = {
-                primitive:primObj.format,
-                data:stlAscii
-            };
-            // Preserve attributes if they exist
-            if (primObj.attributes) {
-                stlData.attributes = primObj.attributes;
-            }
+            var jsonData = data[key];
             // This function adds the results as children of geometryResults.object
-            Create.createObject(stlData, geometryResults);
+            Create.createObject(jsonData, geometryResults);
         }
     }
 }
@@ -336,7 +326,7 @@ GeometryBuilder.prototype._constructScene = function (geometryResults, values, p
         if (!value || !value.primitive) continue;
         var resultId = 'result'+i;
         scene.add(resultId, value);
-        var tessOp = modeling.operations.tesselateStl(resultId, this.tessellateQuality);
+        var tessOp = modeling.operations.tessellateJson(resultId, this.tessellateQuality, 1.0);
         // The first argument must be a unique id. It is an integer
         // so it can be used to look up the primitive later.
         scene.add(resultId, tessOp);
