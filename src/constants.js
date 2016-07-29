@@ -34,7 +34,7 @@ export var NON_STANDARD_ENTITIES = 'stl obj text';
 
 // These are primitives that are recognized as geometry, but get special
 // treatment and do not have their own specific handler function in src/primitives
-export var KNOWN_PRIMITIVES = ['point', 'polycurve', 'polysurface', 'brep', 'scene'];
+export var KNOWN_PRIMITIVES = ['point', 'polycurve', 'polysurface', 'brep', 'scene', 'revitElement'];
 
 // Enumeration of strings used as primitive types in scenes
 export var SCENE_PRIMITIVES = {

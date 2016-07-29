@@ -119,5 +119,25 @@ exports.tests = [
     {
         "input": {"info": "Not supported", "primitive": "test"},
         "result": null
+    },
+    {
+        "input": {
+            "primitive": "revitElement",
+            "geometryParameters": {
+                "geometry": [
+                    {
+                        "faces": [[4,5,6]],
+                        "vertices": [
+                            [185.93365522966155,-48.9867499393609, 11.3234889800848443e-23],
+                            [185.93365522966155,-48.9867499393609,37.401574803149416],
+                            [185.93365522966155,-76.09632999185438,37.401574803149416]
+                        ],
+                        "primitive": "mesh",
+                        "units": {}
+                    }
+                ]
+            }
+        },
+        "result": {"type": "Mesh"},
     }
-];
+]

@@ -14,6 +14,7 @@ import * as materials from './materials.js';
 import GeometryResults from './geometryResults.js';
 import StatusMap from './statusMap.js';
 import checkSchema from './schemaValidator.js';
+import * as revitHelper from './helpers/revitHelper.js';
 
 /**
  * Helper function to run a callback on each entity in the nested array
@@ -100,7 +101,10 @@ function _flattenData(data, geomResult) {
             Array.prototype.push.apply(geomResult.linePrims,data.curves);
         } else if (data.primitive === 'polysurface') {
             Array.prototype.push.apply(geomResult.phongPrims,data.surfaces);
-        } else {
+        } else if (data.primitive === "revitElement") {
+            Array.prototype.push.apply(geomResult.phongPrims, revitHelper.extractGeom(data));
+        }
+        else {
             var type = createPrimitive.resolveType(data.primitive).material;
             switch (type) {
                 case constants.MATERIAL_TYPES.POINT: {
