@@ -3,7 +3,7 @@
 var test = require('tape');
 var THREE = require('three');
 var GeometryBuilder = require('../build/index-test.common.js').GeometryBuilder;
-var tests = require('./nurbsFixtures.js').tests;
+var tests = require('./data/fixturesNurbs.js').tests;
 
 // Maximum variation in parameters allowed for tests to pass
 var TEST_TOLERANCE = 0.4;

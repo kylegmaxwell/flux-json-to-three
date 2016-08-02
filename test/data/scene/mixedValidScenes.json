@@ -1,0 +1,75 @@
+[
+{
+  "elements": [
+    {
+      "entity": [
+        {
+          "id": "ball",
+          "origin": [0,0,10],
+          "primitive": "sphere",
+          "radius": 10
+        },
+        {
+          "id": "ball",
+          "origin": [0,0,-10],
+          "primitive": "sphere",
+          "radius": 10
+        }
+      ],
+      "id": "dataKey0",
+      "primitive": "alphaGeometryContainer"
+    },
+    {
+      "entity": "dataKey0",
+      "id": "stuff",
+      "matrix": [
+        1,0,0,0,0,1,0,0,0,0,1,0,-20,0,0,1
+      ],
+      "primitive": "instance"
+    },
+    {
+      "color": "orange",
+      "elements": [
+        "stuff"
+      ],
+      "id": "myLayer",
+      "primitive": "layer"
+    }
+  ],
+  "primitive": "scene",
+  "version": "0.0.1"
+},
+{
+  "elements": [
+    {
+      "children": ["bush2"
+      ],
+      "id": "bush1",
+      "matrix": [1,0,0,0,0,1,0,0,0,0,1,0,-20,0,0,1],
+      "primitive": "assembly"
+    },
+    {
+      "children": ["bush3"],
+      "id": "bush2",
+      "matrix": [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],
+      "primitive": "assembly"
+    },
+    {
+      "children": ["bush1"
+      ],
+      "id": "bush3",
+      "matrix": [1,0,0,0,0,1,0,0,0,0,1,0,20,0,0,1],
+      "primitive": "assembly"
+    },
+    {
+      "color": "green",
+      "elements": ["bush1"
+      ],
+      "id": "plants",
+      "primitive": "layer"
+    }
+  ],
+  "primitive": "scene",
+  "version": "0.0.1"
+}
+]

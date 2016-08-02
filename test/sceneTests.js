@@ -9,15 +9,17 @@ var GeometryBuilder = index.GeometryBuilder;
 var builder = new SceneBuilder(new GeometryBuilder());
 var printError = require('./printError.js').init('scene');
 
-var basicScene = require('./data/basicScene.json');
-var entitiesScene = require('./data/entitiesScene.json');
-var sceneData = require('./data/scene.json');
-var badEntityScene = require('./data/badEntityScene.json');
-var badLayerScene = require('./data/badLayerScene.json');
-var validAssembly = require('./data/validAssembly.json');
-var cyclicAssembly = require('./data/cyclicAssembly.json');
-var cyclicInstance = require('./data/cyclicInstance.json');
-var partiallyValidScene = require('./data/partiallyValidScene.json');
+var basicScene = require('./data/scene/basicScene.json');
+var entitiesScene = require('./data/scene/entitiesScene.json');
+var sceneData = require('./data/scene/scene.json');
+var badEntityScene = require('./data/scene/badEntityScene.json');
+var badLayerScene = require('./data/scene/badLayerScene.json');
+var validAssembly = require('./data/scene/validAssembly.json');
+var cyclicAssembly = require('./data/scene/cyclicAssembly.json');
+var cyclicInstance = require('./data/scene/cyclicInstance.json');
+var partiallyValidScene = require('./data/scene/partiallyValidScene.json');
+var maxPanels = require('./data/scene/maxPanels.json');
+var mixedValidScenes = require('./data/scene/mixedValidScenes.json');
 
 test('should create a scene with instanced geometry', function (t) {
     // When value is set it should be parsed, and model will be updated
@@ -120,7 +122,7 @@ test('set twice', function (t) {
     }).catch(printError(t));
 });
 
-test('set garbage', function (t) {
+test('Set garbage', function (t) {
     builder.convert(sceneData).then(function (result1) {
         var scene = result1.getObject();
         t.ok(scene,'Object exist 1');
@@ -132,12 +134,12 @@ test('set garbage', function (t) {
     }).catch(printError(t));
 });
 
-test('No assembly yet', function (t) {
+test('Valid assembly', function (t) {
     builder.convert(validAssembly).then(function (result) {
         var scene = result.getObject();
         var errors = result.getErrorSummary();
         t.ok(scene,'Object exist: '+errors);
-        t.ok(errors.indexOf('not supported')!==-1, 'Not supported in: '+errors);
+        t.equal(errors,'','No errors');
         t.end();
     }).catch(printError(t));
 });
@@ -146,13 +148,12 @@ test('Should not allow cyclic references in assemblies', function (t) {
     builder.convert(cyclicAssembly).then(function (result) {
         var scene = result.getObject();
         var errors = result.getErrorSummary();
-        t.ok(scene,'Object exist');
-        t.ok(errors.indexOf('not supported')!==-1, 'Not supported in: '+errors);
+        t.ok(!scene,'Object null');
+        t.ok(errors.indexOf('Cycle')!==-1, 'Cycle not allowed: '+errors);
         t.end();
     }).catch(printError(t));
 });
 
-//TODO(Kyle): I don't see why not
 test('Should not allow instances of instances', function (t) {
     builder.convert(cyclicInstance).then(function (result) {
         var scene = result.getObject();
@@ -169,7 +170,28 @@ test('Partially valid scene', function (t) {
         t.ok(scene,'Object exists');
         var errors = result.getErrorSummary();
         t.ok(errors.indexOf('sphere:ball2')!==-1, 'Should have id in: '+errors);
-        t.equal(scene.children[0].children.length,2,'Two instances');
+        var layer = result._getObjectById('plants');
+        t.equal(layer.children.length,2,'Two instances');
+        t.end();
+    }).catch(printError(t));
+});
+
+test('Max scene with nulls', function (t) {
+    builder.convert(maxPanels).then(function (result) {
+        var scene = result.getObject();
+        t.ok(scene,'Object exists');
+        var errors = result.getErrorSummary();
+        t.equal(errors,'','No errors');
+        t.end();
+    }).catch(printError(t));
+});
+
+test('mixedValidScenes', function (t) {
+    builder.convert(mixedValidScenes).then(function (result) {
+        var scene = result.getObject();
+        t.ok(scene,'Object exists');
+        var errors = result.getErrorSummary();
+        t.ok(errors.indexOf('scene')!==-1,'Has issues');
         t.end();
     }).catch(printError(t));
 });

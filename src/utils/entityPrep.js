@@ -29,7 +29,9 @@ function _unsetNulls(obj) {
             obj[key] = undefined;
             changed = true;
         } else if (obj[key] && typeof obj[key] === 'object') {
-            changed = changed || _unsetNulls(obj[key]);
+            if (_unsetNulls(obj[key])) {
+                changed = true;
+            }
         }
     }
     return changed;
@@ -41,7 +43,6 @@ function _unsetNulls(obj) {
  * @return {Object}        New JSON object representation
  */
 export default function cleanElement(entity) {
-
     // Create a clone so that we can modify the properties in place
     // TODO(Kyle) This is slow for very large objects. The only reason we need a clone is for
     // the functions removeNulls and unitConverter, if we change those functions to return a new

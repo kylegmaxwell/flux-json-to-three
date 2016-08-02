@@ -36,41 +36,53 @@ SceneBuilder.prototype.convert = function(data) {
         return Promise.resolve(sceneBuilderData.getResults());
     }
     var dataClean = cleanElement(data);
-    var scene = _findTheScene(dataClean, sceneBuilderData);
-    var builderPromise;
-    if (scene) {
-        var sceneValidator = new SceneValidator();
-        var sceneValid = sceneValidator.validateJSON(scene);
-        if (!sceneValid.getResult()) {
-            sceneBuilderData.primStatus.appendError(scene.primitive, sceneValid.getMessage());
+    var scenes = _findTheScenes(dataClean, sceneBuilderData);
+    var builderPromises=[];
+    if (scenes) {
+        for (var i=0;i<scenes.length;i++) {
+            var scene = scenes[i];
+            var sceneValidator = new SceneValidator();
+            var sceneValid = sceneValidator.validateJSON(scene);
+            if (sceneValid.getResult()) {
+                builderPromises.push(this._convertScene(scene.elements, sceneBuilderData));
+            } else {
+                sceneBuilderData.primStatus.appendError(scene.primitive, sceneValid.getMessage());
+            }
+        }
+        if (builderPromises.length === 0) {
             return Promise.resolve(sceneBuilderData.getResults());
         }
-        builderPromise = this._convertScene(scene.elements, sceneBuilderData);
     } else {
-        builderPromise = this._createEntity(dataClean);
+        builderPromises = [this._createEntity(dataClean)];
     }
 
-    return builderPromise.then(function(newBuilderData) {
-        newBuilderData.mergeCache(sceneBuilderData);
-        return newBuilderData.getResults();
+    return Promise.all(builderPromises).then(function(newBuilderData) {
+        for (var i=0;i<newBuilderData.length;i++) {
+            sceneBuilderData.mergeScenes(newBuilderData[i]);
+        }
+        return sceneBuilderData.getResults();
     });
 };
 
 /**
- * Find the first scene in the data.
- * Other scenes will be ignored.
+ * Find the scenes in the data and return a flat list.
  * @param  {Object} data         Flux json
- * @return {Object}              Scene json or null
+ * @return {Object}              Scene json object or array of objects or null
  */
-function _findTheScene(data) {
+function _findTheScenes(data) {
+    var scenes = [];
     var array = _flattenArray([data], []);
     for (var i=0;i<array.length;i++) {
         var element = array[i];
         if (SceneValidator.isScene(element)) {
-            return element;
+            scenes.push(element);
         }
     }
-    return null;
+    if (scenes.length > 0) {
+        return scenes;
+    } else {
+        return null;
+    }
 }
 
 /**
@@ -163,9 +175,9 @@ SceneBuilder.prototype._createLayer = function(data, sceneBuilderData) {
     });
     return layerPromise.then(function(result) {
         // cache the layer
-        var layerId = data.id;
-        if (layerId) {
-            sceneBuilderData.cacheObject(layerId, result.object);
+        var id = data.id;
+        if (id) {
+            sceneBuilderData.cacheObject(id, result.object);
         }
         return result;
     });
@@ -242,9 +254,28 @@ SceneBuilder.prototype._createInstance = function(element, sceneBuilderData) {
  * @return {Promise}                            Promise for SceneBuilderData
  */
 SceneBuilder.prototype._createAssembly = function(element, sceneBuilderData) {
-    //TODO(Kyle) We need to implement this. https://vannevar.atlassian.net/browse/LIB3D-778
-    sceneBuilderData.primStatus.appendError(element.primitive, 'Assembly is not supported by scene version 0.0.1a');
-    return Promise.resolve(sceneBuilderData);
+    var promises = [];
+    for (var c=0;c<element.children.length;c++) {
+        var child = element.children[c];
+        promises.push(this._createSceneElement(child, sceneBuilderData));
+    }
+    var assemblyPromise = Promise.all(promises).then(function (results) { // merge elements
+        if (results.length===0) return sceneBuilderData;
+        var combo = new SceneBuilderData();
+        _applyTransform(element.matrix, combo.object);
+        for (var r=0;r<results.length;r++) {
+            combo.mergeInstances(results[r]);
+        }
+        return combo;
+    });
+    return assemblyPromise.then(function(result) {
+        // cache the layer
+        var id = element.id;
+        if (id) {
+            sceneBuilderData.cacheObject(id, result.object);
+        }
+        return result;
+    });
 };
 
 /**

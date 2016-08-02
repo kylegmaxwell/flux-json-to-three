@@ -5,7 +5,7 @@ var THREE = require('three');
 var index = require('../build/index-test.common.js');
 var FluxGeometryError = index.FluxGeometryError;
 var SceneBuilder = index.SceneBuilder;
-var fixtures = require('./fixtures.js');
+var fixtures = require('./data/fixtures.js');
 var sphereRound = require('../data/sphere-round.json');
 var sphereSurface = require('../data/sphere-surface.json');
 

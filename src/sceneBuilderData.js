@@ -121,26 +121,40 @@ SceneBuilderData.prototype.getCachedPromise = function(entityId) {
 };
 
 /**
- * Merge these layers with those from another query
- * @param  {SceneBuilderData} result The other one
+ * Merge in the layers from another scene
+ * @param  {SceneBuilderData} other Other data containing a finished scene
  */
-SceneBuilderData.prototype.mergeLayers = function(result) {
-    if (!result) return;
-    this.object.add(result.object);
-    this.object.updateMatrixWorld(true);
+SceneBuilderData.prototype.mergeScenes = function(other) {
+    if (!other) return;
 
-    this.primStatus.merge(result.primStatus);
+    var children = other.object.children;
+    if (children.length>0) {
+        while(children.length>0) {
+            this.object.add(children[children.length-1]);
+        }
+    }
+    this._finishMerge(other);
+};
+
+/**
+ * Merge these layers with those from another query
+ * @param  {SceneBuilderData} other The other one containing a layer
+ */
+SceneBuilderData.prototype.mergeLayers = function(other) {
+    if (!other) return;
+    this.object.add(other.object);
+    this._finishMerge(other);
 };
 
 /**
  * Merge these results with those form another query
- * @param  {SceneBuilderData} result The other one
+ * @param  {SceneBuilderData} other The other one containing an instance
  */
-SceneBuilderData.prototype.mergeInstances = function(result) {
-    if (!result) return;
+SceneBuilderData.prototype.mergeInstances = function(other) {
+    if (!other) return;
     var _this = this;
-    for (var i=0;i<result.object.children.length; i++) {
-        var child = result.object.children[i];
+    for (var i=0;i<other.object.children.length; i++) {
+        var child = other.object.children[i];
         if (child.type === "Mesh" || child.type ==="Line") {
             // Build a completely new object containing new meshes, since three.js
             // does not allow multiple parents for the same object
@@ -153,10 +167,19 @@ SceneBuilderData.prototype.mergeInstances = function(result) {
             _this.object.add(child);
         }
     }
+    this._finishMerge(other);
+};
+
+/**
+ * Common merge functionality that needs to be done after merging different object types
+ * @param  {SceneBuilderData} other The other builder instance
+ */
+SceneBuilderData.prototype._finishMerge = function(other) {
     // Update the matrix on this object and its new children
     this.object.updateMatrixWorld(true);
 
-    this.primStatus.merge(result.primStatus);
+    this.primStatus.merge(other.primStatus);
+    this._mergeCache(other);
 };
 
 /**
@@ -172,6 +195,8 @@ SceneBuilderData.prototype.getResults = function() {
  * Merges other into this.
  * @param  {SceneBuilderData} other The other scene data container
  */
-SceneBuilderData.prototype.mergeCache = function(other) {
-    this._sceneObjectMap = other._sceneObjectMap;
+SceneBuilderData.prototype._mergeCache = function(other) {
+    for (var key in other._sceneObjectMap) {
+        this._sceneObjectMap[key] = other._sceneObjectMap[key];
+    }
 };

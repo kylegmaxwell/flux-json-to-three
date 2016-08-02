@@ -1,6 +1,6 @@
 {
   "name": "flux-json-to-three",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "A module that takes parasolid data and produces Three.js objects",
   "main": "build/index.common.js",
   "repository": "git@bitbucket.org:vannevartech/flux-json-to-three.git",
@@ -16,7 +16,7 @@
     "run-test": "tape test/test.js",
     "lint": "eslint src/**;",
     "build": "npm run clean; npm run init; npm run build-common; npm run build-amd; npm run build-globals",
-    "build-common-fixtures-units": "rollup -i test/fixturesUnits.js -f=cjs -o=./build/fixturesUnits.common.js;",
+    "build-common-fixtures-units": "rollup -i test/data/fixturesUnits.js -f=cjs -o=./build/fixturesUnits.common.js;",
     "build-common-test": "rollup -c rollup-test.config.js -f=cjs -o=./build/index-test.common.js;",
     "build-common": "rollup -c rollup.config.js -f=cjs -o=./build/index.common.js;",
     "build-amd": "rollup -c rollup.config.js -f=amd -o=./build/index.amd.js;",
@@ -25,7 +25,7 @@
   },
   "dependencies": {
     "ajv": "^3.8.10",
-    "flux-modelingjs": "0.0.4",
+    "flux-modelingjs": "0.0.5",
     "json-pointer": "^0.5.0",
     "@flux/flux-fetch": "git+ssh://git@bitbucket.org/vannevartech/flux-fetch.git#v0.0.4",
     "three": "^0.77.0",
