@@ -5,6 +5,7 @@ import * as Create from './createObject.js';
 import GeometryResults from './geometryResults.js';
 import * as compatibility from './compatibility.js';
 import * as print from './debugConsole.js';
+import * as constants from './constants.js';
 
 import modelingFunc from 'flux-modelingjs/modeling.js';
 var modeling = modelingFunc({'skip':true});
@@ -51,6 +52,9 @@ function loadImages(path) {
                 if (loadedImageCount === 9) {
                     resolve();
                 }
+            }, undefined, function() {
+                print.warn('Unable to load image based lighting.');
+                resolve();
             });
             iblCubeArray[i].format = THREE.RGBFormat;
         }
@@ -63,15 +67,13 @@ var imagesLoadingPromise = null;
 /**
 * Flux geometry class converts parameter objects to geometry
 * @param {String} tessUrl   The url for the brep tessellation service
-* @param {String} iblUrl    The url for image based lighting textures
 * @param {String} token     The current flux auth token
 * @constructor
 */
-export default function GeometryBuilder(tessUrl, iblUrl, token) {
+export default function GeometryBuilder(tessUrl, token) {
 
     // String path to tessellation API endpoint
     this._parasolidUrl = tessUrl;
-    this._imagesUrl = iblUrl;
     this._fluxToken = token;
 
     // quality   - tesselation quality, ranges 0-4; the bigger, the better
@@ -87,8 +89,8 @@ export default function GeometryBuilder(tessUrl, iblUrl, token) {
 GeometryBuilder.prototype.convert = function(entities) {
     var _this = this;
     var hasRoughness = Create.hasRoughness(entities);
-    if (hasRoughness && !imagesLoadingPromise && this._imagesUrl) {
-        imagesLoadingPromise = loadImages(this._imagesUrl);
+    if (hasRoughness && !imagesLoadingPromise) {
+        imagesLoadingPromise = loadImages(constants.IMAGES_URL);
     }
     return Promise.resolve(imagesLoadingPromise).then(function () {
         return _this.convertHelper(entities);

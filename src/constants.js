@@ -75,5 +75,4 @@ export var DEFAULT_MATERIAL_PROPERTIES = {
 };
 
 export var DEFAULT_UNITS = 'meters';
-
-
+export var IMAGES_URL = 'https://object-library.storage.googleapis.com/image_based_lighting/park_filtered';

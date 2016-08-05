@@ -16,11 +16,10 @@ import cleanElement from './utils/entityPrep.js';
 /**
  * Class to convert a Flux JSON scene to a three.js object hierarchy
  * @param {String} tessUrl  The url for the brep tessellation service
- * @param {String} iblUrl   The url for image based lighting textures
  * @param {String} token    The current flux auth token
  */
-export default function SceneBuilder(tessUrl, iblUrl, token) {
-    this._geometryBuilder = new GeometryBuilder(tessUrl, iblUrl, token);
+export default function SceneBuilder(tessUrl, token) {
+    this._geometryBuilder = new GeometryBuilder(tessUrl, token);
 }
 
 /**
