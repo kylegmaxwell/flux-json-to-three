@@ -11,17 +11,6 @@ var printError = require('./printError.js').init('brep');
 // List of xhr requests made per test
 var requests = [];
 
-// Three.js image loader tries to create an image element and add a listener
-// so we have to stub that out.
-global.document = global;
-global.createElement = function () {
-    return {
-        addEventListener: function (name, cb) {
-            cb();
-        }
-    }
-};
-
 // Mock out xhr for brep async tessellation request
 global.fluxFetchStub = function (url, opts) {
     return new Promise(function (resolve, reject) {

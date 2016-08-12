@@ -5,7 +5,6 @@
 
 import THREE from 'three';
 import SceneBuilderData from './sceneBuilderData.js';
-import checkSchema from './schemaValidator.js';
 import * as print from './debugConsole.js';
 import GeometryBuilder from './geometryBuilder.js';
 import SceneValidator from 'flux-modelingjs/SceneValidator.js';
@@ -34,19 +33,12 @@ SceneBuilder.prototype.convert = function(data) {
     if (!data || !(data.constructor === Array || data.primitive)) {
         return Promise.resolve(sceneBuilderData.getResults());
     }
-    var dataClean = cleanElement(data);
+    var dataClean = cleanElement(data, sceneBuilderData.primStatus);
     var scenes = _findTheScenes(dataClean, sceneBuilderData);
     var builderPromises=[];
     if (scenes) {
         for (var i=0;i<scenes.length;i++) {
-            var scene = scenes[i];
-            var sceneValidator = new SceneValidator();
-            var sceneValid = sceneValidator.validateJSON(scene);
-            if (sceneValid.getResult()) {
-                builderPromises.push(this._convertScene(scene.elements, sceneBuilderData));
-            } else {
-                sceneBuilderData.primStatus.appendError(scene.primitive, sceneValid.getMessage());
-            }
+            builderPromises.push(this._convertScene(scenes[i].elements, sceneBuilderData));
         }
         if (builderPromises.length === 0) {
             return Promise.resolve(sceneBuilderData.getResults());
@@ -135,9 +127,7 @@ SceneBuilder.prototype._createLayers = function(data, sceneBuilderData) {
     var layers = sceneBuilderData.getLayers();
     for (var l=0;l<layers.length;l++) {
         var layer = layers[l];
-        if (checkSchema(layer, sceneBuilderData.primStatus)) {
-            promises.push(this._createLayer(layer, sceneBuilderData));
-        }
+        promises.push(this._createLayer(layer, sceneBuilderData));
     }
     return Promise.all(promises).then(function (results) {
         if (results.length===0) return sceneBuilderData;
@@ -190,7 +180,8 @@ SceneBuilder.prototype._createLayer = function(data, sceneBuilderData) {
  */
 SceneBuilder.prototype._createSceneElement = function(elementId, sceneBuilderData) {
     var element = sceneBuilderData.getEntityData(elementId);
-    if (!checkSchema(element, sceneBuilderData.primStatus)) {
+    // There might be a missing link if the element was removed due to an invalid schema
+    if (!element) {
         return Promise.resolve(sceneBuilderData);
     }
     if (element.primitive === constants.SCENE_PRIMITIVES.instance) {
@@ -309,6 +300,10 @@ SceneBuilder.prototype._createEntity = function(entityData) {
         sceneBuilderData.object = geometryResults.object;
         sceneBuilderData.primStatus = geometryResults.primStatus;
         return sceneBuilderData;
+    }).catch(function (err) {
+        // Make sure syntax errors are available to the developer
+        print.warn(err);
+        return err;
     });
 };
 

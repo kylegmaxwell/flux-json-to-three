@@ -15,49 +15,19 @@ var modeling = modelingFunc({'skip':true});
 */
 var READY_STATE_FINISHED = 4;
 
-// Array of environment textures for image-based lighting.
-// Singleton
-// Cubemap textures are pre-filtered to simulate different levels of light diffusion.
-// More about the technique:
-// http://developer.amd.com/tools-and-sdks/archive/legacy-cpu-gpu-tools/cubemapgen/
-var iblCubeArray = [
-    new THREE.Texture(), // 512x512
-    new THREE.Texture(), // 256x256
-    new THREE.Texture(), // 128x128
-    new THREE.Texture(), // 61x64
-    new THREE.Texture(), // 32x32
-    new THREE.Texture(), // 16x16
-    new THREE.Texture(), // 8x8
-    new THREE.Texture(), // 4x4
-    new THREE.Texture()  // 2x2
-];
+// Environment texture for image-based lighting.
+var iblCube = null;
 
-// Loads pre-filtered textures
-function loadImages(path) {
+// Loads textures
+function loadImages() {
     return new Promise(function (resolve) {
-        var loadedImageCount = 0;
-        for (var i = 0; i <= 8; i++) {
-            var iblCubeUrls = [
-                path + '_m0' + i + '_c00.png',
-                path + '_m0' + i + '_c01.png',
-                path + '_m0' + i + '_c02.png',
-                path + '_m0' + i + '_c03.png',
-                path + '_m0' + i + '_c04.png',
-                path + '_m0' + i + '_c05.png'
-            ];
-            var loader = new THREE.CubeTextureLoader();
-            loader.setCrossOrigin(true);
-            iblCubeArray[i] = loader.load(iblCubeUrls, function() {
-                loadedImageCount++;
-                if (loadedImageCount === 9) {
-                    resolve();
-                }
-            }, undefined, function() {
-                print.warn('Unable to load image based lighting.');
-                resolve();
-            });
-            iblCubeArray[i].format = THREE.RGBFormat;
-        }
+        var loader = new THREE.CubeTextureLoader();
+        loader.setCrossOrigin(true);
+        iblCube = loader.load(constants.CUBE_URLS, resolve, undefined, function() {
+            print.warn('Unable to load image based lighting.');
+            resolve();
+        });
+        iblCube.format = THREE.RGBFormat;
     });
 }
 
@@ -76,7 +46,7 @@ export default function GeometryBuilder(tessUrl, token) {
     this._parasolidUrl = tessUrl;
     this._fluxToken = token;
 
-    // quality   - tesselation quality, ranges 0-4; the bigger, the better
+    // quality - tesselation quality, ranges 0-4; the bigger, the better
     this.tessellateQuality = 2.0;
 }
 
@@ -88,9 +58,9 @@ export default function GeometryBuilder(tessUrl, token) {
 */
 GeometryBuilder.prototype.convert = function(entities) {
     var _this = this;
-    var hasRoughness = Create.hasRoughness(entities);
-    if (hasRoughness && !imagesLoadingPromise) {
-        imagesLoadingPromise = loadImages(constants.IMAGES_URL);
+    var needsImages = Create.needsIBL(entities);
+    if (needsImages && !imagesLoadingPromise) {
+        imagesLoadingPromise = loadImages();
     }
     return Promise.resolve(imagesLoadingPromise).then(function () {
         return _this.convertHelper(entities);
@@ -104,7 +74,7 @@ GeometryBuilder.prototype.convert = function(entities) {
  */
 GeometryBuilder.prototype.convertHelper = function(entities) {
     var geometryResults = new GeometryResults();
-    geometryResults.cubeArray = iblCubeArray;
+    geometryResults.iblCube = iblCube;
 
     if (entities == null || typeof entities != 'object') {
         return Promise.resolve(geometryResults);
@@ -132,7 +102,7 @@ GeometryBuilder.prototype.convertHelper = function(entities) {
  * More info on Parasolid Entities can be found here:
  * https://bitbucket.org/vannevartech/parasolid-worker/src/master/doc/ENTITIES.md
  * Formal schema is here:
- * https://bitbucket.org/vannevartech/flux-modelingjs/src/master/schemas/psworker.json
+ * https://bitbucket.org/vannevartech/flux-modelingjs/src/master/schemas/flux-entity.json
  * @param    {Object}    data    The geometry data as objects
  * @param    {GeometryResults}    geometryResults    Geometry and errors object
  */
@@ -396,4 +366,3 @@ function _interpretServerErrorCode(status, text) {
 GeometryBuilder.prototype.setTessUrl = function(newUrl) {
     this._parasolidUrl = newUrl;
 };
-

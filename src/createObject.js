@@ -49,16 +49,22 @@ export function isKnownGeom (data) {
 }
 
 /**
- * Determine if the given data contains materials with roughness.
+ * Determine if the given data contains materials that reflect image based lighting.
+ * Then it is necessary to load the related textures.
  *
- * Then it is necessary to load the related textures
- *
- * @param  {Object}  entities Flux JSON formatted object.
- * @return {Boolean}      Whether the materials have roughness.
+ * @param  {Object}     entities Flux JSON formatted object.
+ * @return {Boolean}    Whether the materials have roughness.
  */
-export function hasRoughness(entities) {
+export function needsIBL(entities) {
     return _recursiveReduce(entities, function (item) {
-        return materials._getEntityData(item, 'roughness', undefined) != null;
+        for (var i=0;i<constants.IBL_PROPERTIES.length; i++) {
+            var key = constants.IBL_PROPERTIES[i];
+            var value = materials._getEntityData(item, key, undefined);
+            if (value != null && value !== constants.DEFAULT_MATERIAL_PROPERTIES.surface[key]) {
+                return true;
+            }
+        }
+        return false;
     });
 }
 /**
@@ -102,9 +108,9 @@ function _flattenData(data, geomResult) {
         if (data.primitive === 'polycurve') {
             Array.prototype.push.apply(geomResult.linePrims,data.curves);
         } else if (data.primitive === 'polysurface') {
-            Array.prototype.push.apply(geomResult.phongPrims,data.surfaces);
-        } else if (data.primitive === "revitElement") {
-            Array.prototype.push.apply(geomResult.phongPrims, revitHelper.extractGeom(data));
+            Array.prototype.push.apply(geomResult.surfacePrims,data.surfaces);
+        } else if (data.primitive === 'revitElement') {
+            Array.prototype.push.apply(geomResult.surfacePrims, revitHelper.extractGeom(data));
         }
         else {
             var type = createPrimitive.resolveMaterialType(data.primitive);
@@ -117,8 +123,8 @@ function _flattenData(data, geomResult) {
                     geomResult.linePrims.push(data);
                     break;
                 }
-                case constants.MATERIAL_TYPES.PHONG: {
-                    geomResult.phongPrims.push(data);
+                case constants.MATERIAL_TYPES.SURFACE: {
+                    geomResult.surfacePrims.push(data);
                     break;
                 }
                 default: {
@@ -141,7 +147,7 @@ function _flattenData(data, geomResult) {
 function _createObject ( geomResult ) {
     _handlePoints(geomResult);
     _handleLines(geomResult);
-    _handlePhongs(geomResult);
+    _handleSurfaces(geomResult);
 }
 
 /**
@@ -167,12 +173,12 @@ function _handleLines(geomResult) {
 }
 
 /**
- * Create all geometry that will be phong shaded.
+ * Create all geometry that will be surface shaded.
  * @param {GeometryResult} geomResult The results container
  * @private
  */
-function _handlePhongs(geomResult) {
-    var prims = geomResult.phongPrims;
+function _handleSurfaces(geomResult) {
+    var prims = geomResult.surfacePrims;
     if (prims.length === 0) return;
     _handlePrimitives(prims, geomResult);
 }

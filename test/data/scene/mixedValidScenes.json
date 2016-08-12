@@ -28,7 +28,7 @@
       "primitive": "instance"
     },
     {
-      "color": "orange",
+      "color": [0.8,0.5,0.3],
       "elements": [
         "stuff"
       ],
@@ -62,7 +62,7 @@
       "primitive": "assembly"
     },
     {
-      "color": "green",
+      "color": [0,1,0],
       "elements": ["bush1"
       ],
       "id": "plants",

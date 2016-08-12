@@ -10,7 +10,7 @@ import StatusMap from './statusMap.js';
  * asyncPrims - Buffer for prims that require a server call
  * pointPrims - Buffer for combining all point objects
  * linePrims - Buffer for combining all line objects
- * phongPrims - Buffer for combining all surface objects
+ * surfacePrims - Buffer for combining all surface objects
  * _layerPrims - List of layers
  */
 export default function GeometryResults() {
@@ -21,12 +21,12 @@ export default function GeometryResults() {
     this.primStatus = new StatusMap();
 
     // Array of THREE.Texture objects used for image based lighting
-    this.cubeArray = null;
+    this.iblCube = null;
 
     this.asyncPrims = [];
     this.pointPrims = [];
     this.linePrims = [];
-    this.phongPrims = [];
+    this.surfacePrims = [];
     this._layerPrims = [];
 }
 
@@ -37,6 +37,6 @@ GeometryResults.prototype.clear = function () {
     this.asyncPrims = [];
     this.pointPrims = [];
     this.linePrims = [];
-    this.phongPrims = [];
+    this.surfacePrims = [];
     this._layerPrims = [];
 };

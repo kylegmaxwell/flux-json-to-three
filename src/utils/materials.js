@@ -6,6 +6,7 @@
 
 import THREE from 'three';
 import * as constants from '../constants.js';
+import materials from 'flux-modelingjs/src/materials.js';
 
 /**
  * Convert a material to hash like string.
@@ -20,10 +21,9 @@ export function materialToJson(type, m) {
     var propertyNames = [];
     var prop;
     switch ( type ) {
-        case constants.MATERIAL_TYPES.PHONG: {
-            propertyNames = Object.keys(knownProperties.phong);
-            // Special case roughness since its not a real property, but determines uniqueness
-            propertyNames.push('roughness');
+        case constants.MATERIAL_TYPES.SURFACE: {
+            propertyNames = Object.keys(knownProperties.surface).concat(
+                constants.THREE_MATERIAL_PROPERTIES);
             break;
         }
         case constants.MATERIAL_TYPES.POINT: {
@@ -39,12 +39,14 @@ export function materialToJson(type, m) {
     var orderedMaterial =[];
     var i, len;
     for (i=0, len=propertyNames.length; i<len; i++) {
-        prop = m[propertyNames[i]];
-        if (prop) {
-            orderedMaterial.push(prop);
+        var name = propertyNames[i];
+        if (name === 'color') continue;
+        prop = m[name];
+        if (prop != null) {
+            orderedMaterial.push(name+JSON.stringify(prop));
         }
     }
-    // Use the type (mesh, phong, line) as a namespace to separate materials
+    // Use the type (mesh, surface, line) as a namespace to separate materials
     var result = JSON.stringify(type);
     result += JSON.stringify(orderedMaterial);
     return result;
@@ -58,7 +60,7 @@ export function materialToJson(type, m) {
  */
 export function _convertColor(color) {
     if (color == null) {
-        color = constants.DEFAULT_MATERIAL_PROPERTIES.phong.color;
+        color = constants.DEFAULT_MATERIAL_PROPERTIES.surface.color;
     }
     var newColor = new THREE.Color();
     if (typeof color === 'object' &&
@@ -91,4 +93,13 @@ export function _getEntityData(data, attr, defaultAttr) {
         value = data.attributes.materialProperties[attr];
     }
     return value;
+}
+
+/**
+ * Convert a string color to an array of three normalized values
+ * @param  {String} colorName   The CSS color string
+ * @return {Array.<Number>}     The values [r,g,b]
+ */
+export function colorToArray(colorName) {
+    return materials.colorToArray(colorName);
 }

@@ -6,8 +6,8 @@ var index = require('../build/index-test.common.js');
 var FluxGeometryError = index.FluxGeometryError;
 var SceneBuilder = index.SceneBuilder;
 var fixtures = require('./data/fixtures.js');
-var sphereRound = require('../data/sphere-round.json');
-var sphereSurface = require('../data/sphere-surface.json');
+var sphereRound = require('./data/sphere-round.json');
+var sphereSurface = require('./data/sphere-surface.json');
 
 var TOLERANCE = 0.000001;
 
@@ -92,9 +92,9 @@ test('should handle complicated lists', function (t) {
     [[[-8,-12,0],[8,-12,0]],[[-8,-28,0],[8,-28,0]]],"primitive":"surface","uDegree":1,
     "uKnots":[0,0,1,1],"vDegree":1,"vKnots":[0,0,1,1]},{"controlPoints":
     [[[-20,-12,9],[-8,-12,0]],[[-20,-28,9],[-8,-28,0]]],"primitive":"surface",
-    "uDegree":1,"uKnots":[0,0,1,1],"vDegree":1,"vKnots":[0,0,1,1]},{"polygons":
-    [{"boundary":[[25,-20,15],[10,-7,0],[10,-33,0]],"holes":[[[20,-20,10],[12,-11,2],
-    [12,-29,2]]]}],"primitive":"polygonSet"}]},{"normal":[0,0,1],"origin":[5,5,-10],
+    "uDegree":1,"uKnots":[0,0,1,1],"vDegree":1,"vKnots":[0,0,1,1]},{"vertices":
+    [[-1,0,0],[0,1,2],[1,0,0],[0,-1,2]],"faces":[[0,3,1],[1,3,2]],"primitive":"mesh"
+    }]},{"normal":[0,0,1],"origin":[5,5,-10],
     "primitive":"plane"}]];
     // When value is set it should be parsed, and model will be updated
     builder.convert(data).then(function (result) {
@@ -205,32 +205,6 @@ test('should merge vertices on surfaces', function (t) {
     }).catch(printError(t));
 });
 
-test('should merge multi colored objects', function (t) {
-    var coloredPanels = [{"attributes":{"materialProperties":{"color":"red"}},"vertices":
-        [[-1,0,0],[0,1,2],[1,0,0],[0,-1,2]],"faces":[[0,3,1],[1,3,2]],"primitive":"mesh"},
-        {"attributes":{"materialProperties":{"color":"blue"}},"vertices": [[-1,0,0],
-        [0,1,0],[1,0,0],[0,-1,0]],"faces":[[0,3,1],[1,3,2]],"primitive":"mesh"}];
-    // When value is set it should be parsed, and model will be updated
-    builder.convert(coloredPanels).then(function (result) {
-        t.ok(result.getObject(),'Create a mesh');
-        t.equal(result.getObject().children.length,1,'One child');
-        var color = result.getObject().children[0].geometry.attributes.color.array;
-        t.ok(color,'Color exists');
-
-        // Check for red
-        t.equal(color[0],1,'Color component r');
-        t.equal(color[1],0,'Color component g');
-        t.equal(color[2],0,'Color component b');
-
-        // Check for blue
-        t.equal(color[color.length-3],0,'Last color component r');
-        t.equal(color[color.length-2],0,'Last color component g');
-        t.equal(color[color.length-1],1,'Last color component b');
-
-        t.end();
-    }).catch(printError(t));
-});
-
 test('should merge non consecutive objects', function (t) {
     var coloredPanels = [{"attributes":{"materialProperties":{"color":"red"}},"vertices":
         [[-1,0,0],[0,1,2],[1,0,0],[0,-1,2]],"faces":[[0,3,1],[1,3,2]],"primitive":"mesh"},
@@ -307,6 +281,47 @@ test('schema should allow anything inside attributes', function (t) {
     builder.convert(line).then(function (result) {
         t.equal(result.getErrorSummary(),'','No invalid keys');
         t.equal(result.getObject().children.length,1,'One child');
+        t.end();
+    }).catch(printError(t));
+});
+
+
+test( 'Schema for geometry', function ( t ) {
+    // var results = new GeometryResults();
+    var data = {
+        "x":5,
+        "units":{
+            "/controlPoints":"meters"
+        },
+        "attributes":{"materialProperties":{"color":[0.25,1,0.639],"size":4}},
+        "controlPoints":[[0,0,0],[1,0,0],[1,1,0],[0,1,0]],
+        "degree":3,
+        "knots":[0,0,0,1,2,3,3,3],"primitive":"curve"
+    };
+    // var matchesSchema = index.checkEntity(data, results.primStatus);
+    builder.convert(data).then(function(result) {
+        var summary = result.getErrorSummary();
+        t.ok(summary === '', 'Should match schema '+summary);
+        t.end();
+    }).catch(printError(t));
+
+});
+
+test( 'Invalid schema for polycurve', function ( t ) {
+    var data = {"x":5,
+        "attributes":{"materialProperties":{"color":[0.25,1,0.639],"size":4}},
+        "curves":[
+        {"controlPoints":[[0,0,0],[1,0,0],[1,1,0],[0,1,0]],"degree":3,
+            "knots":[0,0,0,1,2,3,3,3],"primitive":"curve"},
+            {"start":[1,0,0],"middle":[0,1,0],"end":[-1,0,0],
+            "units":{"start":12}, // unit key is missing slash
+            "primitive":"arc"}],
+        "primitive":"polycurve"
+    };
+    builder.convert(data).then(function(result) {
+        var summary = result.getErrorSummary();
+        t.ok(summary !== '', 'Should not match schema '+summary);
+        t.ok(summary.indexOf('units') !== -1, "Should contain message about units");
         t.end();
     }).catch(printError(t));
 });

@@ -17,7 +17,7 @@ export var PLANE_DEFAULTS = {
 export var CIRCLE_RES = 32;
 export var DEG_2_RAD = Math.PI / 180;
 export var MATERIAL_TYPES = {
-    PHONG: 0,
+    SURFACE: 0,
     POINT: 1,
     LINE: 2
 };
@@ -52,27 +52,69 @@ export var SCENE_PRIMITIVES = {
 var degreesSmoothLimit = 45;
 export var NORMALS_SMOOTH_LIMIT = Math.cos(degreesSmoothLimit * DEG_2_RAD);
 
-export var DEFAULT_POINT_COLOR = [0.5,0.5,0.8];
-export var DEFAULT_LINE_COLOR =  [0.5,0.5,0.8];
-export var DEFAULT_PHONG_COLOR = [  1,  1,  1];
-
 export var POINT_PIXEL_SIZE = 2.0;
+
+// These properties cause image based lighting maps to be loaded
+export var IBL_PROPERTIES = ['glossiness', 'roughness', 'reflectivity'];
+
+// These properties were renamed, and the old names are the complement (1 - new value)
+export var LEGACY_INVERSE_PROPERTIES = {
+    opacity: 'transparency',
+    roughness: 'glossiness'
+};
+
+// These are properties defined on three.js materials that are used to differentiate
+// them by the viewer's merging logic
+export var THREE_MATERIAL_PROPERTIES = [
+    'opacity',
+    'roughness',
+    'metalness',
+    'emissive'
+];
+
+// Correspondence between Flux material properties and three.js
+export var FLUX_MATERIAL_TO_THREE = {
+    glossiness: 'roughness',
+    transparency: 'opacity',
+    reflectivity: 'metalness',
+    color: 'color',
+    emissionColor: 'emissive'
+};
+export var LEGACY_POINT_PROPERTIES = {
+    pointSize: 'size'
+};
+
 export var DEFAULT_MATERIAL_PROPERTIES = {
     // color is per point
-    phong: {
-        opacity: 1.0,
-        //roughness: 1.0,  TODO this has to be translated to specular as in flux-materialUtil.html
+    surface: {
+        color: [1,1,1],
+        reflectivity: 0.0,
+        glossiness: 0.0,
+        transparency: null,
+        emissionColor: null,
         wireframe: false,
         side: THREE.DoubleSide
     },
     point: {
-        size: 0.001,// This default helps with very small points coming from grasshopper in millimeters
+        color: [0.5,0.5,0.8],
+        pointSize: 0.001,// This default helps with very small points coming from grasshopper in millimeters
         sizeAttenuation: true
     },
     line: {
+        color: [0.5,0.5,0.8],
         linewidth: 1.0
     }
 };
 
 export var DEFAULT_UNITS = 'meters';
-export var IMAGES_URL = 'https://object-library.storage.googleapis.com/image_based_lighting/park_filtered';
+
+// Path to static assets of images used for image based lighting.
+var imagesUrl = 'https://object-library.storage.googleapis.com/Park2/';
+export var CUBE_URLS = [
+    imagesUrl + 'posx3.jpg',
+    imagesUrl + 'negx3.jpg',
+    imagesUrl + 'posz2.jpg',
+    imagesUrl + 'negz2.jpg',
+    imagesUrl + 'posy2.jpg',
+    imagesUrl + 'negy2.jpg'
+];

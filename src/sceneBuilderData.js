@@ -82,7 +82,12 @@ SceneBuilderData.prototype.getEntityData = function(id) {
         if (entity != null) {
             return entity;
         }
-        throw new FluxGeometryError('Reference to non existing id in scene:',id);
+        // TODO(Kyle): Right now schema validation removes primitives that fail the
+        // schema check, so it can lead to missing references. Thiw allows rendering
+        // of partially valid scenes. At some point I would like to change the way
+        //  the scene is parsed so that we can walk up the graph and remove those references.
+        // throw new FluxGeometryError('Reference to non existing id in scene:',id);
+        return null;
     } else {
         if (id == null) {
             throw new FluxGeometryError('No entity or referenced id specified');

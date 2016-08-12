@@ -12,8 +12,6 @@ import * as otherPrimitives from './primitives/primitives.js';
 import * as constants from './constants.js';
 import * as materials from './utils/materials.js';
 import FluxGeometryError from './geometryError.js';
-import convertUnits from './units/unitConverter.js';
-import checkSchema from './schemaValidator.js';
 
 // Map from primitive name to material type
 var _primToMaterial = null;
@@ -36,15 +34,15 @@ function _makePrimMaps() {
         _primToFunc[key] = wirePrimitives[key];
     }
     for (key in sheetPrimitives) {
-        _primToMaterial[key] = constants.MATERIAL_TYPES.PHONG;
+        _primToMaterial[key] = constants.MATERIAL_TYPES.SURFACE;
         _primToFunc[key] = sheetPrimitives[key];
     }
     for (key in solidPrimitives) {
-        _primToMaterial[key] = constants.MATERIAL_TYPES.PHONG;
+        _primToMaterial[key] = constants.MATERIAL_TYPES.SURFACE;
         _primToFunc[key] = solidPrimitives[key];
     }
     for (key in otherPrimitives) {
-        _primToMaterial[key] = constants.MATERIAL_TYPES.PHONG;
+        _primToMaterial[key] = constants.MATERIAL_TYPES.SURFACE;
         _primToFunc[key] = otherPrimitives[key];
     }
 }
@@ -102,31 +100,20 @@ var UP    = new THREE.Vector3(0, 0, 1);
  * @private
  */
 function _getPointSize(prims) {
-    var size = constants.DEFAULT_MATERIAL_PROPERTIES.point.size;
+    var size = constants.DEFAULT_MATERIAL_PROPERTIES.point.pointSize;
     // Just use the first point for now, can't set size per point.
     var prim = prims[0];
     if (!prim) return;
     var materialProperties = prim.materialProperties || (prim.attributes && prim.attributes.materialProperties);
-    if (materialProperties && materialProperties.size) {
-        size = materialProperties.size;
-    }
-    return size;
-}
-
-/**
- * Check points against their schema
- * @param  {Array.<Object>}     prims       List of points
- * @param  {GeometryResults}    geomResult  The error message container
- * @return {Boolean}                        True when all are valid
- */
-function _validatePoints(prims, geomResult) {
-    var validPoints = true;
-    for (var i=0;i<prims.length; i++) {
-        if (!checkSchema(prims[i], geomResult.primStatus)) {
-            validPoints = false;
+    var legacyName = constants.LEGACY_POINT_PROPERTIES.pointSize;
+    if (materialProperties && (materialProperties[legacyName] != null || materialProperties.pointSize != null)) {
+        if (materialProperties.pointSize != null) {
+            size = materialProperties.pointSize;
+        } else {
+            size = materialProperties[legacyName];
         }
     }
-    return validPoints;
+    return size;
 }
 
 /**
@@ -135,19 +122,15 @@ function _validatePoints(prims, geomResult) {
  * @param {GeometryResults} geomResult  Results object for errors and geometry
  */
 export function createPoints (prims, geomResult) {
-    if (!_validatePoints(prims, geomResult)) {
-        return;
-    }
-
     var positions = new Float32Array(prims.length*3);
     var colors = new Float32Array(prims.length*3);
     for (var i=0;i<prims.length;i++) {
-        var prim = convertUnits(prims[i]);
+        var prim = prims[i];
         positions[i*3] = prim.point[0];
         positions[i*3+1] = prim.point[1];
         positions[i*3+2] = prim.point[2]||0;
         // Get color or default color
-        var color = materials._convertColor(materials._getEntityData(prim, 'color', constants.DEFAULT_POINT_COLOR));
+        var color = materials._convertColor(materials._getEntityData(prim, 'color', constants.DEFAULT_MATERIAL_PROPERTIES.point.color));
         colors[i*3] = color.r;
         colors[i*3+1] = color.g;
         colors[i*3+2] = color.b;
@@ -193,31 +176,21 @@ export function createPoints (prims, geomResult) {
  * @param { Object } data The data to create the object with
  * @param { GeometryResults } geomResult The container for the geometry and caches
  */
-export function createPrimitive ( data, geomResult ) {
+export function createPrimitive (data, geomResult) {
     var materialType = resolveMaterialType(data.primitive);
-
-    // Get a new clone of the data with different units for rendering
-    var dataNormalized = convertUnits(data);
-
-    // Check that the entity matches a schema, otherwise return no geometry
-    if (!checkSchema(data, geomResult.primStatus)) {
-        return; // Errors are already added to geomResult
-    }
-
-    var materialProperties = _findMaterialProperties( dataNormalized );
-    var material = _createMaterial( materialType, materialProperties, geomResult.cubeArray );
+    var materialProperties = _findMaterialProperties(data);
+    var material = _createMaterial(materialType, materialProperties, geomResult);
 
     var primFunction = _resolvePrimFunc(data.primitive);
     if (!primFunction) return;
 
-    var mesh = primFunction( dataNormalized, material );
+    var mesh = primFunction(data, material);
 
     if ( mesh ) {
-        return cleanupMesh(mesh, dataNormalized, materialProperties);
+        return cleanupMesh(mesh, data, materialProperties);
     }
 
-    throw new FluxGeometryError( 'Unsupported geometry type: ' + dataNormalized.primitive );
-
+    throw new FluxGeometryError('Unsupported geometry type: ' + data.primitive);
 }
 
 /**
@@ -358,28 +331,55 @@ function _addKnownProps(knownPropsMap, propsIn, propsOut) {
 }
 
 /**
+ * Get the value and apply to the properties if set, with defaults
+ * @param  {Object} propsSource  User input material properties
+ * @param  {String} nameSource   Name of the input property
+ * @param  {Object} propsDest    Material properties for three.js
+ * @param  {String} nameDest     Name of the three.js property
+ * @param  {Boolean} invertDest  Whether the output is the complement of the input
+ */
+function _getPropertyValue(propsSource, nameSource, propsDest, nameDest, invertDest) {
+    var value;
+    if (propsSource[nameSource] != null) {
+        value = propsSource[nameSource];
+    } else {
+        value = constants.DEFAULT_MATERIAL_PROPERTIES.surface[nameSource];
+    }
+    if (value != null) {
+        if (invertDest) {
+            value = 1.0 - value;
+        }
+        propsDest[nameDest] = value;
+    }
+}
+/**
  * Modify a material to approximate a shading model with roughness
- * @param {Number} roughness        The roughness (measures shiny to matte)
- * @param {THREE.Material} material The material to edit
- * @param {Array} cubeArray         Array of textures
+ * @param {Object}              propsSource Flux material properties
+ * @param {Object}              propsDest   Resulting three.js material properties
+ * @param {THREE.CubeTexture}   iblCube     Cube map
  * @private
  */
-function _applyRoughness(roughness, material, cubeArray) {
-    if (roughness != null && cubeArray != null) {
-        // There are some magic numbers here to simulate physically-accurate lighting.
-        // This is only an artistic approximation of physically-accurate models.
-        // TODO(aki): implement custom shader with better lighting model.
-        material.envMap = cubeArray[Math.floor(Math.pow(roughness, 0.2) * 8)];
-        // TODO(aki): Colored materials have clear white reflection.
-        material.combine = THREE.AddOperation;
-        material.reflectivity = 1 - roughness * 1;
-        if (material.color.r !== 1 || material.color.g !== 1 || material.color.b !== 1) {
-            var hsl = material.color.getHSL();
-            material.reflectivity *= Math.pow(hsl.l, 2);
-            material.specular = material.color.clone();
-            material.color.multiplyScalar(Math.pow(roughness, 0.3));
-            material.specular.multiplyScalar(1 - Math.pow(roughness, 2));
-        }
+function _applyPhysicalProperties(propsSource, propsDest, iblCube) {
+
+    if (propsSource.wireframe != null) {
+        propsDest.wireframe = propsSource.wireframe;
+    }
+
+    var props = constants.FLUX_MATERIAL_TO_THREE;
+    for (var p in props) {
+        var destName = props[p];
+        var complement = destName in constants.LEGACY_INVERSE_PROPERTIES;
+        _getPropertyValue(propsSource, p, propsDest, destName, complement);
+    }
+
+    // Convert colors
+    propsDest.color = materials._convertColor(propsDest.color);
+    if (propsDest.emissive){
+        propsDest.emissive = materials._convertColor(propsDest.emissive);
+    }
+
+    if (iblCube != null) {
+        propsDest.envMap = iblCube;
     }
 }
 
@@ -398,45 +398,44 @@ function _applyRoughness(roughness, material, cubeArray) {
  *
  * @param { Object } materialProperties A set of properties that functions
  *                                      as options for the material
- * @param {Array} cubeArray             Array of textures
+ * @param {GeometryResults} geomResult  Container for textures and errors
  */
-function _createMaterial ( type, materialProperties, cubeArray ) {
+function _createMaterial ( type, materialProperties, geomResult) {
+    var iblCube = geomResult.iblCube;
     var material;
     // Just the properties that actually make sense for this material
     var props = {};
     // Add sidedness to local state if it is not present
     if ( materialProperties && !materialProperties.side ) {
         props.side = THREE.DoubleSide;
+    } else {
+        props.side = materialProperties.side;
     }
     // Create a material of the appropriate type
-    if ( type === constants.MATERIAL_TYPES.PHONG ) {
+    if ( type === constants.MATERIAL_TYPES.SURFACE ) {
         // Add material properties related to shadows. This is an offset
         // to prevent z-fighting with stencil buffer shadows and their host object
+        // TODO(Kyle): Only set these when shadows are on.
         props.polygonOffset = true;
         props.polygonOffsetFactor = 1;
         props.polygonOffsetUnits = 1;
         props.vertexColors = THREE.VertexColors;
 
-        _addKnownProps(constants.DEFAULT_MATERIAL_PROPERTIES.phong, materialProperties, props);
-        material = new THREE.MeshPhongMaterial( props );
-        material.color = materials._convertColor(materialProperties.color||constants.DEFAULT_PHONG_COLOR);
-
-        // Apply roughness (modifies color and other material object properties)
-        _applyRoughness(materialProperties.roughness, material, cubeArray);
-        if (materialProperties.roughness) props.roughness = materialProperties.roughness;
+        _applyPhysicalProperties(materialProperties, props, iblCube);
+        material = new THREE.MeshPhysicalMaterial( props );
 
     } else if ( type === constants.MATERIAL_TYPES.POINT ) {
 
         _addKnownProps(constants.DEFAULT_MATERIAL_PROPERTIES.point, materialProperties, props);
         material = new THREE.PointsMaterial( props );
-        material.color = materials._convertColor(materialProperties.color||constants.DEFAULT_POINT_COLOR);
+        material.color = materials._convertColor(materialProperties.color||constants.DEFAULT_MATERIAL_PROPERTIES.point.color);
 
     } else if ( type === constants.MATERIAL_TYPES.LINE ) {
 
         props.vertexColors = THREE.VertexColors;
         _addKnownProps(constants.DEFAULT_MATERIAL_PROPERTIES.line, materialProperties, props);
         material = new THREE.LineBasicMaterial( props );
-        material.color = materials._convertColor(materialProperties.color||constants.DEFAULT_LINE_COLOR);
+        material.color = materials._convertColor(materialProperties.color||constants.DEFAULT_MATERIAL_PROPERTIES.line.color);
     }
     // Use the material's name to track uniqueness of it's source
     material.name = materials.materialToJson(type, props);
@@ -446,7 +445,6 @@ function _createMaterial ( type, materialProperties, cubeArray ) {
     }
 
     return material;
-
 }
 
 /**

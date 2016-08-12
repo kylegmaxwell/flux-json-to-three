@@ -82,16 +82,6 @@ exports.tests = [
             "primitive":"mesh"},
         "result": {"type": "Mesh"},
     },
-    {// simple polygon-set with legacy primitive
-        "input":{"polygons":[{"boundary":[[15,0,0],[-7.5,13.0,0],[-7.5,-13.0,0]],"holes":[]}],
-            "primitive":"polygonSet"},
-        "result": {"type": "Mesh"},
-    },
-    {// test polygonSet with holes with up to date primitive
-        "input": {"polygons":[{"boundary":[[15,0,15], [0,13.0,0],[0,-13.0,0]],
-            "holes":[[[10,0,10],[2,9.0,2],[2,-9.0,2]]]}],"primitive":"polygonSet"},
-        "result": {"type": "Mesh"},
-    },
     {
         "input": {"points":[[0,0,5],[1,0,5],[2,2,5],[0,1,5]],"primitive":"polyline"}, // TODO
         "result": {"type": "Line"},
@@ -105,9 +95,7 @@ exports.tests = [
         "input": {"surfaces":[{"controlPoints":[[[-8,8,0],[8,8,0]],[[-8,-8,0],[8,-8,0]]],
             "primitive":"surface","uDegree":1,"uKnots":[0,0,1,1],"vDegree":1,"vKnots":[0,0,1,1]},
             {"controlPoints":[[[-20,8,9],[-8,8,0]],[[-20,-8,9],[-8,-8,0]]], "primitive":"surface",
-            "uDegree":1,"uKnots":[0,0,1,1],"vDegree":1,"vKnots":[0,0,1,1]},
-            {"polygons":[{"boundary":[[15,0,15], [0,13.0,0],[0,-13.0,0]],
-            "holes":[[[10,0,10],[2,9.0,2],[2,-9.0,2]]]}],"primitive":"polygonSet"}
+            "uDegree":1,"uKnots":[0,0,1,1],"vDegree":1,"vKnots":[0,0,1,1]}
             ],"primitive":"polysurface"},
         "result": {"type": "Mesh"},
     },
@@ -121,23 +109,28 @@ exports.tests = [
         "result": null
     },
     {
-        "input": {
-            "primitive": "revitElement",
-            "geometryParameters": {
-                "geometry": [
-                    {
-                        "faces": [[4,5,6]],
-                        "vertices": [
-                            [185.93365522966155,-48.9867499393609, 11.3234889800848443e-23],
-                            [185.93365522966155,-48.9867499393609,37.401574803149416],
-                            [185.93365522966155,-76.09632999185438,37.401574803149416]
-                        ],
-                        "primitive": "mesh",
-                        "units": {}
-                    }
-                ]
-            }
-        },
+
+        "input": {"primitive":"revitElement","fluxId":"Id-1",
+            "familyInfo":{"category":"Walls","family":"WallFamily-1",
+            "type":"WallType-1","placementType":"Invalid"},
+            "geometryParameters":{
+                "profile":[
+                    {"units":{"end":"feet","start":"feet"},"end":[20.31,17.82,0],"primitive":"line","start":[-63.18,17.82,0]}],
+                    "level":"Level-1","structural":true,"flipped":true,
+                    "geometry": [
+                        {
+                            "faces": [[0,1,2]],
+                            "vertices": [
+                                [185.93365522966155,-48.9867499393609, 11.3234889800848443e-23],
+                                [185.93365522966155,-48.9867499393609,37.401574803149416],
+                                [185.93365522966155,-76.09632999185438,37.401574803149416]
+                            ],
+                            "primitive": "mesh",
+                            "units": {}
+                        }
+                    ]
+                },
+            "instanceParameters":{},"typeParameters":{},"customParameters":{}},
         "result": {"type": "Mesh"},
     }
 ]

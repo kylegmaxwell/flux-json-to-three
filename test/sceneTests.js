@@ -25,7 +25,7 @@ test('should create a scene with instanced geometry', function (t) {
     // When value is set it should be parsed, and model will be updated
     builder.convert(basicScene).then(function (result) {
         var obj = result.getObject();
-        t.ok(obj,'Object exists');
+        t.ok(obj,'Object exists '+result.getErrorSummary());
         t.equal(obj.children.length,1,'One layer');
         t.equal(obj.children[0].children.length,3,'Three instances');
         t.end();
@@ -91,8 +91,7 @@ test('should have an error message for bad layers', function (t) {
         var scene = result.getObject();
         t.ok(!scene,'Object not exist');
         var summary = result.getErrorSummary();
-        t.ok(summary.indexOf('2')!==-1,'Message contains id: '+summary);
-        t.ok(summary.indexOf('element found with')!==-1,'Missing id message');
+        t.ok(summary.indexOf('ID')!==-1,'Message contains (ID): ('+summary+')');
         t.end();
     }).catch(printError(t));
 });
@@ -169,7 +168,8 @@ test('Partially valid scene', function (t) {
         var scene = result.getObject();
         t.ok(scene,'Object exists');
         var errors = result.getErrorSummary();
-        t.ok(errors.indexOf('sphere:ball2')!==-1, 'Should have id in: '+errors);
+        var id = 'sphere:ball2';
+        t.ok(errors.indexOf(id)!==-1, 'Should have id ('+id+') in: ('+errors+')');
         var layer = result._getObjectById('plants');
         t.equal(layer.children.length,2,'Two instances');
         t.end();

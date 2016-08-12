@@ -14,11 +14,10 @@ var registry = UnitRegistry.newStandardRegistry();
  * Convert an entity to standardized units.
  * Note: modifies input JSON object in place
  * @param {Object} entity Flux entity parameters object
- * @returns {Object} A copy of the entity with standardized units.
  */
 export default function convertUnits (entity) {
     if (!entity.units) {
-        return entity;
+        return;
     }
     var units = entity.units;
     // Iterate over each unit specification and set it on the object
@@ -48,10 +47,8 @@ export default function convertUnits (entity) {
                 // throw new FluxGeometryError('Unknown units specified');
                 continue;
             }
-            // _setPropIgnoreCase(prop, unitPath[j], func(unitValue));
             pointer.set(entity, unitPath, func(unitValue));
             entity.units[unitString] = constants.DEFAULT_UNITS;
         }
     }
-    return entity;
 }

@@ -2,20 +2,46 @@
 
 var test = require('tape');
 var THREE = require('three');
-var GeometryBuilder = require('../build/index-test.common.js').GeometryBuilder;
-
-var builder = new GeometryBuilder();
+var index = require('../build/index-test.common.js');
+var SceneBuilder = index.SceneBuilder;
+var builder = new SceneBuilder('parasolid','ibl');
 
 var printError = require('./printError.js').init('geometry material');
 
+test('should merge multi colored objects', function (t) {
+    var coloredPanels = [{"attributes":{"materialProperties":{"color":"red"}},"vertices":
+        [[-1,0,0],[0,1,2],[1,0,0],[0,-1,2]],"faces":[[0,3,1],[1,3,2]],"primitive":"mesh"},
+        {"attributes":{"materialProperties":{"color":"blue"}},"vertices": [[-1,0,0],
+        [0,1,0],[1,0,0],[0,-1,0]],"faces":[[0,3,1],[1,3,2]],"primitive":"mesh"}];
+    // When value is set it should be parsed, and model will be updated
+    builder.convert(coloredPanels).then(function (result) {
+        t.ok(result.getObject(),'Create a mesh');
+        t.equal(result.getObject().children.length,1,'One child');
+        var color = result.getObject().children[0].geometry.attributes.color.array;
+        t.ok(color,'Color exists');
+
+        // Check for red
+        t.equal(color[0],1,'Color component r');
+        t.equal(color[1],0,'Color component g');
+        t.equal(color[2],0,'Color component b');
+
+        // Check for blue
+        t.equal(color[color.length-3],0,'Last color component r');
+        t.equal(color[color.length-2],0,'Last color component g');
+        t.equal(color[color.length-1],1,'Last color component b');
+
+        t.end();
+    }).catch(printError(t));
+});
+
 test('should not share attributes between material types', function (t) {
-    var lineAndPhong= [{"origin":[0,0,0],"primitive":"circle","radius":10},
+    var lineAndSurface= [{"origin":[0,0,0],"primitive":"circle","radius":10},
         {"vertices": [[-1,0,0],[0,1,0],[1,0,0],[0,-1,0]],"faces":[[0,3,1],[1,3,2]],"primitive":"mesh"} ];
     // When value is set it should be parsed, and model will be updated
-    builder.convert(lineAndPhong).then(function (result) {
-        t.ok(result.object,'Object exists');
-        t.equal(result.object.children.length,2,'Two children');
-        var children = result.object.children;
+    builder.convert(lineAndSurface).then(function (result) {
+        t.ok(result.getObject(),'Object exists');
+        t.equal(result.getObject().children.length,2,'Two children');
+        var children = result.getObject().children;
         // ordering is not guaranteed
         // Default line color is blue
         // Default mesh color is white
@@ -49,9 +75,9 @@ test('should not merge objects with different opacity', function (t) {
         [0,1,0],[1,0,0],[0,-1,0]],"faces":[[0,3,1],[1,3,2]],"primitive":"mesh"} ];
     // When value is set it should be parsed, and model will be updated
     builder.convert(twoPanels).then(function (result) {
-        t.ok(result.object,'Object exists');
-        t.equal(result.object.children.length,2,'Two children');
-        var children = result.object.children;
+        t.ok(result.getObject(),'Object exists');
+        t.equal(result.getObject().children.length,2,'Two children');
+        var children = result.getObject().children;
         // ordering is not guaranteed
         // Thus we just check if opacity is not the same, since 0.5 !== 1
         t.notEqual(children[0].material.opacity,children[1].material.opacity,'Different opacity');
@@ -65,8 +91,8 @@ test('should set reflectivity when roughness is set', function (t) {
         "vertices":[[-1,0,0],[0,1,2],[1,0,0],[0,-1,2]]};
     // When value is set it should be parsed, and model will be updated
     builder.convert(reflectivePanels).then(function (result) {
-        t.ok(result.object,'Object exists');
-        var mesh = result.object.children[0];
+        t.ok(result.getObject(),'Object exists');
+        var mesh = result.getObject().children[0];
         t.notEqual(mesh.material.reflectivity,0,'Material nonzero reflectivity');
         t.end();
     }).catch(printError(t));
@@ -76,8 +102,8 @@ test('should pass through line properties', function (t) {
     var line = {"attributes":{"materialProperties":{"linewidth":5}},"end":[2,2,2],"primitive":"line","start":[1,1,1]};
     // When value is set it should be parsed, and model will be updated
     builder.convert(line).then(function (result) {
-        t.ok(result.object,'Object exists');
-        var mesh = result.object.children[0];
+        t.ok(result.getObject(),'Object exists');
+        var mesh = result.getObject().children[0];
         t.equal(mesh.material.linewidth,5,'Linewidth 5');
         t.end();
     }).catch(printError(t));
@@ -87,8 +113,8 @@ test('should pass through point color', function (t) {
     var point = {"attributes":{"materialProperties":{"color":[0.25,1,0.639],"size":4}},"point":[0,0,8.35],"primitive":"point"};
     // When value is set it should be parsed, and model will be updated
     builder.convert(point).then(function (result) {
-        t.ok(result.object,'Object exists');
-        var mesh = result.object.children[0].children[0];
+        t.ok(result.getObject(),'Object exists');
+        var mesh = result.getObject().children[0].children[0];
         // Material is white
         t.equal(mesh.material.color.r,1,'Red is 1');
         // Point color is not white
@@ -109,7 +135,7 @@ test('should color lines', function (t) {
         {"start":[1,0,0],"middle":[0,1,0],"end":[-1,0,0],"primitive":"arc"}],"primitive":"polycurve"};
     // When value is set it should be parsed, and model will be updated
     builder.convert(line).then(function (result) {
-        var meshes = result.object.children[0].children;
+        var meshes = result.getObject().children[0].children;
         for (var i=0;i<meshes.length;i++) {
             var mesh = meshes[i];
             // Material is white
@@ -134,7 +160,7 @@ test('should not modify text material', function (t) {
         "primitive":"text","size":8,"text":"Text!"};
     // When value is set it should be parsed, and model will be updated
     builder.convert(text).then(function (result) {
-        var material = result.object.children[0].material;
+        var material = result.getObject().children[0].material;
         t.equal(material.color.r,1,'Red value');
         t.equal(material.color.g,0,'Green value');
         t.end();
@@ -146,7 +172,7 @@ test('should allow color on object itself (legacy)', function (t) {
         "primitive":"text","size":8,"color":"black","text":"Text!"};
     // When value is set it should be parsed, and model will be updated
     builder.convert(text).then(function (result) {
-        var material = result.object.children[0].material;
+        var material = result.getObject().children[0].material;
         t.equal(material.color.r,0,'Red value');
         t.end();
     }).catch(printError(t));
@@ -158,8 +184,44 @@ test('should allow color as an array', function (t) {
         "primitive":"text","size":8,"text":"Text!"};
     // When value is set it should be parsed, and model will be updated
     builder.convert(text).then(function (result) {
-        var material = result.object.children[0].material;
+        var material = result.getObject().children[0].material;
         t.equal(material.color.r,0.25,'Red value');
+        t.end();
+    }).catch(printError(t));
+});
+
+test('should not allow color as a number', function (t) {
+    var circle = {"materialProperties":{"color":0.25},"origin":[0,0,0],"primitive":"sphere","radius":10};
+    // When value is set it should be parsed, and model will be updated
+    builder.convert(circle).then(function (result) {
+        var summary = result.getErrorSummary();
+        t.ok(result.getObject(),'Create a mesh '+summary);
+        t.ok(summary.indexOf('color')!==-1,'Should have error about color');
+        t.end();
+    }).catch(printError(t));
+});
+
+test('should not merge different material parameters with the same value', function (t) {
+    var panels = [{"attributes":{"materialProperties":{"reflectivity":1}},"vertices":
+        [[-1,0,0],[0,1,2],[1,0,0],[0,-1,2]],"faces":[[0,3,1],[1,3,2]],"primitive":"mesh"},
+        {"attributes":{"materialProperties":{"glossiness":1}},"vertices": [[-1,0,0],
+        [0,1,0],[1,0,0],[0,-1,0]],"faces":[[0,3,1],[1,3,2]],"primitive":"mesh"}];
+    builder.convert(panels).then(function (result) {
+        t.ok(result.getObject(),'Create a mesh');
+        t.equal(result.getObject().children.length,2,'Two children');
+        t.end();
+    }).catch(printError(t));
+});
+
+test('should not merge material parameters with falsy value', function (t) {
+    // transparency of 1 leads to opacity 0, which is falsy
+    var panels = [{"attributes":{"materialProperties":{"transparency":1}},"vertices":
+        [[-1,0,0],[0,1,2],[1,0,0],[0,-1,2]],"faces":[[0,3,1],[1,3,2]],"primitive":"mesh"},
+        {"attributes":{"materialProperties":{}},"vertices": [[-1,0,0],
+        [0,1,0],[1,0,0],[0,-1,0]],"faces":[[0,3,1],[1,3,2]],"primitive":"mesh"}];
+    builder.convert(panels).then(function (result) {
+        t.ok(result.getObject(),'Create a mesh');
+        t.equal(result.getObject().children.length,2,'Two children');
         t.end();
     }).catch(printError(t));
 });
