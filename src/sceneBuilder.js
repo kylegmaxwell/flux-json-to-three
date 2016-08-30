@@ -216,6 +216,7 @@ function _applyTransform(matrix, object) {
         for (var i = 0; i < matrix.length; i++) {
             mat.elements[i] = matrix[i];
         }
+        mat.transpose();
         object.applyMatrix(mat);
         object.updateMatrixWorld(true);
     }

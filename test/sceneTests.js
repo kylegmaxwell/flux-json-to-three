@@ -9,21 +9,20 @@ var GeometryBuilder = index.GeometryBuilder;
 var builder = new SceneBuilder(new GeometryBuilder());
 var printError = require('./printError.js').init('scene');
 
-var basicScene = require('./data/scene/basicScene.json');
-var entitiesScene = require('./data/scene/entitiesScene.json');
-var sceneData = require('./data/scene/scene.json');
-var badEntityScene = require('./data/scene/badEntityScene.json');
-var badLayerScene = require('./data/scene/badLayerScene.json');
-var validAssembly = require('./data/scene/validAssembly.json');
-var cyclicAssembly = require('./data/scene/cyclicAssembly.json');
-var cyclicInstance = require('./data/scene/cyclicInstance.json');
-var partiallyValidScene = require('./data/scene/partiallyValidScene.json');
-var maxPanels = require('./data/scene/maxPanels.json');
-var mixedValidScenes = require('./data/scene/mixedValidScenes.json');
+
+/**
+ * Get a scene at a predefined location
+ *
+ * @param  {String} name The file name without extension
+ * @return {Object}      The module containing a Flux JSON scene
+ */
+function _getScene(name) {
+    return require('./data/scene/'+name+'.json');
+}
 
 test('should create a scene with instanced geometry', function (t) {
     // When value is set it should be parsed, and model will be updated
-    builder.convert(basicScene).then(function (result) {
+    builder.convert(_getScene('basicScene')).then(function (result) {
         var obj = result.getObject();
         t.ok(obj,'Object exists '+result.getErrorSummary());
         t.equal(obj.children.length,1,'One layer');
@@ -38,7 +37,7 @@ test('should create a scene with geometry elements', function (t) {
     builder.convert(sphere).then(function (result) {
         var obj = result.getObject().children[0];
         var count = obj.geometry.attributes.position.count;
-        builder.convert(entitiesScene).then(function (result) {
+        builder.convert(_getScene('entitiesScene')).then(function (result) {
             obj = result.getObject();
             t.ok(obj,'Object exists '+result.getErrorSummary());
             t.equal(obj.children.length,1,'One layer');
@@ -51,7 +50,7 @@ test('should create a scene with geometry elements', function (t) {
 
 test('should create a scene with curves, meshes and instances', function (t) {
     // When value is set it should be parsed, and model will be updated
-    builder.convert(sceneData).then(function (result) {
+    builder.convert(_getScene('scene')).then(function (result) {
         var scene = result.getObject();
         t.ok(scene,'Scene exists: '+result.getErrorSummary());
         t.equal(scene.children.length, 2, 'Two layers')
@@ -74,7 +73,7 @@ test('should create a scene with curves, meshes and instances', function (t) {
 
 test('should have an error message for bad entities', function (t) {
     // When value is set it should be parsed, and model will be updated
-    builder.convert(badEntityScene).then(function (result) {
+    builder.convert(_getScene('badEntityScene')).then(function (result) {
         var scene = result.getObject();
         t.ok(scene,'Object exist');
         t.equal(scene.children.length, 1, 'One layer')
@@ -87,7 +86,7 @@ test('should have an error message for bad entities', function (t) {
 
 test('should have an error message for bad layers', function (t) {
     // When value is set it should be parsed, and model will be updated
-    builder.convert(badLayerScene).then(function (result) {
+    builder.convert(_getScene('badLayerScene')).then(function (result) {
         var scene = result.getObject();
         t.ok(!scene,'Object not exist');
         var summary = result.getErrorSummary();
@@ -97,11 +96,11 @@ test('should have an error message for bad layers', function (t) {
 });
 
 test('layer manipulation', function (t) {
-    builder.convert(sceneData).then(function (result1) {
+    builder.convert(_getScene('scene')).then(function (result1) {
         var scene = result1.getObject();
         t.ok(scene,'Object exist 1');
         result1.setElementVisible('concrete', false);
-        builder.convert(basicScene).then(function (result) {
+        builder.convert(_getScene('basicScene')).then(function (result) {
             t.ok(result.getObject(),'Object exist 2');
             result1.setElementColor('red'); // Expect that this has no effect, but does not error
             result.setElementVisible('concrete',true);
@@ -111,10 +110,10 @@ test('layer manipulation', function (t) {
 });
 
 test('set twice', function (t) {
-    builder.convert(sceneData).then(function (result1) {
+    builder.convert(_getScene('scene')).then(function (result1) {
         var scene = result1.getObject();
         t.ok(scene,'Object exist 1');
-        builder.convert(sceneData).then(function (result) {
+        builder.convert(_getScene('scene')).then(function (result) {
             t.ok(result.getObject(),'Object exist 2');
             t.end();
         }).catch(printError(t));
@@ -122,7 +121,7 @@ test('set twice', function (t) {
 });
 
 test('Set garbage', function (t) {
-    builder.convert(sceneData).then(function (result1) {
+    builder.convert(_getScene('scene')).then(function (result1) {
         var scene = result1.getObject();
         t.ok(scene,'Object exist 1');
         // This is the scene objects, not data hence it should not work to generate anything
@@ -134,7 +133,7 @@ test('Set garbage', function (t) {
 });
 
 test('Valid assembly', function (t) {
-    builder.convert(validAssembly).then(function (result) {
+    builder.convert(_getScene('validAssembly')).then(function (result) {
         var scene = result.getObject();
         var errors = result.getErrorSummary();
         t.ok(scene,'Object exist: '+errors);
@@ -144,7 +143,7 @@ test('Valid assembly', function (t) {
 });
 
 test('Should not allow cyclic references in assemblies', function (t) {
-    builder.convert(cyclicAssembly).then(function (result) {
+    builder.convert(_getScene('cyclicAssembly')).then(function (result) {
         var scene = result.getObject();
         var errors = result.getErrorSummary();
         t.ok(!scene,'Object null');
@@ -154,7 +153,7 @@ test('Should not allow cyclic references in assemblies', function (t) {
 });
 
 test('Should not allow instances of instances', function (t) {
-    builder.convert(cyclicInstance).then(function (result) {
+    builder.convert(_getScene('cyclicInstance')).then(function (result) {
         var scene = result.getObject();
         var errors = result.getErrorSummary();
         t.ok(!scene,'Object not exist');
@@ -164,7 +163,7 @@ test('Should not allow instances of instances', function (t) {
 });
 
 test('Partially valid scene', function (t) {
-    builder.convert(partiallyValidScene).then(function (result) {
+    builder.convert(_getScene('partiallyValidScene')).then(function (result) {
         var scene = result.getObject();
         t.ok(scene,'Object exists');
         var errors = result.getErrorSummary();
@@ -177,7 +176,7 @@ test('Partially valid scene', function (t) {
 });
 
 test('Max scene with nulls', function (t) {
-    builder.convert(maxPanels).then(function (result) {
+    builder.convert(_getScene('maxPanels')).then(function (result) {
         var scene = result.getObject();
         t.ok(scene,'Object exists');
         var errors = result.getErrorSummary();
@@ -187,11 +186,56 @@ test('Max scene with nulls', function (t) {
 });
 
 test('mixedValidScenes', function (t) {
-    builder.convert(mixedValidScenes).then(function (result) {
+    builder.convert(_getScene('mixedValidScenes')).then(function (result) {
         var scene = result.getObject();
         t.ok(scene,'Object exists');
         var errors = result.getErrorSummary();
         t.ok(errors.indexOf('scene')!==-1,'Has issues');
+        t.end();
+    }).catch(printError(t));
+});
+
+var TOLERANCE = 0.000001;
+test('Sphere with origin', function (t) {
+    builder.convert(_getScene('sphereOriginScene')).then(function (result) {
+        var scene = result.getObject();
+        var errors = result.getErrorSummary();
+        t.ok(scene,'Object exist '+errors);
+        var mesh = scene.children[0].children[0];
+        var pos = mesh.geometry.attributes.position.array;
+        var center = [0,0,0];
+        var tmpV = new THREE.Vector3(0,0,0);
+        var expectedV = new THREE.Vector3(-50.48976135253906,19.15716552734375,0);
+        for (var i=0;i<pos.length;i+=3) {
+            tmpV.x += pos[i];
+            tmpV.y += pos[i+1];
+            tmpV.z += pos[i+2];
+        }
+        tmpV.multiplyScalar(3.0/pos.length);
+        tmpV.applyMatrix4(mesh.matrixWorld);
+        t.ok(tmpV.sub(expectedV).length() < TOLERANCE, 'Center should have expected value');
+        t.end();
+    }).catch(printError(t));
+});
+
+test('Sphere with matrix', function (t) {
+    builder.convert(_getScene('sphereMatrixScene')).then(function (result) {
+        var scene = result.getObject();
+        var errors = result.getErrorSummary();
+        t.ok(scene,'Object exist '+errors);
+        var mesh = scene.children[0].children[0];
+        var pos = mesh.geometry.attributes.position.array;
+        var center = [0,0,0];
+        var tmpV = new THREE.Vector3(0,0,0);
+        var expectedV = new THREE.Vector3(-50.48976135253906,19.15716552734375,0);
+        for (var i=0;i<pos.length;i+=3) {
+            tmpV.x += pos[i];
+            tmpV.y += pos[i+1];
+            tmpV.z += pos[i+2];
+        }
+        tmpV.multiplyScalar(3.0/pos.length);
+        tmpV.applyMatrix4(mesh.matrixWorld);
+        t.ok(tmpV.sub(expectedV).length() < TOLERANCE, 'Center should have expected value');
         t.end();
     }).catch(printError(t));
 });

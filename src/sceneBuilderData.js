@@ -165,6 +165,7 @@ SceneBuilderData.prototype.mergeInstances = function(other) {
             // does not allow multiple parents for the same object
             var func = THREE[child.type];
             var obj = new func(child.geometry, child.material);
+            child.updateMatrixWorld();
             obj.applyMatrix(child.matrixWorld);
             _this.object.add(obj);
         } else {
