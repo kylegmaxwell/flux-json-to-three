@@ -325,3 +325,14 @@ test( 'Invalid schema for polycurve', function ( t ) {
         t.end();
     }).catch(printError(t));
 });
+
+test('mixed value same prim', function (t) {
+    var data = [{"origin":[0,0,0],"primitive":"sphere","radius":1},
+                {"origin":[1,0,0],"primitive":"sphere","xradius":1}];
+    // When value is set it should be parsed, and model will be updated
+    builder.convert(data).then(function (result) {
+        t.ok(result.getErrorSummary().indexOf("sphere")!==-1,'Errors for mixed value');
+        t.ok(result.getObject(), 'Result exists in spite of errors');
+        t.end();
+    }).catch(printError(t));
+});
