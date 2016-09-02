@@ -6,7 +6,7 @@
  * interface and reliance on globals is isolated.
  */
 
-import fluxFetchReal from '@flux/flux-fetch';
+import fluxFetchReal from 'flux-fetch';
 
 /**
  * Wrapper around flux fetch, which assumes a stub when running tests.
