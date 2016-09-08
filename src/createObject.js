@@ -44,7 +44,8 @@ function _recursiveReduce (arr, cb) {
 export function isKnownGeom (data) {
     var prims = createPrimitive.listValidPrims();
     return _recursiveReduce(data, function (item) {
-        return prims.indexOf(item.primitive) !== -1;
+        return (prims.indexOf(item.primitive) !== -1)
+        && _hasGeometry(item);
     });
 }
 
@@ -90,6 +91,27 @@ export function createObject ( data, geomResult ) {
         _flattenData(data, geomResult);
         _createObject(geomResult);
     }
+}
+
+/**
+ * Helper function to check if the given element which
+ * can have displayable geomtry actually has displayable
+ * geometry. This is to prevent the viewport from switching
+ * to 3D view mode if the element does not have
+ * displayable geometry.
+ *
+ * @function _hasGeometry
+ *
+ * @param { Object } data Individual element
+ * @private
+*/
+
+function _hasGeometry(data) {
+    if (data.primitive === "revitElement") {
+        return revitHelper.hasGeometry(data);
+    }
+
+    return true;
 }
 
 /**

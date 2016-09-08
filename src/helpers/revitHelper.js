@@ -32,3 +32,18 @@ export function extractGeom (data) {
     }
     return data;
 }
+
+/**
+* Helper function to check if a revit element has
+* displayable (messh) geometry
+* from a revitElement object.
+*
+* @function hasGeometry
+*
+* @param { object } data The revitElement.
+*
+* @return { Boolean } True of element has geometry.
+*/
+export function hasGeometry (data) {
+    return data.geometryParameters && data.geometryParameters.geometry;
+}
