@@ -27,10 +27,13 @@ export default function computeNormals ( geometry ) {
         // with unique face vertices (no shared vertex between triangles).
         // This gives the most flexibility, since indexed buffer geometry affords
         // too much blending, and does not allow the necessary sharp creases.
-        newGeom = bufferUtils.splitVertices(geometry);
+        if (newGeom.index) {
+            newGeom = newGeom.toNonIndexed();
+        }
 
         // Just get the normals per triangle to be used in the cusp calculation
-        _computeFlatFaceNormals(newGeom);
+        // This function actually generates face normals for non indexed geometry
+        newGeom.computeVertexNormals();
 
         // Re-index the geometry merging triangles that have shared vertices.
         // I know we just blew them away, but now we have the full list of triangles
@@ -139,46 +142,6 @@ function _computeCuspNormals( geom, thresh ) {
             vertexNormals[0] = faceNormals[f][0].clone();
             vertexNormals[1] = faceNormals[f][1].clone();
             vertexNormals[2] = faceNormals[f][2].clone();
-        }
-    }
-}
-
-/**
- * Compute one normal vector per face and apply to each face vertex
- * @param  {THREE.BufferGeometry} geom Geometry in need of normals
- */
-function _computeFlatFaceNormals(geom) {
-    var pos = geom.attributes.position.array;
-    var attrName = 'normal';
-    if ( geom.attributes[attrName] === undefined ) {
-        geom.addAttribute( attrName, new THREE.BufferAttribute( new Float32Array( pos.length ), 3 ) );
-    }
-    var n = geom.attributes[attrName].array;
-    var i, v, il;
-    var cb = new THREE.Vector3();
-    var ab = new THREE.Vector3();
-    for (i=0, il=pos.length;i<il;i+=9) {
-
-        var iA = i;
-        var iB = i+3;
-        var iC = i+6;
-
-        cb.set(pos[iC  ]-pos[iB  ],
-               pos[iC+1]-pos[iB+1],
-               pos[iC+2]-pos[iB+2]);
-        ab.set(pos[iA  ]-pos[iB  ],
-               pos[iA+1]-pos[iB+1],
-               pos[iA+2]-pos[iB+2]);
-        cb.cross( ab );
-        cb.normalize();
-
-        var face = [iA,iB,iC];
-        // For each vertex on the face
-        for (v=0; v<3; v++) {
-            var faceAbc = face[v];
-            n[faceAbc  ] = cb.x;
-            n[faceAbc+1] = cb.y;
-            n[faceAbc+2] = cb.z;
         }
     }
 }

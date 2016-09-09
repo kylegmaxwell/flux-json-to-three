@@ -24,7 +24,7 @@ export function mergeBufferGeom(meshes) {
         geom2 = meshes[m].geometry;
         if (geom2.index) {
             // throw new FluxGeometryError('Not expecting indexed geometry.');
-            meshes[m].geometry = splitVertices(geom2);
+            meshes[m].geometry = geom2.toNonIndexed();
         }
         geom2 = meshes[m].geometry;
         if (!geom2.attributes.normal) {
@@ -119,34 +119,4 @@ export function mergeVertices(geom) {
         }
     }
 
-}
-
-/**
- * Split the faces of an indexed buffer geometry
- * This creates attribute arrays that are populated per face vertex allowing
- * it to have sharp changes in attributes and not need an index array.
- * @param  {THREE.BufferGeometry} geom The indexed geometry to split
- * @return {THREE.BufferGeometry}      A modified clone or the original geometry
- */
-export function splitVertices(geom) {
-    var geometry = new THREE.BufferGeometry();
-    if (!geom.index) return geom;
-    var i, j, il, idx;
-    var index = geom.index.array;
-    // for each attribute
-    for ( var key in geom.attributes ) {
-        var attr = geom.attributes[key].array;
-        var values = new Float32Array(index.length*3);
-        // Don't care about uv and other stuff
-        if (key !== 'color' && key !== 'position' && key !== 'normal') continue;
-        for ( j=0, i=0, il=index.length; i < il; i++) {
-            idx = index[i]*3;
-            values[j++]=attr[idx];
-            values[j++]=attr[idx+1];
-            values[j++]=attr[idx+2];
-        }
-        geometry.addAttribute( key, new THREE.BufferAttribute( values, 3 ) );
-    }
-    geom.dispose();
-    return geometry;
 }
