@@ -1,8 +1,9 @@
 {
   "name": "flux-json-to-three",
-  "version": "0.17.0",
+  "version": "0.18.0",
   "description": "A module that takes parasolid data and produces Three.js objects",
   "main": "build/index.common.js",
+  "jsnext:main": "src/index.js",
   "repository": "git@bitbucket.org:vannevartech/flux-json-to-three.git",
   "author": "Flux Factory Inc.",
   "keywords": [
@@ -25,17 +26,17 @@
   },
   "dependencies": {
     "ajv": "^3.8.10",
-    "eslint": "^1.9.0",
+    "eslint": "^3.5.0",
     "flux-fetch": "^0.1.1",
-    "flux-modelingjs": "0.0.8",
+    "flux-modelingjs": "0.1.0",
     "json-pointer": "^0.5.0",
-    "rollup": "^0.26.7",
-    "rollup-plugin-commonjs": "^2.2.1",
-    "rollup-plugin-json": "^2.0.0",
-    "rollup-plugin-node-builtins": "^1.0.6",
-    "rollup-plugin-node-globals": "^1.0.5",
-    "rollup-plugin-node-resolve": "^1.5.0",
-    "rollup-plugin-replace": "^1.1.0",
+    "rollup": "^0.35.10",
+    "rollup-plugin-commonjs": "^4.1.0",
+    "rollup-plugin-json": "^2.0.2",
+    "rollup-plugin-node-builtins": "^1.0.8",
+    "rollup-plugin-node-globals": "^1.0.7",
+    "rollup-plugin-node-resolve": "^2.0.0",
+    "rollup-plugin-replace": "^1.1.1",
     "tape": "^4.2.2",
     "three": "^0.79.0"
   }

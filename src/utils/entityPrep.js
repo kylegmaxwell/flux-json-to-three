@@ -5,7 +5,7 @@
 
 import convertUnits from '../units/unitConverter.js';
 import * as schema from '../schemaValidator.js';
-import SceneValidator from 'flux-modelingjs/SceneValidator.js';
+import {scene as modeling} from 'flux-modelingjs';
 import * as materials from './materials.js';
 import * as constants from '../constants.js';
 
@@ -113,7 +113,7 @@ function _checkScene(obj, primStatus) {
  * @return {Boolean}            Returns true when the scene should be removed
  */
 function _checkSceneHelper(scene, primStatus) {
-    var sceneValidator = new SceneValidator();
+    var sceneValidator = new modeling.Validator();
     var sceneValid = sceneValidator.validateJSON(scene);
     if (!sceneValid.getResult()) {
         primStatus.appendError('scene', sceneValid.getMessage());
@@ -131,7 +131,7 @@ function _convertColors(obj) {
         for (var key in obj) {
             var value = obj[key];
             if (key === 'color' && typeof obj[key] === 'string') {
-                obj[key] = materials.colorToArray(value);
+                obj[key] = materials.scene.colorToArray(value);
             } else {
                 _convertColors(value);
             }

@@ -4,11 +4,9 @@ import THREE from 'three';
 import * as Create from './createObject.js';
 import GeometryResults from './geometryResults.js';
 import * as compatibility from './compatibility.js';
-import * as print from './debugConsole.js';
+import * as print from './debugPrint.js';
 import * as constants from './constants.js';
-
-import modelingFunc from 'flux-modelingjs/modeling.js';
-var modeling = modelingFunc({'skip':true});
+import {Query, Operation} from 'flux-modelingjs';
 
 /**
 * Stand in for the finished status on an xhr
@@ -102,7 +100,7 @@ GeometryBuilder.prototype.convertHelper = function(entities) {
  * More info on Parasolid Entities can be found here:
  * https://bitbucket.org/vannevartech/parasolid-worker/src/master/doc/ENTITIES.md
  * Formal schema is here:
- * https://bitbucket.org/vannevartech/flux-modelingjs/src/master/schemas/flux-entity.json
+ * https://bitbucket.org/vannevartech/flux-modelingjs/src/master/schema/flux-entity.json
  * @param    {Object}    data    The geometry data as objects
  * @param    {GeometryResults}    geometryResults    Geometry and errors object
  */
@@ -294,13 +292,13 @@ GeometryBuilder.prototype._tessellateValues = function (geometryResults) {
  * @return {Object}     JSON object with parameters describing the operations to be sent to parasolid
  */
 GeometryBuilder.prototype._constructScene = function (geometryResults, values, primitives) {
-    var scene = modeling.query();
+    var scene = new Query();
     for (var i=0; i<values.length; i++) {
         var value = values[i];
         if (!value || !value.primitive) continue;
         var resultId = 'result'+i;
         scene.add(resultId, value);
-        var tessOp = modeling.operations.tessellateJson(resultId, this.tessellateQuality, 1.0);
+        var tessOp = Operation.tessellateJson(resultId, this.tessellateQuality, 1.0);
         // The first argument must be a unique id. It is an integer
         // so it can be used to look up the primitive later.
         scene.add(resultId, tessOp);
