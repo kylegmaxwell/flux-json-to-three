@@ -22,9 +22,7 @@
     {
       "entity": "dataKey0",
       "id": "stuff",
-      "matrix": [
-        1,0,0,0,0,1,0,0,0,0,1,0,-20,0,0,1
-      ],
+      "matrix": [1, 0, 0, -20, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
       "primitive": "instance"
     },
     {
@@ -42,29 +40,26 @@
 {
   "elements": [
     {
-      "children": ["bush2"
-      ],
+      "children": ["bush2"],
       "id": "bush1",
-      "matrix": [1,0,0,0,0,1,0,0,0,0,1,0,-20,0,0,1],
+      "matrix": [1, 0, 0, -20, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
       "primitive": "assembly"
     },
     {
       "children": ["bush3"],
       "id": "bush2",
-      "matrix": [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],
+      "matrix": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
       "primitive": "assembly"
     },
     {
-      "children": ["bush1"
-      ],
+      "children": ["bush1"],
       "id": "bush3",
-      "matrix": [1,0,0,0,0,1,0,0,0,0,1,0,20,0,0,1],
+      "matrix": [1, 0, 0, 20, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
       "primitive": "assembly"
     },
     {
       "color": [0,1,0],
-      "elements": ["bush1"
-      ],
+      "elements": ["bush1"],
       "id": "plants",
       "primitive": "layer"
     }

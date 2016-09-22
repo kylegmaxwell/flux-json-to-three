@@ -23,7 +23,7 @@
             "id": "stuff",
             "primitive": "instance",
             "entity": "dataKey0",
-            "matrix": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -20, 0, 0, 1]
+            "matrix": [1, 0, 0, -20, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
         },
         {
             "id": "myLayer",

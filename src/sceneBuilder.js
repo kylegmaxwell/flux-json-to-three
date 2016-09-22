@@ -160,6 +160,9 @@ SceneBuilder.prototype._createLayer = function(data, sceneBuilderData) {
         return combo;
     }).then(function(result) { // apply layer overrides
         setObjectColor(result.object, data.color);
+        if (data.visible != null) {
+            result.object.visible = !!data.visible;
+        }
         return result;
     });
     return layerPromise.then(function(result) {

@@ -5,20 +5,17 @@
         {
             "id": "bush1",
             "primitive": "assembly",
-            "children": ["bush2"],
-            "matrix": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -20, 0, 0, 1]
+            "children": ["bush2"]
         },
         {
             "id": "bush2",
             "primitive": "assembly",
-            "children": ["bush3"],
-            "matrix": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+            "children": ["bush3"]
         },
         {
             "id": "bush3",
             "primitive": "assembly",
-            "children": ["bush1"],
-            "matrix": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 20, 0, 0, 1]
+            "children": ["bush1"]
         },
         {
             "id": "plants",

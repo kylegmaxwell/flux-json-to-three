@@ -239,3 +239,15 @@ test('Sphere with matrix', function (t) {
         t.end();
     }).catch(printError(t));
 });
+
+test('Layer with visible', function (t) {
+    builder.convert(_getScene('layerVisibleScene')).then(function (result) {
+        var scene = result.getObject();
+        var errors = result.getErrorSummary();
+        t.ok(scene,'Object exist '+errors);
+        // order is not guaranteed, so assert that at least one must be hidden
+        var hidden = scene.children[0].visible === false || scene.children[1].visible === false;
+        t.equal(hidden, true, 'Layer should not be visible');
+        t.end();
+    }).catch(printError(t));
+});

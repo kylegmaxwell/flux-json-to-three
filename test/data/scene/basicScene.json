@@ -12,7 +12,7 @@
             "id": "bush1",
             "primitive": "instance",
             "entity": "ball",
-            "matrix": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -20, 0, 0, 1]
+            "matrix": [1, 0, 0, -20, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
         },
         {
             "id": "bush2",
@@ -24,7 +24,7 @@
             "id": "bush3",
             "primitive": "instance",
             "entity": "ball",
-            "matrix": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 20, 0, 0, 1]
+            "matrix": [1, 0, 0, 20, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
         },
         {
             "id": "plants",
