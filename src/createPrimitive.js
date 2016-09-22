@@ -406,7 +406,7 @@ function _createMaterial ( type, materialProperties, geomResult) {
     // Just the properties that actually make sense for this material
     var props = {};
     // Add sidedness to local state if it is not present
-    if ( materialProperties && !materialProperties.side ) {
+    if ( !materialProperties || materialProperties.side == null ) {
         props.side = THREE.DoubleSide;
     } else {
         props.side = materialProperties.side;
