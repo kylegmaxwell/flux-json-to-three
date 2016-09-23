@@ -23,3 +23,5 @@ global.XMLHttpRequest = function () {
         overrideMimeType: function () {}
     }
 };
+
+global.self = global;

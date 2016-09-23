@@ -6,7 +6,8 @@
 
 import THREE from 'three';
 import * as constants from '../constants.js';
-import materials from 'flux-modelingjs/src/materials.js';
+
+export {scene} from 'flux-modelingjs';
 
 /**
  * Convert a material to hash like string.
@@ -93,13 +94,4 @@ export function _getEntityData(data, attr, defaultAttr) {
         value = data.attributes.materialProperties[attr];
     }
     return value;
-}
-
-/**
- * Convert a string color to an array of three normalized values
- * @param  {String} colorName   The CSS color string
- * @return {Array.<Number>}     The values [r,g,b]
- */
-export function colorToArray(colorName) {
-    return materials.colorToArray(colorName);
 }

@@ -5,9 +5,9 @@
 
 import THREE from 'three';
 import SceneBuilderData from './sceneBuilderData.js';
-import * as print from './debugConsole.js';
+import * as print from './debugPrint.js';
 import GeometryBuilder from './geometryBuilder.js';
-import SceneValidator from 'flux-modelingjs/SceneValidator.js';
+import {scene} from 'flux-modelingjs';
 import * as constants from './constants.js';
 import setObjectColor from './sceneEdit.js';
 import cleanElement from './utils/entityPrep.js';
@@ -65,7 +65,7 @@ function _findTheScenes(data) {
     var array = _flattenArray([data], []);
     for (var i=0;i<array.length;i++) {
         var element = array[i];
-        if (SceneValidator.isScene(element)) {
+        if (scene.Validator.isScene(element)) {
             scenes.push(element);
         }
     }

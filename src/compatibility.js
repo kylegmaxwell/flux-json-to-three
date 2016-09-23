@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint-disable no-constant-condition */
+
 /**
  * All the functions in this module wrap functionality that differs
  * between browsers and tests, so that other code can see a consistent

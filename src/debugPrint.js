@@ -1,5 +1,5 @@
 /**
- * Container class for 3D geometry and errors.
+ * Utilities to isolate console use
  */
 'use strict';
 

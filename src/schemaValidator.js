@@ -4,10 +4,12 @@
 'use strict';
 
 import Ajv from 'ajv/dist/ajv.min.js';
-import * as entitiesJson from 'flux-modelingjs/schemas/flux-entity.json';
-import * as materialsJson from 'flux-modelingjs/schemas/flux-material.json';
-import * as revitJson from 'flux-modelingjs/schemas/flux-revit.json';
+import {schema} from 'flux-modelingjs';
 import * as constants from './constants.js';
+
+var entitiesJson = schema.entity;
+var materialsJson = schema.material;
+var revitJson = schema.revit;
 
 // Mapping from primitive names to schema validator functions
 var ajvValidators = null;
