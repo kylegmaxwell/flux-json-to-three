@@ -1,5 +1,4 @@
-{
-  "elements": [
+[
     {
       "Units": null,
       "faces": [
@@ -328,7 +327,7 @@
       "id": "3395ca36-e382-45e1-a362-aab575bd69ec",
       "label": "0",
       "primitive": "layer",
-      "visible": false
+      "visible": true
     },
     {
       "Units": null,
@@ -649,7 +648,4 @@
       ],
       "primitive": "instance"
     }
-  ],
-  "primitive": "scene",
-  "version": "0.0.1"
-}
+]

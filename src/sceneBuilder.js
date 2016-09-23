@@ -22,6 +22,22 @@ export default function SceneBuilder(tessUrl, token) {
 }
 
 /**
+ * Check whether the given scene is valid and add message
+ * @param  {Object} data        Flux JSON to check and modify
+ * @param  {StatusMap} primStatus Container for error messages
+ * @return {Boolean}      True for valid
+ */
+function _checkScene(data, primStatus) {
+    var sceneValidator = new scene.Validator();
+    var sceneValid = sceneValidator.validateJSON(data);
+    if (!sceneValid.getResult()) {
+        primStatus.appendError('scene', sceneValid.getMessage());
+        return false;
+    }
+    return true;
+}
+
+/**
  * Convert JSON data to a tree of three.js geometry
  * Conversion is asynchronous, so results are returned in promises.
  * @param  {Object} data JSON data containing scene
@@ -34,67 +50,17 @@ SceneBuilder.prototype.convert = function(data) {
         return Promise.resolve(sceneBuilderData.getResults());
     }
     var dataClean = cleanElement(data, sceneBuilderData.primStatus);
-    var scenes = _findTheScenes(dataClean, sceneBuilderData);
-    var builderPromises=[];
-    if (scenes) {
-        for (var i=0;i<scenes.length;i++) {
-            builderPromises.push(this._convertScene(scenes[i].elements, sceneBuilderData));
-        }
-        if (builderPromises.length === 0) {
-            return Promise.resolve(sceneBuilderData.getResults());
-        }
+    var builderPromise;
+    if (scene.Validator.isScene(dataClean) && _checkScene(dataClean, sceneBuilderData.primStatus)) {
+        builderPromise = this._convertScene(dataClean, sceneBuilderData);
     } else {
-        builderPromises = [this._createEntity(dataClean)];
+        builderPromise = this._createEntity(dataClean);
     }
-
-    return Promise.all(builderPromises).then(function(newBuilderData) {
-        for (var i=0;i<newBuilderData.length;i++) {
-            sceneBuilderData.mergeScenes(newBuilderData[i]);
-        }
+    return builderPromise.then(function(newBuilderData) {
+        sceneBuilderData.mergeScenes(newBuilderData);
         return sceneBuilderData.getResults();
     });
 };
-
-/**
- * Find the scenes in the data and return a flat list.
- * @param  {Object} data         Flux json
- * @return {Object}              Scene json object or array of objects or null
- */
-function _findTheScenes(data) {
-    var scenes = [];
-    var array = _flattenArray([data], []);
-    for (var i=0;i<array.length;i++) {
-        var element = array[i];
-        if (scene.Validator.isScene(element)) {
-            scenes.push(element);
-        }
-    }
-    if (scenes.length > 0) {
-        return scenes;
-    } else {
-        return null;
-    }
-}
-
-/**
- * Flatten a nested array into a simple list
- * This function is recursive.
- * @param  {Array} arr    Source data
- * @param  {Array} result Empty array to store elements
- * @return {Array}        Return the result again for convenience
- */
-function _flattenArray(arr, result) {
-    if (arr == null) return result;
-
-    if (arr.constructor === Array) {
-        for (var i=0;i<arr.length;i++) {
-            _flattenArray(arr[i], result);
-        }
-    } else {
-        result.push(arr);
-    }
-    return result;
-}
 
 /**
  * Convert the scene data into a THREE.Object3D
@@ -103,9 +69,10 @@ function _flattenArray(arr, result) {
  * @return {Promise}                            Promise for SceneBuilderData
  */
 SceneBuilder.prototype._convertScene = function(entities, sceneBuilderData) {
-    var array = _flattenArray([entities], []);
+    var array = entities;
     for (var i=0;i<array.length;i++) {
         var element = array[i];
+        if (element == null) continue;
         sceneBuilderData.setEntityData(element);
         if (element.primitive && element.primitive === constants.SCENE_PRIMITIVES.layer) {
             sceneBuilderData.addLayer(element);
@@ -189,8 +156,8 @@ SceneBuilder.prototype._createSceneElement = function(elementId, sceneBuilderDat
     }
     if (element.primitive === constants.SCENE_PRIMITIVES.instance) {
         return this._createInstance(element, sceneBuilderData);
-    } else if (element.primitive === constants.SCENE_PRIMITIVES.assembly) {
-        return this._createAssembly(element, sceneBuilderData);
+    } else if (element.primitive === constants.SCENE_PRIMITIVES.group) {
+        return this._createGroup(element, sceneBuilderData);
     } else if (element.primitive === constants.SCENE_PRIMITIVES.geometry) {
         return this._createGeometryContainer(element);
     } else { // entity
@@ -227,7 +194,7 @@ function _applyTransform(matrix, object) {
 
 /**
  * Instances are special and reuse their entities
- * @param  {Object} element                     JSON data for assembly
+ * @param  {Object} element                     JSON data for group
  * @param  {SceneBuilderData} sceneBuilderData  Container for results and errors
  * @return {Promise}                            Promise for SceneBuilderData
  */
@@ -242,18 +209,18 @@ SceneBuilder.prototype._createInstance = function(element, sceneBuilderData) {
     });
 };
 /**
- * Create an assembly collection of elements with a transform
- * @param  {Object} element                     JSON data for assembly
+ * Create an group collection of elements with a transform
+ * @param  {Object} element                     JSON data for group
  * @param  {SceneBuilderData} sceneBuilderData  Container for results and errors
  * @return {Promise}                            Promise for SceneBuilderData
  */
-SceneBuilder.prototype._createAssembly = function(element, sceneBuilderData) {
+SceneBuilder.prototype._createGroup = function(element, sceneBuilderData) {
     var promises = [];
     for (var c=0;c<element.children.length;c++) {
         var child = element.children[c];
         promises.push(this._createSceneElement(child, sceneBuilderData));
     }
-    var assemblyPromise = Promise.all(promises).then(function (results) { // merge elements
+    var groupPromise = Promise.all(promises).then(function (results) { // merge elements
         if (results.length===0) return sceneBuilderData;
         var combo = new SceneBuilderData();
         _applyTransform(element.matrix, combo.object);
@@ -262,7 +229,7 @@ SceneBuilder.prototype._createAssembly = function(element, sceneBuilderData) {
         }
         return combo;
     });
-    return assemblyPromise.then(function(result) {
+    return groupPromise.then(function(result) {
         // cache the layer
         var id = element.id;
         if (id) {

@@ -1,49 +1,44 @@
+[
+{
+  "attributes": {},
+  "id": "5f930d9c-fa3c-404b-9009-13888cc00c9d",
+  "origin": [
+    -50.48976135253906,
+    19.15716552734375,
+    0
+  ],
+  "primitive": "sphere",
+  "radius": 14.386938095092773
+},
+{
+  "entity": "5f930d9c-fa3c-404b-9009-13888cc00c9d",
+  "id": "d8bc3a25-ab44-4780-84de-99f758f11afe",
+  "label": "Sphere001",
+  "matrix": [
+    1,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0,
+    1
+  ],
+  "primitive": "instance"
+},
 {
   "elements": [
-    {
-      "attributes": {},
-      "id": "5f930d9c-fa3c-404b-9009-13888cc00c9d",
-      "origin": [
-        -50.48976135253906,
-        19.15716552734375,
-        0
-      ],
-      "primitive": "sphere",
-      "radius": 14.386938095092773
-    },
-    {
-      "entity": "5f930d9c-fa3c-404b-9009-13888cc00c9d",
-      "id": "d8bc3a25-ab44-4780-84de-99f758f11afe",
-      "label": "Sphere001",
-      "matrix": [
-        1,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        0,
-        1
-      ],
-      "primitive": "instance"
-    },
-    {
-      "elements": [
-        "d8bc3a25-ab44-4780-84de-99f758f11afe"
-      ],
-      "id": "a1024674-4af6-4262-ba71-12c6f8438e19",
-      "primitive": "layer",
-      "visible": false
-    }
+    "d8bc3a25-ab44-4780-84de-99f758f11afe"
   ],
-  "primitive": "scene",
-  "version": "0.0.1"
+  "id": "a1024674-4af6-4262-ba71-12c6f8438e19",
+  "primitive": "layer"
 }
+]

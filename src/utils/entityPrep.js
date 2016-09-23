@@ -5,7 +5,6 @@
 
 import convertUnits from '../units/unitConverter.js';
 import * as schema from '../schemaValidator.js';
-import {scene as modeling} from 'flux-modelingjs';
 import * as materials from './materials.js';
 import * as constants from '../constants.js';
 
@@ -84,45 +83,6 @@ function _checkSchema(obj, primStatus) {
 }
 
 /**
- * Check whether the given scene is valid
- * Removes invalid scene objects
- * @param  {Object} obj        Flux JSON to check and modify
- * @param  {StatusMap} primStatus Container for error messages
- * @return {Boolean}            Returns true for scenes that need to be removed
- */
-function _checkScene(obj, primStatus) {
-    if (obj != null && typeof obj === 'object') {
-        if (obj.primitive === 'scene') {
-            if (_checkSceneHelper(obj, primStatus)) {
-                return true;
-            }
-        } else {
-            for (var key in obj) {
-                if (_checkScene(obj[key], primStatus)) {
-                    obj[key] = null;
-                }
-            }
-        }
-    }
-}
-
-/**
- * Helper function validates a scene primitive once it is found
- * @param  {Object} scene      Flux JSON scene to check
- * @param  {StatusMap} primStatus Container for error messages
- * @return {Boolean}            Returns true when the scene should be removed
- */
-function _checkSceneHelper(scene, primStatus) {
-    var sceneValidator = new modeling.Validator();
-    var sceneValid = sceneValidator.validateJSON(scene);
-    if (!sceneValid.getResult()) {
-        primStatus.appendError('scene', sceneValid.getMessage());
-        return true;
-    }
-}
-
-
-/**
  * Convert color strings to arrays
  * @param  {Object} obj Flux JSON data to be modified
  */
@@ -169,6 +129,26 @@ function _checkMaterials(obj, primStatus) {
 }
 
 /**
+ * Flatten a nested array into a simple list
+ * This function is recursive.
+ * @param  {Array} arr    Source data
+ * @param  {Array} result Empty array to store elements
+ * @return {Array}        Return the result again for convenience
+ */
+function _flattenArray(arr, result) {
+    if (arr == null) return result;
+
+    if (arr.constructor === Array) {
+        for (var i=0;i<arr.length;i++) {
+            _flattenArray(arr[i], result);
+        }
+    } else {
+        result.push(arr);
+    }
+    return result;
+}
+
+/**
  * Clone an element and remove null properties
  * @param  {Object} entity JSON element data
  * @param  {StatusMap} primStatus Map to track errors per primitive
@@ -181,13 +161,12 @@ export default function cleanElement(entity, primStatus) {
     // data structure without modifying the result then this clone will not be necessary.
     var entityClone = JSON.parse(JSON.stringify(entity));
 
+    // Guarantee that the data is an array and it is flat
+    entityClone = _flattenArray([entity], []);
+
     _convertColors(entityClone);
 
     _checkMaterials(entityClone, primStatus);
-
-    if (_checkScene(entityClone, primStatus)) {
-        return null;
-    }
 
     // Get rid of invalid properties commonly sent by plugins on elements
     // If they remain these properties will fail schema validation.

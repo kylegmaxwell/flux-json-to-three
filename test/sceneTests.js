@@ -75,8 +75,7 @@ test('should have an error message for bad entities', function (t) {
     // When value is set it should be parsed, and model will be updated
     builder.convert(_getScene('badEntityScene')).then(function (result) {
         var scene = result.getObject();
-        t.ok(scene,'Object exist');
-        t.equal(scene.children.length, 1, 'One layer')
+        t.ok(!scene,'Object not exist');
         var summary = result.getErrorSummary();
         t.ok(summary.indexOf('sphere:ball')!==-1,'Report error entity');
         t.ok(summary.indexOf('origin')!==-1,'Report error property');
@@ -88,9 +87,9 @@ test('should have an error message for bad layers', function (t) {
     // When value is set it should be parsed, and model will be updated
     builder.convert(_getScene('badLayerScene')).then(function (result) {
         var scene = result.getObject();
-        t.ok(!scene,'Object not exist');
+        t.ok(scene,'Object exist');
         var summary = result.getErrorSummary();
-        t.ok(summary.indexOf('ID')!==-1,'Message contains (ID): ('+summary+')');
+        t.ok(summary.indexOf('plants')!==-1,'Message contains id (plants): ('+summary+')');
         t.end();
     }).catch(printError(t));
 });
@@ -132,8 +131,8 @@ test('Set garbage', function (t) {
     }).catch(printError(t));
 });
 
-test('Valid assembly', function (t) {
-    builder.convert(_getScene('validAssembly')).then(function (result) {
+test('Valid group', function (t) {
+    builder.convert(_getScene('validGroup')).then(function (result) {
         var scene = result.getObject();
         var errors = result.getErrorSummary();
         t.ok(scene,'Object exist: '+errors);
@@ -142,8 +141,8 @@ test('Valid assembly', function (t) {
     }).catch(printError(t));
 });
 
-test('Should not allow cyclic references in assemblies', function (t) {
-    builder.convert(_getScene('cyclicAssembly')).then(function (result) {
+test('Should not allow cyclic references in groups', function (t) {
+    builder.convert(_getScene('cyclicGroup')).then(function (result) {
         var scene = result.getObject();
         var errors = result.getErrorSummary();
         t.ok(!scene,'Object null');
@@ -169,8 +168,6 @@ test('Partially valid scene', function (t) {
         var errors = result.getErrorSummary();
         var id = 'sphere:ball2';
         t.ok(errors.indexOf(id)!==-1, 'Should have id ('+id+') in: ('+errors+')');
-        var layer = result._getObjectById('plants');
-        t.equal(layer.children.length,2,'Two instances');
         t.end();
     }).catch(printError(t));
 });
@@ -181,16 +178,6 @@ test('Max scene with nulls', function (t) {
         t.ok(scene,'Object exists');
         var errors = result.getErrorSummary();
         t.equal(errors,'','No errors');
-        t.end();
-    }).catch(printError(t));
-});
-
-test('mixedValidScenes', function (t) {
-    builder.convert(_getScene('mixedValidScenes')).then(function (result) {
-        var scene = result.getObject();
-        t.ok(scene,'Object exists');
-        var errors = result.getErrorSummary();
-        t.ok(errors.indexOf('scene')!==-1,'Has issues');
         t.end();
     }).catch(printError(t));
 });
@@ -248,6 +235,18 @@ test('Layer with visible', function (t) {
         // order is not guaranteed, so assert that at least one must be hidden
         var hidden = scene.children[0].visible === false || scene.children[1].visible === false;
         t.equal(hidden, true, 'Layer should not be visible');
+        t.end();
+    }).catch(printError(t));
+});
+
+test('Layer none visible', function (t) {
+    var sceneJson = _getScene('layerVisibleScene');
+    sceneJson[4].visible = false;
+    builder.convert(sceneJson).then(function (result) {
+        var scene = result.getObject();
+        var errors = result.getErrorSummary();
+        t.ok(scene,'Object exist '+errors);
+        t.ok(errors.indexOf('visible')!== -1, 'Errors should mention visible');
         t.end();
     }).catch(printError(t));
 });

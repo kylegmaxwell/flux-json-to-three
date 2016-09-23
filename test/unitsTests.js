@@ -12,7 +12,7 @@ test( 'Units translation', function ( t ) {
     var results = new GeometryResults();
     Object.keys(fixturesUnits).forEach(function (key) {
         console.log('Fixture: '+key);
-        var entity = index.cleanElement(fixturesUnits[key].start);
+        var entity = index.cleanElement(fixturesUnits[key].start)[0];
         var succeedStr = fixturesUnits[key].succeed ? 'pass' : 'fail';
         var hasException = false;
         try {

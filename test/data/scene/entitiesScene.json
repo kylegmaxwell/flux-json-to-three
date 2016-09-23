@@ -1,35 +1,31 @@
-{
-    "primitive": "scene",
-    "version":"0.0.1",
-    "elements":[
-        {
-            "id":"dataKey0",
-            "entity":[
-                {
-                    "id":"ball",
-                    "origin":[0,0,10],
-                    "radius":10,
-                    "primitive":"sphere"
-                },{
-                    "id":"ball",
-                    "origin":[0,0,-10],
-                    "radius":10,
-                    "primitive":"sphere"
-                }
-            ],
-            "primitive":"alphaGeometryContainer"
-        },
-        {
-            "id": "stuff",
-            "primitive": "instance",
-            "entity": "dataKey0",
-            "matrix": [1, 0, 0, -20, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
-        },
-        {
-            "id": "myLayer",
-            "primitive": "layer",
-            "color": [0.8,0.5,0.3],
-            "elements": ["stuff"]
-        }
-    ]
-}
+[
+    {
+        "id":"dataKey0",
+        "entity":[
+            {
+                "id":"ball",
+                "origin":[0,0,10],
+                "radius":10,
+                "primitive":"sphere"
+            },{
+                "id":"ball",
+                "origin":[0,0,-10],
+                "radius":10,
+                "primitive":"sphere"
+            }
+        ],
+        "primitive":"alphaGeometryContainer"
+    },
+    {
+        "id": "stuff",
+        "primitive": "instance",
+        "entity": "dataKey0",
+        "matrix": [1, 0, 0, -20, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+    },
+    {
+        "id": "myLayer",
+        "primitive": "layer",
+        "color": [0.8,0.5,0.3],
+        "elements": ["stuff"]
+    }
+]

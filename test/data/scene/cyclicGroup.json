@@ -1,0 +1,23 @@
+[
+    {
+        "id": "bush1",
+        "primitive": "group",
+        "children": ["bush2"]
+    },
+    {
+        "id": "bush2",
+        "primitive": "group",
+        "children": ["bush3"]
+    },
+    {
+        "id": "bush3",
+        "primitive": "group",
+        "children": ["bush1"]
+    },
+    {
+        "id": "plants",
+        "primitive": "layer",
+        "color": [0,1,0],
+        "elements": ["bush1"]
+    }
+]

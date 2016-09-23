@@ -135,7 +135,7 @@ export function sphere ( data, material ) {
         throw new FluxGeometryError('Sphere is missing radius.');
     }
 
-    geometry = new THREE.SphereBufferGeometry( data.radius, 12, 8 );
+    geometry = new THREE.SphereBufferGeometry( data.radius, 24, 24 );
     geometry = computeNormals(geometry);
     mesh = new THREE.Mesh( geometry, material );
     rotateGeometry( mesh, constants.DEFAULT_ROTATION );
