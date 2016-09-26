@@ -1,7 +1,6 @@
 'use strict';
 
 var test = require('tape');
-var THREE = require('three');
 var index = require('../build/index-test.common.js');
 var SceneBuilder = index.SceneBuilder;
 var builder = new SceneBuilder('parasolid','ibl');
@@ -53,9 +52,9 @@ test('should not share attributes between material types', function (t) {
         t.equal(color0.g,1,'color0 g');
         t.equal(color0.b,1,'color0 b');
 
-        t.equal(color1.r,1,'color1 r')
-        t.equal(color1.g,1,'color1 g')
-        t.equal(color1.b,1,'color1 b')
+        t.equal(color1.r,1,'color1 r');
+        t.equal(color1.g,1,'color1 g');
+        t.equal(color1.b,1,'color1 b');
 
         var vertColor0 =  children[0].geometry.attributes.color.array;
         var vertColor1 =  children[1].geometry.attributes.color.array;
@@ -222,6 +221,31 @@ test('should not merge material parameters with falsy value', function (t) {
     builder.convert(panels).then(function (result) {
         t.ok(result.getObject(),'Create a mesh');
         t.equal(result.getObject().children.length,2,'Two children');
+        t.end();
+    }).catch(printError(t));
+});
+
+
+test('should default to double sided', function (t) {
+    var sphere = {"origin":[0,0,0],"primitive":"sphere","radius":10};
+    // When value is set it should be parsed, and model will be updated
+    builder.convert(sphere).then(function (result) {
+        var summary = result.getErrorSummary();
+        var obj = result.getObject();
+        t.ok(obj,'Create a mesh '+summary);
+        t.equal(obj.children[0].material.side, 2, 'Default to double side');
+        t.end();
+    }).catch(printError(t));
+});
+
+test('should be able to set side to 0', function (t) {
+    var sphere = {"materialProperties":{"side":0},"origin":[0,0,0],"primitive":"sphere","radius":10};
+    // When value is set it should be parsed, and model will be updated
+    builder.convert(sphere).then(function (result) {
+        var summary = result.getErrorSummary();
+        var obj = result.getObject();
+        t.ok(obj,'Create a mesh '+summary);
+        t.equal(obj.children[0].material.side, 0, 'Set to zero');
         t.end();
     }).catch(printError(t));
 });
