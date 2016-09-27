@@ -3,10 +3,8 @@
 var test = require('tape');
 var THREE = require('three');
 var index = require('../build/index-test.common.js');
-var FluxGeometryError = index.FluxGeometryError;
 var SceneBuilder = index.SceneBuilder;
 var fixtures = require('./data/fixtures.js');
-var sphereRound = require('./data/sphere-round.json');
 var sphereSurface = require('./data/sphere-surface.json');
 
 var TOLERANCE = 0.000001;
@@ -154,7 +152,7 @@ normalsTests.forEach(function (elem) {
                     t.equal(isFlat,elem.faceNormals, 'Face '+(i/9)+' should '+flatWord+'have face normals');
                 }
             } else {
-                for (var i = 0; i < geom.faces.length; i++) {
+                for (i = 0; i < geom.faces.length; i++) {
                     t.ok(geom.faces[i].vertexNormals.length === (elem.faceNormals ? 0 : 3), 'Has the right number of face normals');
                 }
             }
@@ -162,25 +160,6 @@ normalsTests.forEach(function (elem) {
         }).catch(printError(t));
     });
 }); // end for each
-
-test('should make round nurbs spheres', function (t) {
-    // When value is set it should be parsed, and model will be updated
-    builder.convert(sphereRound).then(function (result) {
-        t.ok(result.getObject(), 'sphere made a mesh');
-        var geom = result.getObject().children[0].geometry;
-        var isRound = true;
-        var pAttr = geom.attributes.position.array;
-        // For each point (points always have 3 components)
-        for (var i=0; i<pAttr.length; i+=3) {
-            var p = new THREE.Vector3(pAttr[i],pAttr[i+1],pAttr[i+2]);
-            if (Math.abs(p.length()-1) >= TOLERANCE) {
-                isRound = false;
-            }
-        }
-        t.ok(isRound,'Sphere is round');
-        t.end();
-    }).catch(printError(t));
-});
 
 // This test renders a sphere which has many disjoint points at the top.
 // It passes when those points are merged together which results in a

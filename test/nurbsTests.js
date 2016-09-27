@@ -2,11 +2,16 @@
 
 var test = require('tape');
 var THREE = require('three');
-var GeometryBuilder = require('../build/index-test.common.js').GeometryBuilder;
+var SceneBuilder = require('../build/index-test.common.js').SceneBuilder;
 var tests = require('./data/fixturesNurbs.js').tests;
+var sphereRound = require('./data/sphere-round.json');
+var flatCurvedSurface = require('./data/flatCurvedSurface.json');
+var flatSurface = require('./data/flatSurface.json');
 
 // Maximum variation in parameters allowed for tests to pass
 var TEST_TOLERANCE = 0.4;
+
+var TOLERANCE = 0.000001;
 
 /**
  * Convert an array to a vector object
@@ -31,26 +36,27 @@ function floatEquals(a, b, tol) {
 var printError = require('./printError.js').init('nurbs test');
 
 // Module for converting parameter objects to geometry
-var builder = new GeometryBuilder();
+var builder = new SceneBuilder();
 
 // Iterate over all the primitive types, and test each one
 tests.forEach(function (elem) {
     test('Should render \''+elem.name+'\' without artifacts', function (t) {
         builder.convert(elem.entity).then(function (result) {
-            t.ok(result.object,'Object exists');
-            var geom = result.object.children[0].geometry;
+            t.ok(result.getObject(),'Object exists');
+            var geom = result.getObject().children[0].geometry;
             var verts = geom.vertices;
             var pArr = geom.type === 'BufferGeometry' ? geom.attributes.position.array : null;
             var center = new THREE.Vector3(0,0,0);
+            var i;
             if (pArr) {
                 // Buffergeometry
-                for (var i=0; i<pArr.length; i+=3) {
+                for (i=0; i<pArr.length; i+=3) {
                     center.add(new THREE.Vector3(pArr[i],pArr[i+1],pArr[i+2]));
                 }
                 center.divideScalar(pArr.length/3);
             } else {
                 // Loop over the vertices to compute the center
-                for (var i=0; i<verts.length; i++) {
+                for (i=0; i<verts.length; i++) {
                     center.add(verts[i]);
                 }
                 center.divideScalar(verts.length);
@@ -60,10 +66,11 @@ tests.forEach(function (elem) {
             t.ok(delta < TEST_TOLERANCE, 'Delta in tolerance');
             var minRadius = 1000;
             var maxRadius = 0;
+            var dist;
             if (!pArr) {
                 // BufferGeometry
-                for (var i=0; i<verts.length; i++) {
-                    var dist = center.distanceTo(verts[i]);
+                for (i=0; i<verts.length; i++) {
+                    dist = center.distanceTo(verts[i]);
                     if (dist > maxRadius) {
                         maxRadius = dist;
                     }
@@ -73,8 +80,8 @@ tests.forEach(function (elem) {
                 }
             } else {
                 // Loop over the points and find their relative distances from the center
-                for (var i=0; i<pArr.length; i+=3) {
-                    var dist = center.distanceTo(new THREE.Vector3(pArr[i],pArr[i+1],pArr[i+2]));
+                for (i=0; i<pArr.length; i+=3) {
+                    dist = center.distanceTo(new THREE.Vector3(pArr[i],pArr[i+1],pArr[i+2]));
                     if (dist > maxRadius) {
                         maxRadius = dist;
                     }
@@ -122,26 +129,67 @@ test('should appropriately triangulate nurbs', function (t) {
         52753],[17382,114192,52755],[24264,113406,72758],[31145,112621,52760]]],
             "primitive":"surface","uDegree":3,"uKnots":[0,0,0,0,1,1,1,1],"vDegree":3,
             "vKnots":[0,0,0,0,1,1,1,1]}
-    ]
+    ];
 
     // Triangle has x, y, z, x, y, z, x, y, z
     var triangleComponents = 9;
     var faceCount = 0;
     var faceCountPrev = 0;
     builder.convert(panels[0]).then(function(result) {
-        t.ok(result.object,'Object exists');
-        faceCount = result.object.children[0].geometry.attributes.position.array.length/triangleComponents;
+        t.ok(result.getObject(),'Object exists');
+        faceCount = result.getObject().children[0].geometry.attributes.position.array.length/triangleComponents;
         t.ok(faceCount,2,'Two faces');
         faceCountPrev = faceCount;
         builder.convert(panels[1]).then(function (result) {
-            faceCount = result.object.children[0].geometry.attributes.position.array.length/triangleComponents;
+            faceCount = result.getObject().children[0].geometry.attributes.position.array.length/triangleComponents;
             t.ok(faceCount >= faceCountPrev, 'Has more faces');
             faceCountPrev = faceCount;
             builder.convert(panels[2]).then(function (result) {
-                faceCount = result.object.children[0].geometry.attributes.position.array.length/triangleComponents;
+                faceCount = result.getObject().children[0].geometry.attributes.position.array.length/triangleComponents;
                 t.ok(faceCount >= faceCountPrev,'Has more more faces');
                 t.end();
             });
         });
     }).catch(printError(t));
 }); // end it
+
+test('should make round nurbs spheres', function (t) {
+    // When value is set it should be parsed, and model will be updated
+    builder.convert(sphereRound).then(function (result) {
+        t.ok(result.getObject(), 'sphere made a mesh');
+        var geom = result.getObject().children[0].geometry;
+        var isRound = true;
+        var pAttr = geom.attributes.position.array;
+        // For each point (points always have 3 components)
+        for (var i=0; i<pAttr.length; i+=3) {
+            var p = new THREE.Vector3(pAttr[i],pAttr[i+1],pAttr[i+2]);
+            if (Math.abs(p.length()-1) >= TOLERANCE) {
+                isRound = false;
+            }
+        }
+        t.ok(isRound,'Sphere is round');
+        t.end();
+    }).catch(printError(t));
+});
+
+test('Flat curved surface should have minimum resolution', function (t) {
+    builder.convert(flatCurvedSurface).then(function (result) {
+        var geom = result.getObject().children[0].geometry;
+        var pAttr = geom.attributes.position.array;
+        var cps = flatCurvedSurface.controlPoints;
+        // # slices, # stacks, 6 points in two triangles per quad, 3 coordinates per point
+        t.equal(pAttr.length, (cps.length-1)*(cps[0].length-1)*6*3,'Surface has minimum number of control points (but is not a single quad).');
+        t.end();
+    }).catch(printError(t));
+});
+
+test('Flat surface should be optimized as a single quad', function (t) {
+    builder.convert(flatSurface).then(function (result) {
+        var geom = result.getObject().children[0].geometry;
+        var pAttr = geom.attributes.position.array;
+        var cps = flatSurface.controlPoints;
+        // 1 slice, 1 stack, 6 points in two triangles per quad, 3 coordinates per point
+        t.equal(pAttr.length, 18,'Surface has minimum number of control points (but is not a single quad).');
+        t.end();
+    }).catch(printError(t));
+});

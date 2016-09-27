@@ -63,6 +63,56 @@ function _calcMaxCurvature(geom) {
 
     return maxCurvature;
 }
+
+
+/**
+ * Check whether control points are co-linear when increasing index in one direction.
+ * This is used to determine whether it is safe to optimize away a higher order
+ * surface and just replace it with a quad.
+ *
+ * @param  {Array.<Array.<Number>>} cps Control points
+ * @return {Boolean}     True for parallelogram surfaces.
+ */
+function _linearControlPoints(cps) {
+    var a = new THREE.Vector3();
+    var b = new THREE.Vector3();
+    var c = new THREE.Vector3();
+    var d = new THREE.Vector3();
+
+    // Note, nurbs control points must be a rectangular array
+    for (var i=0;i<cps.length-2;i++) {
+        var row = cps[i];
+        for (var j=0; j<row.length; j++) {
+            a.copy(cps[i][j]);
+            b.copy(cps[i+1][j]);
+            c.copy(cps[i+1][j]);
+            d.copy(cps[i+2][j]);
+            var dp = (b.sub(a).normalize()).dot(d.sub(c).normalize());
+            // If dot product is not fuzzy equal 1
+            if (Math.abs(dp-1) > constants.TOLERANCE) {
+                return false;
+            }
+        }
+    }
+
+    // Repeat in the perpendicular direction
+    for (i=0;i<cps.length;i++) {
+        row = cps[i];
+        for (j=0; j<row.length-2; j++) {
+            a.copy(cps[i][j]);
+            b.copy(cps[i][j+1]);
+            c.copy(cps[i][j+1]);
+            d.copy(cps[i][j+2]);
+            dp = (b.sub(a).normalize()).dot(d.sub(c).normalize());
+            // If dot product is not fuzzy equal 1
+            if (Math.abs(dp-1) > constants.TOLERANCE) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 /**
  * Creates a surface THREE.Mesh from parasolid data and a material
  *
@@ -128,7 +178,7 @@ export function surface ( data, material ) {
     var stacks = Math.max(Math.floor(data.uDegree * nsControlPoints[0].length * factor), minStacks);
 
     // Exception for totally flat surfaces, then render as a single quad
-    if (curvature < constants.NURBS_FLAT_LIMIT) {
+    if (curvature < constants.NURBS_FLAT_LIMIT && _linearControlPoints(nsControlPoints)) {
         slices = 1;
         stacks = 1;
     }
