@@ -11,7 +11,7 @@ import * as materials from './utils/materials.js';
 import GeometryResults from './geometryResults.js';
 import StatusMap from './statusMap.js';
 import FluxGeometryError from './geometryError.js';
-import * as revitHelper from './helpers/revitHelper.js';
+import * as revitUtils from './utils/revitUtils.js';
 import * as bufferUtils from './utils/bufferGeometryUtils.js';
 
 /**
@@ -108,7 +108,7 @@ export function createObject ( data, geomResult ) {
 
 function _hasGeometry(data) {
     if (data.primitive === "revitElement") {
-        return revitHelper.hasGeometry(data);
+        return revitUtils.hasGeometry(data);
     }
 
     return true;
@@ -132,7 +132,7 @@ function _flattenData(data, geomResult) {
         } else if (data.primitive === 'polysurface') {
             Array.prototype.push.apply(geomResult.surfacePrims,data.surfaces);
         } else if (data.primitive === 'revitElement') {
-            Array.prototype.push.apply(geomResult.surfacePrims, revitHelper.extractGeom(data));
+            Array.prototype.push.apply(geomResult.surfacePrims, revitUtils.extractGeom(data));
         }
         else {
             var type = createPrimitive.resolveMaterialType(data.primitive);

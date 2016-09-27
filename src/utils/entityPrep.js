@@ -7,6 +7,7 @@ import convertUnits from '../units/unitConverter.js';
 import * as schema from '../schemaValidator.js';
 import * as materials from './materials.js';
 import * as constants from '../constants.js';
+import * as revitUtils from './revitUtils.js';
 
 /**
  * Modify an object and then return a copy of it with no null properties
@@ -50,7 +51,16 @@ function _unsetNulls(obj) {
 function _convertUnits(obj) {
     if (obj != null && typeof obj === 'object') {
         if (obj.primitive) {
+            // Handle units set on the container
             convertUnits(obj);
+            // Handle units on the children
+            if (obj.primitive === 'polycurve') {
+                _convertUnits(obj.curves);
+            } else if (obj.primitive === 'polysurface') {
+                _convertUnits(obj.surfaces);
+            } else if (obj.primitive === 'revitElement') {
+                _convertUnits(revitUtils.extractGeom(obj));
+            }
         } else {
             for (var key in obj) {
                 _convertUnits(obj[key]);

@@ -173,6 +173,37 @@ export var polysurface = {
     },
     "succeed":true
 };
+export var polysurfaceChild = {
+    "start": {
+        "surfaces":[{
+            "units":{
+                "controlPoints":"cm"
+            },
+            "controlPoints":[[[-8,8,0],[8,8,0]],[[-8,-8,0],[8,-8,0]]],
+            "primitive":"surface",
+            "uDegree":1,
+            "uKnots":[0,0,1,1],
+            "vDegree":1,
+            "vKnots":[0,0,1,1]
+        }],
+        "primitive":"polysurface"
+    },
+    "end": {
+        "surfaces":[{
+            "units":{
+                "controlPoints":"meters"
+            },
+            "controlPoints":[[[-0.08,0.08,0],[0.08,0.08,0]],[[-0.08,-0.08,0],[0.08,-0.08,0]]],
+            "primitive":"surface",
+            "uDegree":1,
+            "uKnots":[0,0,1,1],
+            "vDegree":1,
+            "vKnots":[0,0,1,1]
+        }],
+        "primitive":"polysurface"
+    },
+    "succeed":true
+};
 
 // Aggregate entity with units on each child
 var polycurve = {

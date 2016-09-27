@@ -1,15 +1,11 @@
 'use strict';
 
 var test = require('tape');
-var THREE = require('three');
 var index = require('../build/index-test.common.js');
-var GeometryResults = index.GeometryResults;
-
+var FluxGeometryError = index.FluxGeometryError;
 var fixturesUnits = require('../build/fixturesUnits.common.js');
 
-
 test( 'Units translation', function ( t ) {
-    var results = new GeometryResults();
     Object.keys(fixturesUnits).forEach(function (key) {
         console.log('Fixture: '+key);
         var entity = index.cleanElement(fixturesUnits[key].start)[0];
