@@ -14,7 +14,7 @@
                 "primitive":"sphere"
             }
         ],
-        "primitive":"alphaGeometryContainer"
+        "primitive":"geometryList"
     },
     {
         "id": "stuff",

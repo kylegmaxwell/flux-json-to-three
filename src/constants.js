@@ -41,7 +41,7 @@ export var SCENE_PRIMITIVES = {
     layer: 'layer',
     group: 'group',
     instance: 'instance',
-    geometry: 'alphaGeometryContainer'
+    geometry: 'geometryList'
 };
 
 // For a face compare the angle between it's normals and those of
