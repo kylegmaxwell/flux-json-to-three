@@ -1,4 +1,4 @@
-# To use this repo clone it and install the dependencies.
+# To use this repo clone it and install the dependencies
 npm install
 npm run build
 
