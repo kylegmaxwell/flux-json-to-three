@@ -4,8 +4,7 @@
 'use strict';
 
 import Ajv from 'ajv/dist/ajv.min.js';
-import {schema} from 'flux-modelingjs';
-import * as constants from './constants.js';
+import {schema, scene} from 'flux-modelingjs';
 
 var entitiesJson = schema.entity;
 var materialsJson = schema.material;
@@ -30,7 +29,7 @@ var revitPrefix = "fluxRevit";
  */
 export function checkEntity (entity, statusMap) {
     if (entity && entity.primitive) {
-        if (constants.NON_STANDARD_ENTITIES.indexOf(entity.primitive) !== -1) {
+        if (scene.NON_STANDARD_ENTITIES.indexOf(entity.primitive) !== -1) {
             return true;
         }
         var validate = _findValidator(entity.primitive);

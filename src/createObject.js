@@ -33,21 +33,6 @@ function _recursiveReduce (arr, cb) {
     }
     return isValid;
 }
-/**
- * Determine if the given data contains geometry.
- *
- * It must only contain geometry, and arrays of geometry, no mixed types.
- *
- * @param  {Object}  data Flux JSON formatted object.
- * @return {Boolean}      Whether the data is geometry.
- */
-export function isKnownGeom (data) {
-    var prims = createPrimitive.listValidPrims();
-    return _recursiveReduce(data, function (item) {
-        return (prims.indexOf(item.primitive) !== -1)
-        && _hasGeometry(item);
-    });
-}
 
 /**
  * Determine if the given data contains materials that reflect image based lighting.
@@ -91,27 +76,6 @@ export function createObject ( data, geomResult ) {
         _flattenData(data, geomResult);
         _createObject(geomResult);
     }
-}
-
-/**
- * Helper function to check if the given element which
- * can have displayable geomtry actually has displayable
- * geometry. This is to prevent the viewport from switching
- * to 3D view mode if the element does not have
- * displayable geometry.
- *
- * @function _hasGeometry
- *
- * @param { Object } data Individual element
- * @private
-*/
-
-function _hasGeometry(data) {
-    if (data.primitive === "revitElement") {
-        return revitUtils.hasGeometry(data);
-    }
-
-    return true;
 }
 
 /**
