@@ -67,28 +67,6 @@ export function resolveMaterialType (primitive) {
     return _primToMaterial[primitive];
 }
 
-/**
- * Cache to prevent repetitive munging of arrays.
- * Stores all the acceptable primitive types for geometry.
- * @type {Array.<String>}
- */
-var _validPrimsList = null;
-
-/**
- * Return a list of all the valid primitive strings
- * @return {Array.<String>} The list of primitives
- */
-export function listValidPrims ( ) {
-    if (_validPrimsList) return _validPrimsList;
-
-    _validPrimsList =    constants.KNOWN_PRIMITIVES.concat(
-                        Object.keys(otherPrimitives),
-                        Object.keys(solidPrimitives),
-                        Object.keys(sheetPrimitives),
-                        Object.keys(wirePrimitives));
-    return _validPrimsList;
-}
-
 var RIGHT = new THREE.Vector3(1, 0, 0);
 var IN    = new THREE.Vector3(0, 1, 0);
 var UP    = new THREE.Vector3(0, 0, 1);

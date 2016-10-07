@@ -1,8 +1,5 @@
-/**
- * set of helpers to make wire primitives
- */
-
 'use strict';
+
 import THREE from 'three';
 
 export var HALF_PI = Math.PI * 0.5;
@@ -28,13 +25,6 @@ export var NURBS_SURFACE_QUALITY = 2.5;
 // this threshold will be considered flat
 var degreesFlatLimit = 1.0;
 export var NURBS_FLAT_LIMIT = degreesFlatLimit/180.0;
-
-// These entities are not official Flux Entities, but can be rendered
-export var NON_STANDARD_ENTITIES = 'stl obj text';
-
-// These are primitives that are recognized as geometry, but get special
-// treatment and do not have their own specific handler function in src/primitives
-export var KNOWN_PRIMITIVES = ['point', 'polycurve', 'polysurface', 'brep', 'layer', 'revitElement'];
 
 // Enumeration of strings used as primitive types in scenes
 export var SCENE_PRIMITIVES = {

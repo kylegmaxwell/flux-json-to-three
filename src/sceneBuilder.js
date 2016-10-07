@@ -51,7 +51,7 @@ SceneBuilder.prototype.convert = function(data) {
     }
     var dataClean = cleanElement(data, sceneBuilderData.primStatus);
     var builderPromise;
-    if (scene.Validator.isScene(dataClean) && _checkScene(dataClean, sceneBuilderData.primStatus)) {
+    if (scene.isScene(dataClean) && _checkScene(dataClean, sceneBuilderData.primStatus)) {
         builderPromise = this._convertScene(dataClean, sceneBuilderData);
     } else {
         builderPromise = this._createEntity(dataClean);
