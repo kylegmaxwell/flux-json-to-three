@@ -1,36 +1,15 @@
 'use strict';
 
-import THREE from 'three';
 import * as Create from './createObject.js';
 import GeometryResults from './geometryResults.js';
 import * as compatibility from './compatibility.js';
-import * as print from './debugPrint.js';
-import * as constants from './constants.js';
+import * as print from './utils/debugPrint.js';
 import {Query, Operation} from 'flux-modelingjs';
 
 /**
 * Stand in for the finished status on an xhr
 */
 var READY_STATE_FINISHED = 4;
-
-// Environment texture for image-based lighting.
-var iblCube = null;
-
-// Loads textures
-function loadImages() {
-    return new Promise(function (resolve) {
-        var loader = new THREE.CubeTextureLoader();
-        loader.setCrossOrigin(true);
-        iblCube = loader.load(constants.CUBE_URLS, resolve, undefined, function() {
-            print.warn('Unable to load image based lighting.');
-            resolve();
-        });
-        iblCube.format = THREE.RGBFormat;
-    });
-}
-
-// Singleton promise for async loading
-var imagesLoadingPromise = null;
 
 /**
 * Flux geometry class converts parameter objects to geometry
@@ -39,7 +18,6 @@ var imagesLoadingPromise = null;
 * @constructor
 */
 export default function GeometryBuilder(tessUrl, token) {
-
     // String path to tessellation API endpoint
     this._parasolidUrl = tessUrl;
     this._fluxToken = token;
@@ -51,28 +29,11 @@ export default function GeometryBuilder(tessUrl, token) {
 /**
 * Create a new model for the given entities.
 *
-* @param {Object} entities The parameters objects
+* @param {Object} entities Array of entities or arrays
 * @return {Promise} A promise object that sets the model when it completes
 */
 GeometryBuilder.prototype.convert = function(entities) {
-    var _this = this;
-    var needsImages = Create.needsIBL(entities);
-    if (needsImages && !imagesLoadingPromise) {
-        imagesLoadingPromise = loadImages();
-    }
-    return Promise.resolve(imagesLoadingPromise).then(function () {
-        return _this.convertHelper(entities);
-    });
-};
-
-/**
- * Function that actually does conversion once assets have loaded
- * @param {Array} entities Array of entities or arrays
- * @return {Promise} Promise to resolve when geometry is ready
- */
-GeometryBuilder.prototype.convertHelper = function(entities) {
     var geometryResults = new GeometryResults();
-    geometryResults.iblCube = iblCube;
 
     if (entities == null || typeof entities != 'object') {
         return Promise.resolve(geometryResults);

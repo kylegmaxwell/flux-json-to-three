@@ -1,0 +1,46 @@
+[
+  {
+    "origin": [
+      16.3689009551518,33.8791287372066,0
+    ],
+    "radius": 4.75069806092868,
+    "primitive": "sphere",
+    "units": {
+      "/": "inches"
+    },
+    "id": "3DF1D7DC-61C7-43D1-857D-F6CA76E5862A"
+  },
+  {
+    "primitive": "material",
+    "color": [
+      1,0,0
+    ],
+    "reflectivity": 0,
+    "glossiness": 0.5,
+    "transparency": 0,
+    "emissionColor": [0,0,0
+    ],
+    "transparencyIOR": 0,
+    "id": "d2b7d2e0-967e-4511-96b9-66945f4767d9"
+  },
+  {
+    "primitive": "instance",
+    "matrix": [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1
+    ],
+    "entity": "3DF1D7DC-61C7-43D1-857D-F6CA76E5862A",
+    "material": "d2b7d2e0-967e-4511-96b9-66945f4767d9",
+    "units": {
+        "matrix": "inches"
+    },
+    "id": "49F0ED1B-20F0-4A09-A7D6-8F80D54961C5"
+  },
+  {
+    "primitive": "layer",
+    "label": "0",
+    "visible": true,
+    "elements": [
+      "49F0ED1B-20F0-4A09-A7D6-8F80D54961C5"
+    ],
+    "id": "1E3FCEAD-B576-4432-B154-97BED5D74638"
+  }
+]

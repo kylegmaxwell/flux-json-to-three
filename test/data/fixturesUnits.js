@@ -3,33 +3,25 @@
  */
 'use strict';
 
-export var cone = {
+export var sphere1 = {
     "start": {
         "units":{
             "origin": "km",
-            "height": "cm",
-            "radius": "in",
-            "semiAngle": "m"
+            "radius": "in"
         },
-        "height":10,
         "origin":[0,0,0],
-        "primitive":"cone",
-        "radius":10,
-        "semiAngle":10
+        "primitive":"sphere",
+        "radius":10
     },
-    "end": {
+    "end": [{
         "units":{
             "origin": "meters",
-            "height": "meters",
-            "radius": "meters",
-            "semiAngle": "meters"
+            "radius": "meters"
         },
-        "height":0.1,
         "origin":[0,0,0],
-        "primitive":"cone",
-        "radius":0.254,
-        "semiAngle":10
-    },
+        "primitive":"sphere",
+        "radius":0.254
+    }],
     "succeed":true
 };
 
@@ -37,29 +29,21 @@ export var caseSensitiveUnitKeys = {
     "start": {
         "units":{
             "ORIGIN": "km",
-            "height": "cm",
-            "radius": "in",
-            "semiAngle": "m"
+            "radius": "in"
         },
-        "height":10,
         "origin":[0,0,0],
-        "primitive":"cone",
-        "radius":10,
-        "semiAngle":10
+        "primitive":"sphere",
+        "radius":10
     },
-    "end": {
+    "end": [{
         "units":{
             "ORIGIN": "km", // should ignore unmatched units (case sensitive)
-            "height": "meters",
-            "radius": "meters",
-            "semiAngle": "meters"
+            "radius": "meters"
         },
-        "height":0.1,
         "origin":[0,0,0],
-        "primitive":"cone",
-        "radius":0.254,
-        "semiAngle":10
-    },
+        "primitive":"sphere",
+        "radius":0.254
+    }],
     "succeed":true
 };
 
@@ -74,7 +58,7 @@ export var sphere = {
             "radius": "shrekles"
         }
     },
-    "end": {
+    "end": [{
         "height": 10,
         "origin": [0,0,0],
         "primitive": "sphere",
@@ -83,7 +67,7 @@ export var sphere = {
             "origin": "meters",
             "radius": "meters"
         }
-    },
+    }],
     "succeed":true
 };
 
@@ -97,7 +81,7 @@ export var caseSensitiveMeasure = {
             "radius": "Mm"
         }
     },
-    "end": {
+    "end": [{
         "height": 10,
         "origin": [0,0,0],
         "primitive": "sphere",
@@ -105,7 +89,7 @@ export var caseSensitiveMeasure = {
         "units": {
             "radius": "meters"
         }
-    },
+    }],
     "succeed":true
 };
 
@@ -117,13 +101,13 @@ export var polyline = {
         "points":[[0,0,5],[1,0,5],[2,2,5],[0,1,5]],
         "primitive":"polyline"
     },
-    "end": {
+    "end": [{
         "units":{
             "points":"meters"
         },
         "points":[[0,0,1.524],[0.3048,0,1.524],[0.6096,0.6096,1.524],[0,0.3048,1.524]],
         "primitive":"polyline"
-    },
+    }],
     "succeed":true
 };
 
@@ -150,11 +134,7 @@ export var polysurface = {
         }],
         "primitive":"polysurface"
     },
-    "end": {
-        "units":{
-            "surfaces/0/controlPoints":"meters"
-        },
-        "surfaces":[{
+    "end": [{
             "controlPoints":[[[-0.08,0.08,0],[0.08,0.08,0]],[[-0.08,-0.08,0],[0.08,-0.08,0]]],
             "primitive":"surface",
             "uDegree":1,
@@ -169,8 +149,6 @@ export var polysurface = {
             "vDegree":1,
             "vKnots":[0,0,1,1]
         }],
-        "primitive":"polysurface"
-    },
     "succeed":true
 };
 export var polysurfaceChild = {
@@ -188,8 +166,7 @@ export var polysurfaceChild = {
         }],
         "primitive":"polysurface"
     },
-    "end": {
-        "surfaces":[{
+    "end": [{
             "units":{
                 "controlPoints":"meters"
             },
@@ -199,9 +176,7 @@ export var polysurfaceChild = {
             "uKnots":[0,0,1,1],
             "vDegree":1,
             "vKnots":[0,0,1,1]
-        }],
-        "primitive":"polysurface"
-    },
+    }],
     "succeed":true
 };
 
@@ -224,8 +199,7 @@ var polycurve = {
             }
         ],"primitive":"polycurve"
     },
-    "end": {
-        "curves":[
+    "end": [
             { // curve 1
                 "units":{
                     "controlPoints":"meters"
@@ -239,21 +213,20 @@ var polycurve = {
                 },
                 "start":[1000,0,0],"middle":[0,1,0],"end":[-1,0,0],"primitive":"arc"
             }
-        ],"primitive":"polycurve"
-    },
+        ],
     "succeed":true
 };
 
 // Test children of aggregate entity
 export var polycurve0 = {
     "start": polycurve.start.curves[0],
-    "end": polycurve.end.curves[0],
+    "end": [polycurve.end[0]],
     "succeed": polycurve.succeed
 };
 
 export var polycurve1 = {
     "start": polycurve.start.curves[1],
-    "end": polycurve.end.curves[1],
+    "end": [polycurve.end[1]],
     "succeed": polycurve.succeed
 };
 
@@ -265,13 +238,13 @@ export var mesh = {
         "vertices": [[-1,0,0],[0,1,2],[1,0,0],[0,-1,2]],
         "faces":[[0,3,1],[1,3,2]], "primitive":"mesh"
     },
-    "end": {
+    "end": [{
         "units":{
             "vertices":"meters"
         },
         "vertices": [[-0.000001,0,0],[0,0.000001,0.000002],[0.000001,0,0],[0,-0.000001,0.000002]],
         "faces":[[0,3,1],[1,3,2]], "primitive":"mesh"
-    },
+    }],
     "succeed":true
 };
 
@@ -283,13 +256,13 @@ export var badUnitsPath1 = {
         "vertices": [[-1,0,0],[0,1,2],[1,0,0],[0,-1,2]],
         "faces":[[0,3,1],[1,3,2]], "primitive":"mesh"
     },
-    "end": {
+    "end": [{
         "units":{
             "vertices/x":"mmmm"
         },
         "vertices": [[-1,0,0],[0,1,2],[1,0,0],[0,-1,2]],
         "faces":[[0,3,1],[1,3,2]], "primitive":"mesh"
-    },
+    }],
     "succeed":true
 };
 
@@ -301,13 +274,13 @@ export var badUnitsPath2 = {
         "vertices": [[-1,0,0],[0,1,2],[1,0,0],[0,-1,2]],
         "faces":[[0,3,1],[1,3,2]], "primitive":"mesh"
     },
-    "end": {
+    "end": [{
         "units":{
             "stuff/thing":"um"
         },
         "vertices": [[-1,0,0],[0,1,2],[1,0,0],[0,-1,2]],
         "faces":[[0,3,1],[1,3,2]], "primitive":"mesh"
-    },
+    }],
     "succeed":true
 };
 
@@ -319,13 +292,13 @@ export var badUnitsType = {
         "vertices": [[-1,0,0],[0,1,2],[1,0,0],[0,-1,2]],
         "faces":[[0,3,1],[1,3,2]], "primitive":"mesh"
     },
-    "end": {
+    "end": [{
         "units":{
             "vertices":"not a unit"
         },
         "vertices": [[-1,0,0],[0,1,2],[1,0,0],[0,-1,2]],
         "faces":[[0,3,1],[1,3,2]], "primitive":"mesh"
-    },
+    }],
     "succeed":true
 };
 
@@ -334,10 +307,10 @@ export var noUnits = {
         "vertices": [[-1,0,0],[0,1,2],[1,0,0],[0,-1,2]],
         "faces":[[0,3,1],[1,3,2]], "primitive":"mesh"
     },
-    "end": {
+    "end": [{
         "vertices": [[-1,0,0],[0,1,2],[1,0,0],[0,-1,2]],
         "faces":[[0,3,1],[1,3,2]], "primitive":"mesh"
-    },
+    }],
     "succeed":true
 };
 
@@ -348,12 +321,12 @@ export var noSpecificUnits = {
         "vertices": [[-1,0,0],[0,1,2],[1,0,0],[0,-1,2]],
         "faces":[[0,3,1],[1,3,2]], "primitive":"mesh"
     },
-    "end": {
+    "end": [{
         "units":{
         },
         "vertices": [[-1,0,0],[0,1,2],[1,0,0],[0,-1,2]],
         "faces":[[0,3,1],[1,3,2]], "primitive":"mesh"
-    },
+    }],
     "succeed":true
 };
 
@@ -368,7 +341,7 @@ export var nonLengthUnits = {
         "vertices": [[-1,0,0],[0,1,2],[1,0,0],[0,-1,2]],
         "faces":[[0,3,1],[1,3,2]], "primitive":"mesh"
     },
-    "end": {
+    "end": [{
         "units":{
             "attributes/energy":"meters"
         },
@@ -377,7 +350,7 @@ export var nonLengthUnits = {
         },
         "vertices": [[-1,0,0],[0,1,2],[1,0,0],[0,-1,2]],
         "faces":[[0,3,1],[1,3,2]], "primitive":"mesh"
-    },
+    }],
     "succeed":true
 };
 
@@ -387,9 +360,9 @@ export var nullUnits = {
         "vertices": [[-1,0,0],[0,1,2],[1,0,0],[0,-1,2]],
         "faces":[[0,3,1],[1,3,2]], "primitive":"mesh"
     },
-    "end": {
+    "end": [{
         "vertices": [[-1,0,0],[0,1,2],[1,0,0],[0,-1,2]],
         "faces":[[0,3,1],[1,3,2]], "primitive":"mesh"
-    },
+    }],
     "succeed":true
 };

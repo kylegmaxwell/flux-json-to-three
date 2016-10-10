@@ -198,23 +198,6 @@ test('should merge non consecutive objects', function (t) {
     }).catch(printError(t));
 });
 
-test('should support torus parms', function (t) {
-    var torus = {"origin": [0,0,0],"majorRadius": 5,"minorRadius":3,"axis":[0,0,1],
-        "primitive":"torus"};
-    // When value is set it should be parsed, and model will be updated
-    builder.convert(torus).then(function (result) {
-        var pos = result.getObject().children[0].geometry.attributes.position.array;
-        var maxX = 0;
-        for (var i=0;i<pos.length;i+=3) {
-            if (pos[i] > maxX) {
-                maxX = pos[i];
-            }
-        }
-        t.equal(maxX,8,'Torus max x is 8');
-        t.end();
-    }).catch(printError(t));
-});
-
 test('should merge transformed geometry', function (t) {
     var boxes = [{"dimensions":[1,1,1],"origin":[1,1,1],"primitive":"block"},
         {"dimensions":[1,1,1],"origin":[1,1,1],"primitive":"block"}];
@@ -266,7 +249,6 @@ test('schema should allow anything inside attributes', function (t) {
 
 
 test( 'Schema for geometry', function ( t ) {
-    // var results = new GeometryResults();
     var data = {
         "x":5,
         "units":{
@@ -277,7 +259,6 @@ test( 'Schema for geometry', function ( t ) {
         "degree":3,
         "knots":[0,0,0,1,2,3,3,3],"primitive":"curve"
     };
-    // var matchesSchema = index.checkEntity(data, results.primStatus);
     builder.convert(data).then(function(result) {
         var summary = result.getErrorSummary();
         t.ok(summary === '', 'Should match schema '+summary);

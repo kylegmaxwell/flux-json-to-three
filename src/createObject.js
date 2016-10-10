@@ -7,52 +7,12 @@
 import THREE from 'three';
 import * as createPrimitive from './createPrimitive.js';
 import * as constants from './constants.js';
-import * as materials from './utils/materials.js';
 import GeometryResults from './geometryResults.js';
-import StatusMap from './statusMap.js';
 import FluxGeometryError from './geometryError.js';
-import * as revitUtils from './utils/revitUtils.js';
 import * as bufferUtils from './utils/bufferGeometryUtils.js';
+import {scene} from 'flux-modelingjs';
+var StatusMap = scene.StatusMap;
 
-/**
- * Helper function to run a callback on each entity in the nested array
- * @param {Array} arr Array of arrays or entities
- * @param {Function} cb Callbck function returning boolean
- * @returns {boolean} Reduced return value of the callback
- * @private
- */
-function _recursiveReduce (arr, cb) {
-    if (!arr) return false;
-    var isValid = false;
-    if (arr.primitive) {
-        isValid = cb(arr);
-    } else if (arr.constructor === Array) {
-        isValid = arr.reduce(function(prev, curr) {
-            return prev || _recursiveReduce(curr, cb);
-        }, false);
-    }
-    return isValid;
-}
-
-/**
- * Determine if the given data contains materials that reflect image based lighting.
- * Then it is necessary to load the related textures.
- *
- * @param  {Object}     entities Flux JSON formatted object.
- * @return {Boolean}    Whether the materials have roughness.
- */
-export function needsIBL(entities) {
-    return _recursiveReduce(entities, function (item) {
-        for (var i=0;i<constants.IBL_PROPERTIES.length; i++) {
-            var key = constants.IBL_PROPERTIES[i];
-            var value = materials._getEntityData(item, key, undefined);
-            if (value != null && value !== constants.DEFAULT_MATERIAL_PROPERTIES.surface[key]) {
-                return true;
-            }
-        }
-        return false;
-    });
-}
 /**
  * Creates THREE scene and geometries from parasolid output.
  * The method is called recursively for each array and entities
@@ -91,31 +51,22 @@ function _flattenData(data, geomResult) {
     if (data.primitive === 'brep' && (data.faces == null || data.vertices == null)) {
         geomResult.asyncPrims.push(data);
     } else if (data.primitive) {
-        if (data.primitive === 'polycurve') {
-            Array.prototype.push.apply(geomResult.linePrims,data.curves);
-        } else if (data.primitive === 'polysurface') {
-            Array.prototype.push.apply(geomResult.surfacePrims,data.surfaces);
-        } else if (data.primitive === 'revitElement') {
-            Array.prototype.push.apply(geomResult.surfacePrims, revitUtils.extractGeom(data));
-        }
-        else {
-            var type = createPrimitive.resolveMaterialType(data.primitive);
-            switch (type) {
-                case constants.MATERIAL_TYPES.POINT: {
-                    geomResult.pointPrims.push(data);
-                    break;
-                }
-                case constants.MATERIAL_TYPES.LINE: {
-                    geomResult.linePrims.push(data);
-                    break;
-                }
-                case constants.MATERIAL_TYPES.SURFACE: {
-                    geomResult.surfacePrims.push(data);
-                    break;
-                }
-                default: {
-                    geomResult.primStatus.appendError(data.primitive, 'Unsupported geometry type');
-                }
+        var type = createPrimitive.resolveMaterialType(data.primitive);
+        switch (type) {
+            case constants.MATERIAL_TYPES.POINT: {
+                geomResult.pointPrims.push(data);
+                break;
+            }
+            case constants.MATERIAL_TYPES.LINE: {
+                geomResult.linePrims.push(data);
+                break;
+            }
+            case constants.MATERIAL_TYPES.SURFACE: {
+                geomResult.surfacePrims.push(data);
+                break;
+            }
+            default: {
+                geomResult.primStatus.appendError(data.primitive, 'Unsupported geometry type');
             }
         }
     }
@@ -230,7 +181,7 @@ function _tryCreatePrimitive(data, geomResult) {
     var mesh;
     var errorMessage = StatusMap.NO_ERROR;
     try {
-        mesh = createPrimitive.createPrimitive( data, geomResult );
+        mesh = createPrimitive.createPrimitive(data);
     }
     catch(err) {
         if (err.name !== "FluxGeometryError") {

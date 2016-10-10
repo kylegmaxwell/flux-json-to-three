@@ -8,7 +8,7 @@ var fixturesUnits = require('../build/fixturesUnits.common.js');
 test( 'Units translation', function ( t ) {
     Object.keys(fixturesUnits).forEach(function (key) {
         console.log('Fixture: '+key);
-        var entity = index.cleanElement(fixturesUnits[key].start)[0];
+        var entity = index.cleanElement(fixturesUnits[key].start);
         var succeedStr = fixturesUnits[key].succeed ? 'pass' : 'fail';
         var hasException = false;
         try {

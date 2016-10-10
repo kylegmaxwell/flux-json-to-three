@@ -5,8 +5,9 @@
 
 import THREE from 'three';
 import FluxGeometryError from './geometryError.js';
-import StatusMap from './statusMap.js';
 import SceneResults from './sceneResults.js';
+import {scene} from 'flux-modelingjs';
+var StatusMap = scene.StatusMap;
 
 //---- Class Definition
 

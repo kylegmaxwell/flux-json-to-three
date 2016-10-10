@@ -152,12 +152,11 @@ export function createPoints (prims, geomResult) {
  * @throws FluxGeometryError if unsupported geometry is found
  *
  * @param { Object } data The data to create the object with
- * @param { GeometryResults } geomResult The container for the geometry and caches
  */
-export function createPrimitive (data, geomResult) {
+export function createPrimitive (data) {
     var materialType = resolveMaterialType(data.primitive);
     var materialProperties = _findMaterialProperties(data);
-    var material = _createMaterial(materialType, materialProperties, geomResult);
+    var material = materials.create(materialType, materialProperties);
 
     var primFunction = _resolvePrimFunc(data.primitive);
     if (!primFunction) return;
@@ -288,141 +287,6 @@ function _findMaterialProperties ( data ) {
     else return {
         side: THREE.DoubleSide
     };
-}
-
-/**
- * Function to copy white listed properties from the input to the output
- * @param {Object} knownPropsMap Map from material properties to defualt values
- * @param {Object} propsIn Map from material properties to values
- * @param {Object} propsOut Subset of propsIn (return parameter)
- * @private
- */
-function _addKnownProps(knownPropsMap, propsIn, propsOut) {
-    var knownProps = Object.keys(knownPropsMap);
-    for (var i=0;i<knownProps.length;i++) {
-        var prop = knownProps[i];
-        var propValue = propsIn[prop];
-        if (propValue != null) {
-            propsOut[prop] = propValue;
-        }
-    }
-}
-
-/**
- * Get the value and apply to the properties if set, with defaults
- * @param  {Object} propsSource  User input material properties
- * @param  {String} nameSource   Name of the input property
- * @param  {Object} propsDest    Material properties for three.js
- * @param  {String} nameDest     Name of the three.js property
- * @param  {Boolean} invertDest  Whether the output is the complement of the input
- */
-function _getPropertyValue(propsSource, nameSource, propsDest, nameDest, invertDest) {
-    var value;
-    if (propsSource[nameSource] != null) {
-        value = propsSource[nameSource];
-    } else {
-        value = constants.DEFAULT_MATERIAL_PROPERTIES.surface[nameSource];
-    }
-    if (value != null) {
-        if (invertDest) {
-            value = 1.0 - value;
-        }
-        propsDest[nameDest] = value;
-    }
-}
-/**
- * Modify a material to approximate a shading model with roughness
- * @param {Object}              propsSource Flux material properties
- * @param {Object}              propsDest   Resulting three.js material properties
- * @param {THREE.CubeTexture}   iblCube     Cube map
- * @private
- */
-function _applyPhysicalProperties(propsSource, propsDest, iblCube) {
-
-    if (propsSource.wireframe != null) {
-        propsDest.wireframe = propsSource.wireframe;
-    }
-
-    var props = constants.FLUX_MATERIAL_TO_THREE;
-    for (var p in props) {
-        var destName = props[p];
-        var complement = destName in constants.LEGACY_INVERSE_PROPERTIES;
-        _getPropertyValue(propsSource, p, propsDest, destName, complement);
-    }
-
-    // Convert colors
-    propsDest.color = materials._convertColor(propsDest.color);
-    if (propsDest.emissive){
-        propsDest.emissive = materials._convertColor(propsDest.emissive);
-    }
-
-    if (iblCube != null) {
-        propsDest.envMap = iblCube;
-    }
-}
-
-/**
- * Helper method to create the material from the material properties.
- * There are only a few types of materials used, this function takes a type
- * and returns a material with the properties object given
- *
- * @function _createMaterial
- * @private
- *
- * @return { THREE.Material } an instance of a Three.js material
- *
- * @param { Number } type               A member of the enumeration of material types
- *                                      present in the parasolid utility
- *
- * @param { Object } materialProperties A set of properties that functions
- *                                      as options for the material
- * @param {GeometryResults} geomResult  Container for textures and errors
- */
-function _createMaterial ( type, materialProperties, geomResult) {
-    var iblCube = geomResult.iblCube;
-    var material;
-    // Just the properties that actually make sense for this material
-    var props = {};
-    // Add sidedness to local state if it is not present
-    if ( !materialProperties || materialProperties.side == null ) {
-        props.side = THREE.DoubleSide;
-    } else {
-        props.side = materialProperties.side;
-    }
-    // Create a material of the appropriate type
-    if ( type === constants.MATERIAL_TYPES.SURFACE ) {
-        // Add material properties related to shadows. This is an offset
-        // to prevent z-fighting with stencil buffer shadows and their host object
-        // TODO(Kyle): Only set these when shadows are on.
-        props.polygonOffset = true;
-        props.polygonOffsetFactor = 1;
-        props.polygonOffsetUnits = 1;
-        props.vertexColors = THREE.VertexColors;
-
-        _applyPhysicalProperties(materialProperties, props, iblCube);
-        material = new THREE.MeshPhysicalMaterial( props );
-
-    } else if ( type === constants.MATERIAL_TYPES.POINT ) {
-
-        _addKnownProps(constants.DEFAULT_MATERIAL_PROPERTIES.point, materialProperties, props);
-        material = new THREE.PointsMaterial( props );
-        material.color = materials._convertColor(materialProperties.color||constants.DEFAULT_MATERIAL_PROPERTIES.point.color);
-
-    } else if ( type === constants.MATERIAL_TYPES.LINE ) {
-
-        props.vertexColors = THREE.VertexColors;
-        _addKnownProps(constants.DEFAULT_MATERIAL_PROPERTIES.line, materialProperties, props);
-        material = new THREE.LineBasicMaterial( props );
-        material.color = materials._convertColor(materialProperties.color||constants.DEFAULT_MATERIAL_PROPERTIES.line.color);
-    }
-    // Use the material's name to track uniqueness of it's source
-    material.name = materials.materialToJson(type, props);
-
-    if (material.opacity < 1) {
-        material.transparent = true;
-    }
-
-    return material;
 }
 
 /**

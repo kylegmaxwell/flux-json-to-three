@@ -3,7 +3,7 @@
  */
 'use strict';
 
-import setObjectColor from './sceneEdit.js';
+import { setObjectColor } from './sceneEdit.js';
 
 /**
  * Data model for each call to convertScene.

@@ -16,7 +16,8 @@ export var DEG_2_RAD = Math.PI / 180;
 export var MATERIAL_TYPES = {
     SURFACE: 0,
     POINT: 1,
-    LINE: 2
+    LINE: 2,
+    ALL: 3
 };
 //----NURBS
 export var NURBS_CURVE_QUALITY = 2.5;
@@ -33,6 +34,13 @@ export var SCENE_PRIMITIVES = {
     instance: 'instance',
     geometry: 'geometryList'
 };
+
+// Container primitives contain other entities
+export var CONTAINER_PRIM_MAP = {
+    polycurve: 'curves',
+    polysurface: 'surfaces'
+};
+export var CONTAINER_PRIMS = Object.keys(CONTAINER_PRIM_MAP);
 
 // For a face compare the angle between it's normals and those of
 // it's neighbors. If all the angles are smaller than the limit,

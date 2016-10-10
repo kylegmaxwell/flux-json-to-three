@@ -5,22 +5,7 @@
 // "result" contains the expected type of the THREE.js object created
 exports.tests = [
     {
-        "input": {"height":10,"origin":[0,0,0],"primitive":"cone",
-            "radius":10,"semiAngle":10},
-        "result": {"type": "Mesh"},
-    },
-    {
-        "input": {"axis":[10,20,30],"height":40,"origin":[0,0,0],"primitive":"cylinder",
-            "radius":10},
-        "result": {"type": "Mesh"},
-    },
-    {
         "input": {"origin":[0,0,0],"primitive":"sphere","radius":10},
-        "result": {"type": "Mesh"},
-    },
-    {
-        "input": {"origin": [0,0,0],"majorRadius": 5,"minorRadius":3,"axis":[0,0,1],
-            "primitive":"torus"},
         "result": {"type": "Mesh"},
     },
     {
@@ -133,4 +118,4 @@ exports.tests = [
             "instanceParameters":{},"typeParameters":{},"customParameters":{}},
         "result": {"type": "Mesh"},
     }
-]
+];

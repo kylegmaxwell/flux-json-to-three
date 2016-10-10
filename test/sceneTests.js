@@ -9,7 +9,6 @@ var GeometryBuilder = index.GeometryBuilder;
 var builder = new SceneBuilder(new GeometryBuilder());
 var printError = require('./printError.js').init('scene');
 
-
 /**
  * Get a scene at a predefined location
  *
@@ -53,13 +52,13 @@ test('should create a scene with curves, meshes and instances', function (t) {
     builder.convert(_getScene('scene')).then(function (result) {
         var scene = result.getObject();
         t.ok(scene,'Scene exists: '+result.getErrorSummary());
-        t.equal(scene.children.length, 2, 'Two layers')
-        var types = ''
+        t.equal(scene.children.length, 2, 'Two layers');
+        var types = '';
         scene.traverse(function (child) {
             types += child.type;
         });
-        t.ok(types.indexOf('Line')!==-1,'Has a line')
-        t.ok(types.indexOf('Mesh')!==-1,'Has a mesh')
+        t.ok(types.indexOf('Line')!==-1,'Has a line');
+        t.ok(types.indexOf('Mesh')!==-1,'Has a mesh');
 
         var plants = result._getObjectById('plants');
         var id = plants.children[0].geometry.id;
@@ -190,7 +189,6 @@ test('Sphere with origin', function (t) {
         t.ok(scene,'Object exist '+errors);
         var mesh = scene.children[0].children[0];
         var pos = mesh.geometry.attributes.position.array;
-        var center = [0,0,0];
         var tmpV = new THREE.Vector3(0,0,0);
         var expectedV = new THREE.Vector3(-50.48976135253906,19.15716552734375,0);
         for (var i=0;i<pos.length;i+=3) {
@@ -212,7 +210,6 @@ test('Sphere with matrix', function (t) {
         t.ok(scene,'Object exist '+errors);
         var mesh = scene.children[0].children[0];
         var pos = mesh.geometry.attributes.position.array;
-        var center = [0,0,0];
         var tmpV = new THREE.Vector3(0,0,0);
         var expectedV = new THREE.Vector3(-50.48976135253906,19.15716552734375,0);
         for (var i=0;i<pos.length;i+=3) {
@@ -237,4 +234,34 @@ test('Layer with visible', function (t) {
         t.equal(hidden, true, 'Layer should not be visible');
         t.end();
     }).catch(printError(t));
+});
+
+var materialScenes = [{
+        scene: 'materialScene',
+        results: [[1,0,0]]
+    },{
+        scene: 'materialPolyCurveScene',
+        results: [[1,0,0],[1,0,0]]
+    },{
+        scene: 'materialGroupScene',
+        results: [[0,1,0],[0,1,0],[0,1,0]]
+    },{
+        scene: 'materialNesting',
+        // TODO(Kyle) This depends on order, but it is not guaranteed
+        results: [[0,1,0],[0,1,0],[0,1,0],[1,0,1],[1,0,1]]
+    }
+];
+materialScenes.forEach(function (sceneData) {
+    test('Scene material '+sceneData.scene, function (t) {
+        var sceneJson = _getScene(sceneData.scene);
+        builder.convert(sceneJson).then(function (result) {
+            var scene = result.getObject();
+            var errors = result.getErrorSummary();
+            t.ok(scene,'Object exist '+errors);
+            for (var i=0;i<sceneData.results.length;i++) {
+                t.deepEqual(scene.children[0].children[i].material.color.toArray(), sceneData.results[i], 'Should have color material');
+            }
+            t.end();
+        }).catch(printError(t));
+    });
 });

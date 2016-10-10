@@ -15,21 +15,6 @@ import STLLoader from '../loaders/STLLoader.js';
 import computeNormals from '../utils/normals.js';
 
 /**
- * Moves a geometry by a vector
- *
- * @function moveGeometry
- *
- * @param { THREEJS.OBJECT3D } object The object to move
- * @param { THREE.Vector3 } vector The vector to move the object by
- */
-function moveGeometry ( object, vector ) {
-    object.position.copy( vector );
-    object.updateMatrix();
-    object.geometry.applyMatrix( object.matrix );
-    object.position.set( 0, 0, 0 );
-}
-
-/**
  * Rotates a geometry by a vector
  *
  * @function rotateGeometry
@@ -42,78 +27,6 @@ function rotateGeometry ( object, vector ) {
     object.updateMatrix();
     object.geometry.applyMatrix( object.matrix );
     object.rotation.set( 0, 0, 0 );
-}
-
-/**
- * Extract the semi angle property from a data object.
- * Used to determine cone shape. Data is expected to have a
- * semiAngle property set in degrees.
- *
- * @param  {Object} data The data describing a cone.
- *
- * @function getSemiAngle
- *
- * @throws FluxGeometryError if property is missing or out of bounds
- *
- * @return {Number}      The semi angle in radians.
- */
-function getSemiAngle(data) {
-    var semiAngle;
-    if (data.semiAngle) {
-        semiAngle = data.semiAngle;
-    } else {
-        if (data['semi-angle']) {
-            semiAngle = data['semi-angle'];
-        } else {
-            throw new FluxGeometryError('Cone must specify semiAngle parameter.');
-        }
-    }
-    if (data.semiAngle <= 0 || data.semiAngle >= 90) {
-        throw new FluxGeometryError('Cone semiAngle must be between 0 and 90 degrees exclusive.');
-    }
-    return constants.DEG_2_RAD * semiAngle;
-}
-/**
- * Creates a cone THREE.Mesh from parasolid data and a material.
- *
- * @function cone
- *
- * @return { THREE.Mesh } The cone THREE.Mesh
- *
- * @param { Object }           data     Parasolid data
- * @param { THREE.Material } material The material to give the THREE.Mesh
- */
-export function cone ( data, material ) {
-    var geometry, mesh;
-    var semiAngle = getSemiAngle(data);
-    var topRadius = data.height * Math.tan(semiAngle);
-    geometry = new THREE.CylinderBufferGeometry( topRadius+data.radius, data.radius, data.height, constants.CIRCLE_RES );
-    mesh = new THREE.Mesh( geometry, material );
-    moveGeometry( mesh, new THREE.Vector3( 0, data.height * 0.5, 0 ) );
-    rotateGeometry( mesh, constants.DEFAULT_ROTATION );
-
-    return mesh;
-}
-
-/**
- * Creates a cylindrical THREE.Mesh from parasolid data and a material
- *
- * @function cylinder
- *
- * @return { THREE.Mesh } The cylindrical THREE.Mesh
- *
- * @param { Object }           data     Parasolid data
- * @param { THREE.Material } material The material to give the THREE.Mesh
- */
-export function cylinder ( data, material ) {
-    var geometry, mesh;
-
-    geometry = new THREE.CylinderBufferGeometry( data.radius, data.radius, data.height, constants.CIRCLE_RES );
-    mesh = new THREE.Mesh( geometry, material );
-    moveGeometry( mesh, new THREE.Vector3( 0, data.height * 0.5, 0 ) );
-    rotateGeometry( mesh, constants.DEFAULT_ROTATION );
-
-    return mesh;
 }
 
 /**
@@ -140,23 +53,6 @@ export function sphere ( data, material ) {
     mesh = new THREE.Mesh( geometry, material );
     rotateGeometry( mesh, constants.DEFAULT_ROTATION );
     return mesh;
-}
-
-/**
- * Creates a toroidal THREE.Mesh from parasolid data and a material
- *
- * @function torus
- *
- * @return { THREE.Mesh } The toroidal THREE.Mesh
- *
- * @param { Object }           data     Parasolid data
- * @param { THREE.Material } material The material to give the THREE.Mesh
- */
-export function torus ( data, material ) {
-    var majorRadius = data.majorRadius || data.major_radius;
-    var minorRadius = data.minorRadius || data.minor_radius;
-    var geometry = new THREE.TorusBufferGeometry( majorRadius, minorRadius, 24, 24 );
-    return new THREE.Mesh( geometry, material );
 }
 
 /**

@@ -5,12 +5,13 @@
 
 import THREE from 'three';
 import SceneBuilderData from './sceneBuilderData.js';
-import * as print from './debugPrint.js';
+import * as print from './utils/debugPrint.js';
 import GeometryBuilder from './geometryBuilder.js';
 import {scene} from 'flux-modelingjs';
 import * as constants from './constants.js';
-import setObjectColor from './sceneEdit.js';
+import * as sceneEdit from './sceneEdit.js';
 import cleanElement from './utils/entityPrep.js';
+import * as materials from './utils/materials.js';
 
 /**
  * Class to convert a Flux JSON scene to a three.js object hierarchy
@@ -50,15 +51,18 @@ SceneBuilder.prototype.convert = function(data) {
         return Promise.resolve(sceneBuilderData.getResults());
     }
     var dataClean = cleanElement(data, sceneBuilderData.primStatus);
-    var builderPromise;
-    if (scene.isScene(dataClean) && _checkScene(dataClean, sceneBuilderData.primStatus)) {
-        builderPromise = this._convertScene(dataClean, sceneBuilderData);
-    } else {
-        builderPromise = this._createEntity(dataClean);
-    }
-    return builderPromise.then(function(newBuilderData) {
-        sceneBuilderData.mergeScenes(newBuilderData);
-        return sceneBuilderData.getResults();
+    var _this = this;
+    return materials.prepIBL(dataClean).then(function () {
+        var builderPromise;
+        if (scene.isScene(dataClean) && _checkScene(dataClean, sceneBuilderData.primStatus)) {
+            builderPromise = _this._convertScene(dataClean, sceneBuilderData);
+        } else {
+            builderPromise = _this._createEntity(dataClean);
+        }
+        return builderPromise.then(function(newBuilderData) {
+            sceneBuilderData.mergeScenes(newBuilderData);
+            return sceneBuilderData.getResults();
+        });
     });
 };
 
@@ -126,7 +130,7 @@ SceneBuilder.prototype._createLayer = function(data, sceneBuilderData) {
         }
         return combo;
     }).then(function(result) { // apply layer overrides
-        setObjectColor(result.object, data.color);
+        sceneEdit.setObjectColor(result.object, data.color);
         if (data.visible != null) {
             result.object.visible = !!data.visible;
         }
@@ -172,7 +176,7 @@ SceneBuilder.prototype._createSceneElement = function(elementId, sceneBuilderDat
  * @return {Promise}                            Promise for SceneBuilderData
  */
 SceneBuilder.prototype._createGeometryContainer = function(element) {
-    return this._createEntity(element.entity);
+    return this._createEntity(element.entities);
 };
 
 /**
@@ -193,6 +197,32 @@ function _applyTransform(matrix, object) {
 }
 
 /**
+ * Assign the material with the given id to an object in the scene
+ * @param  {String} materialId       The material's id
+ * @param  {THREE.Object3D} object   The object with a material
+ * @param  {SceneBuilderData} sceneBuilderData Cache for json and objects
+ */
+function _assignMaterial(materialId, object, sceneBuilderData) {
+    if (materialId == null) {
+        return;
+    }
+    // get the material json
+    var materialData = sceneBuilderData.getEntityData(materialId);
+
+    // get the material object
+    var material = sceneBuilderData.getObjectMap()[materialId];
+    if (material == null) {
+        material = materials.create(constants.MATERIAL_TYPES.ALL, materialData);
+        sceneBuilderData.cacheObject(materialId, material);
+    }
+
+    // Recursively override material
+    // Does not need to reset vertex colors since scene materials dont have vertex
+    // color enabled, as scene elements are created after the merging in geometry builder
+    sceneEdit.setObjectMaterial(object, material);
+}
+
+/**
  * Instances are special and reuse their entities
  * @param  {Object} element                     JSON data for group
  * @param  {SceneBuilderData} sceneBuilderData  Container for results and errors
@@ -203,6 +233,7 @@ SceneBuilder.prototype._createInstance = function(element, sceneBuilderData) {
         var instanceResults = new SceneBuilderData();
         _applyTransform(element.matrix, instanceResults.object);
         instanceResults.mergeInstances(results);
+        _assignMaterial(element.material, instanceResults.object, sceneBuilderData);
         return instanceResults;
     }).catch(function (err) {
         print.log(err);
@@ -227,6 +258,7 @@ SceneBuilder.prototype._createGroup = function(element, sceneBuilderData) {
         for (var r=0;r<results.length;r++) {
             combo.mergeInstances(results[r]);
         }
+        _assignMaterial(element.material, combo.object, sceneBuilderData);
         return combo;
     });
     return groupPromise.then(function(result) {
