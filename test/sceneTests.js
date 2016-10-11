@@ -238,15 +238,3 @@ test('Layer with visible', function (t) {
         t.end();
     }).catch(printError(t));
 });
-
-test('Layer none visible', function (t) {
-    var sceneJson = _getScene('layerVisibleScene');
-    sceneJson[4].visible = false;
-    builder.convert(sceneJson).then(function (result) {
-        var scene = result.getObject();
-        var errors = result.getErrorSummary();
-        t.ok(scene,'Object exist '+errors);
-        t.ok(errors.indexOf('visible')!== -1, 'Errors should mention visible');
-        t.end();
-    }).catch(printError(t));
-});

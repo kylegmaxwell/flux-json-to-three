@@ -133,8 +133,8 @@ function _findValidator(primitive) {
             var schemaPrim = entitiesJson.entities[primitive];
             var schemaId = "#/entities/"+primitive;
             if (!schemaPrim) {
-                schemaPrim = entitiesJson[primitive];
-                schemaId = "#/"+primitive;//scene, instance ...
+                schemaPrim = entitiesJson.scene[primitive];
+                schemaId = "#/scene/"+primitive;//scene, instance ...
             }
             if (!schemaPrim) {
                 return null;
