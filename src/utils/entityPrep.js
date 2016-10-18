@@ -12,12 +12,13 @@ import * as revitUtils from './revitUtils.js';
 /**
  * Modify an object and then return a copy of it with no null properties
  * @param  {Object} obj JSON data
+ * @param  {Boolean} alreadyChanged Tells whether there was a previous change that requires a clone
  * @return {Object}     Updated JSON data
  */
-function _removeNulls(obj) {
+function _removeNulls(obj, alreadyChanged) {
     if (!obj) return obj;
     var changed = _unsetNulls(obj);
-    if (changed) {
+    if (changed || alreadyChanged) {
         return JSON.parse(JSON.stringify(obj));
     } else {
         return obj;
@@ -57,26 +58,54 @@ function _unsetNulls(obj) {
     return changed;
 }
 
+
+/**
+ * Make sure that there are not white layers, as this makes it hard to see lines
+ * TODO(Kyle): This is a hacky workaround for GI-4404 / LIB3D-1002
+ * @param  {Array} entities Array of Flux JSON primitives
+ * @return {Boolean} Whether any changes were made
+ */
+function _cleanLayerColors(entities) {
+    var changed = false;
+    for (var i=0;i<entities.length;i++) {
+        var entity = entities[i];
+        if (!entity || !entity.primitive) continue;
+        if (entity.primitive === constants.SCENE_PRIMITIVES.layer) {
+            if (JSON.stringify(entity.color)==="[1,1,1]") {
+                entity.color = undefined;
+                changed = true;
+            }
+        }
+    }
+    return changed;
+}
+
 /**
  * Convert all units to meters
  * @param  {Object} obj JSON object to modify
+ * @param  {StatusMap} primStatus Container for errors
  */
-function _convertUnits(obj) {
+function _convertUnits(obj, primStatus) {
     if (obj != null && typeof obj === 'object') {
         if (obj.primitive) {
             // Handle units set on the container
-            convertUnits(obj);
+            try {
+                convertUnits(obj);
+            } // Turn exceptions from invalid units into status messages
+            catch(err) {
+                primStatus.appendError(obj.primitive, err.message);
+            }
             // Handle units on the children
             if (obj.primitive === 'polycurve') {
-                _convertUnits(obj.curves);
+                _convertUnits(obj.curves, primStatus);
             } else if (obj.primitive === 'polysurface') {
-                _convertUnits(obj.surfaces);
+                _convertUnits(obj.surfaces, primStatus);
             } else if (obj.primitive === 'revitElement') {
-                _convertUnits(revitUtils.extractGeom(obj));
+                _convertUnits(revitUtils.extractGeom(obj), primStatus);
             }
         } else {
             for (var key in obj) {
-                _convertUnits(obj[key]);
+                _convertUnits(obj[key], primStatus);
             }
         }
     }
@@ -206,9 +235,10 @@ function _replaceElementScene(scene, element, children) {
  * @param  {Array} entities Array of Flux JSON
  * @param  {Object} element     Container element to be replaced
  * @param  {Array} children     Array of child entities
+ * @param  {StatusMap} primStatus Map to track errors per primitive
  */
-function _replaceElement(entities, element, children) {
-    _convertUnits(element);
+function _replaceElement(entities, element, children, primStatus) {
+    _convertUnits(element, primStatus);
     for (var c=0;c<children.length;c++) {
         var child = children[c];
         if (element.attributes) {
@@ -220,8 +250,9 @@ function _replaceElement(entities, element, children) {
 /**
  * Get rid of container entities and replace them with equivalent content.
  * @param  {Object} entities Array of Flux JSON
+ * @param  {StatusMap} primStatus Map to track errors per primitive
  */
-function _flattenElements(entities) {
+function _flattenElements(entities, primStatus) {
     var i;
     var isScene = schema.isScene(entities);
     var convertedIds = [];
@@ -237,7 +268,7 @@ function _flattenElements(entities) {
             } else {
                 // otherwise just move the entities out and transfer attributes
                 entities[i] = null;
-                _replaceElement(entities, entity, children);
+                _replaceElement(entities, entity, children, primStatus);
             }
         }
     }
@@ -281,9 +312,11 @@ export default function cleanElement(entity, primStatus) {
     // Guarantee that the data is an array and it is flat
     entityClone = _flattenArray([entity], []);
 
+    var changed = _cleanLayerColors(entityClone);
+
     _explodeRevit(entityClone);
 
-    _flattenElements(entityClone);
+    _flattenElements(entityClone, primStatus);
 
     _convertColors(entityClone);
 
@@ -291,13 +324,13 @@ export default function cleanElement(entity, primStatus) {
 
     // Get rid of invalid properties commonly sent by plugins on elements
     // If they remain these properties will fail schema validation.
-    entityClone = _removeNulls(entityClone);
+    entityClone = _removeNulls(entityClone, changed);
 
     if (schema.checkSchema(entityClone, primStatus)) {
         return null;
     }
 
-    _convertUnits(entityClone);
+    _convertUnits(entityClone, primStatus);
 
     return entityClone;
 }

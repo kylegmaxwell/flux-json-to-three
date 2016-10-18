@@ -10,14 +10,13 @@ import THREE from 'three';
  */
 export function setObjectColor(object, color) {
     if (!color) return;
-
     var colorObj = materials._convertColor(color);
 
     object.traverse(function (child) {
         if (child.geometry && child.material) {
             // Clear the old color
             var colors = child.geometry.attributes.color.array;
-            for (var i=0;i<color.length;i++) {
+            for (var i=0;i<colors.length;i++) {
                 colors[i] = 1;
             }
             // Apply color to material (multiplies with per vertex color)

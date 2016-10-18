@@ -366,3 +366,60 @@ export var nullUnits = {
     }],
     "succeed":true
 };
+
+export var zeroValues = {
+    "start": [
+      {
+        "id": "80f092cb-b5ef-4161-bc62-8d15c4cfdf9a",
+        "origin": [
+          0.387358561192207,0.5363650093916,0],
+        "primitive": "circle",
+        "radius": 0.07680991575304337,
+        "units": {"origin": "meters","radius": "meters"
+        }
+      },
+      {
+        "entity": "80f092cb-b5ef-4161-bc62-8d15c4cfdf9a",
+        "id": "344767b3-0898-47b8-b4ea-4f5d607b6fd3",
+        "matrix": [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],
+        "primitive": "instance",
+        "units": {"matrix/11": "inches","matrix/3": "inches","matrix/7": "inches"
+        }
+      },
+      {
+        "color": [1,1,1],
+        "elements": ["344767b3-0898-47b8-b4ea-4f5d607b6fd3"],
+        "id": "63aba75c-b9e4-475a-b9c3-9c0131b95a9f",
+        "label": "0",
+        "primitive": "layer",
+        "visible": true
+      }
+    ],
+    "end": [
+      {
+        "id": "80f092cb-b5ef-4161-bc62-8d15c4cfdf9a",
+        "origin": [
+          0.387358561192207,0.5363650093916,0],
+        "primitive": "circle",
+        "radius": 0.07680991575304337,
+        "units": {"origin": "meters","radius": "meters"
+        }
+      },
+      {
+        "entity": "80f092cb-b5ef-4161-bc62-8d15c4cfdf9a",
+        "id": "344767b3-0898-47b8-b4ea-4f5d607b6fd3",
+        "matrix": [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],
+        "primitive": "instance",
+        "units": {"matrix/11": "meters","matrix/3": "meters","matrix/7": "meters"
+        }
+      },
+      {
+        // Color is removed due to GI-4404 / LIB3D-1002 (see entityPrep.js: _cleanLayerColors)
+        "elements": ["344767b3-0898-47b8-b4ea-4f5d607b6fd3"],
+        "id": "63aba75c-b9e4-475a-b9c3-9c0131b95a9f",
+        "label": "0",
+        "primitive": "layer",
+        "visible": true
+      }],
+    "succeed":true
+};

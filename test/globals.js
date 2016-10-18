@@ -10,7 +10,7 @@ global.createElement = function () {
         addEventListener: function (name, cb) {
             cb();
         }
-    }
+    };
 };
 global.createElementNS = global.createElement;
 
@@ -21,7 +21,7 @@ global.XMLHttpRequest = function () {
         open: function () {},
         send: function () {this.cb();},
         overrideMimeType: function () {}
-    }
+    };
 };
 
 global.self = global;

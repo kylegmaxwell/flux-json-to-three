@@ -1,6 +1,6 @@
 {
   "name": "flux-json-to-three",
-  "version": "0.23.0",
+  "version": "0.23.1",
   "description": "A module that takes parasolid data and produces Three.js objects",
   "main": "build/index.common.js",
   "jsnext:main": "src/index.js",
@@ -41,6 +41,7 @@
     "three": "^0.79.0"
   },
   "devDependencies": {
-    "colortape": "^0.1.1"
+    "colortape": "^0.1.1",
+    "tape-catch": "^1.0.6"
   }
 }

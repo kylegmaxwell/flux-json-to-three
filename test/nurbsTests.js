@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tape');
+var test = require('tape-catch');
 var THREE = require('three');
 var SceneBuilder = require('../build/index-test.common.js').SceneBuilder;
 var tests = require('./data/fixturesNurbs.js').tests;

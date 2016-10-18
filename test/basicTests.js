@@ -1,11 +1,9 @@
 'use strict';
 
-var test = require('tape');
+var test = require('tape-catch');
 var THREE = require('three');
 var index = require('../build/index-test.common.js');
 var FluxGeometryError = index.FluxGeometryError;
-var GeometryBuilder = index.GeometryBuilder;
-var fixturesUnits = require('../build/fixturesUnits.common.js');
 
 test('Test three', function (t) {
     t.ok(true, 'Can run a test');
@@ -24,10 +22,10 @@ test( 'Error handling', function ( t ) {
     try {
         throw new FluxGeometryError();
     } catch (e) {
-        t.equal(e.name, 'FluxGeometryError', 'Errors should be named FluxGeometryError.')
+        t.equal(e.name, 'FluxGeometryError', 'Errors should be named FluxGeometryError.');
         hasError = true;
     }
 
-    t.equal(hasError, true, 'Should throw errors when appropriate.')
+    t.equal(hasError, true, 'Should throw errors when appropriate.');
     t.end();
 });

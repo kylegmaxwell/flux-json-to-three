@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tape');
+var test = require('tape-catch');
 var THREE = require('three');
 var GeometryBuilder = require('../build/index-test.common.js').GeometryBuilder;
 

@@ -1,14 +1,16 @@
 'use strict';
 
-var test = require('tape');
+var test = require('tape-catch');
 var index = require('../build/index-test.common.js');
+var modeling = require('flux-modelingjs');
 var FluxGeometryError = index.FluxGeometryError;
 var fixturesUnits = require('../build/fixturesUnits.common.js');
 
 test( 'Units translation', function ( t ) {
     Object.keys(fixturesUnits).forEach(function (key) {
         console.log('Fixture: '+key);
-        var entity = index.cleanElement(fixturesUnits[key].start);
+        var primStatus = new modeling.scene.StatusMap();
+        var entity = index.cleanElement(fixturesUnits[key].start, primStatus);
         var succeedStr = fixturesUnits[key].succeed ? 'pass' : 'fail';
         var hasException = false;
         try {

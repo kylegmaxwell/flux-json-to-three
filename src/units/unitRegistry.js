@@ -102,7 +102,7 @@ UnitRegistry.prototype.unitConversionFunc = function (from, to) {
     var factor = this.unitConversionFactor(from, to);
     if (factor !== null) {
         return function (obj) {
-            if (!obj) {
+            if (obj==null) {
                 throw new FluxGeometryError('Invalid unit string '+obj);
             } else if (obj.constructor === Number) {
                 return obj * factor;
