@@ -60,7 +60,7 @@ function _resolvePrimFunc (primitive) {
 /**
  * Determine the material type that would be used for a given primitive
  * @param {String} primitive The name of the entity type
- * @returns {constants.MATERIAL_TYPES} A function to convert a prim to geomtry and a material type
+ * @returns {constants.MATERIAL_TYPES} A function to convert a prim to geometry and a material type
  */
 export function resolveMaterialType (primitive) {
     _makePrimMaps();

@@ -272,16 +272,27 @@ test('Layer with color', function (t) {
         var errors = result.getErrorSummary();
         t.ok(scene,'Object exist '+errors);
         var layer = scene.children[0];
-            t.deepEqual(layer.children[0].material.color.toArray(),
-                [1,0.5,0], 'Should have orange color material');
-            var color = layer.children[0].geometry.attributes.color.array;
-            var white = true;
-            for (var i=0;i<color.length;i++) {
-                if (color[i] !== 1) {
-                    white = false;
-                }
+        t.deepEqual(layer.children[0].material.color.toArray(),
+            [1,0.5,0], 'Should have orange color material');
+        var color = layer.children[0].geometry.attributes.color.array;
+        var white = true;
+        for (var i=0;i<color.length;i++) {
+            if (color[i] !== 1) {
+                white = false;
             }
-            t.ok(white,'Color is reset');
+        }
+        t.ok(white,'Color is reset');
+        t.end();
+    }).catch(printError(t));
+});
+
+
+test('dvp scene', function (t) {
+    builder.convert(_getScene('dvpScene')).then(function (result) {
+        var scene = result.getObject();
+        var errors = result.getErrorSummary();
+        t.ok(scene,'Object exist');
+        t.equal('',errors, 'No errors');
         t.end();
     }).catch(printError(t));
 });

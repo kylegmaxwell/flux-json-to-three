@@ -4,7 +4,7 @@
 'use strict';
 
 import convertUnits from '../units/unitConverter.js';
-import { scene as schema } from 'flux-modelingjs';
+import { scene as modelingScene } from 'flux-modelingjs';
 import * as materials from './materials.js';
 import * as constants from '../constants.js';
 import * as revitUtils from './revitUtils.js';
@@ -70,7 +70,7 @@ function _cleanLayerColors(entities) {
     for (var i=0;i<entities.length;i++) {
         var entity = entities[i];
         if (!entity || !entity.primitive) continue;
-        if (entity.primitive === constants.SCENE_PRIMITIVES.layer) {
+        if (entity.primitive === modelingScene.SCENE_PRIMITIVES.layer) {
             if (JSON.stringify(entity.color)==="[1,1,1]") {
                 entity.color = undefined;
                 changed = true;
@@ -146,7 +146,7 @@ function _checkMaterials(obj, primStatus) {
                         value[p] = undefined;
                     }
                 }
-                if (!schema.checkMaterial(value, primStatus)) {
+                if (!modelingScene.checkMaterial(value, primStatus)) {
                     obj[key] = {};
                 }
             } else if (typeof value === 'object'){
@@ -186,7 +186,7 @@ function _flattenArray(arr, result) {
  */
 function createGroup(id, children) {
     return {
-        primitive: constants.SCENE_PRIMITIVES.group,
+        primitive: modelingScene.SCENE_PRIMITIVES.group,
         id: id,
         children: children
     };
@@ -201,7 +201,7 @@ function createGroup(id, children) {
  */
 function createInstance(id, child) {
     return {
-        primitive: constants.SCENE_PRIMITIVES.instance,
+        primitive: modelingScene.SCENE_PRIMITIVES.instance,
         id: id,
         entity: child
     };
@@ -254,7 +254,7 @@ function _replaceElement(entities, element, children, primStatus) {
  */
 function _flattenElements(entities, primStatus) {
     var i;
-    var isScene = schema.isScene(entities);
+    var isScene = modelingScene.isScene(entities);
     var convertedIds = [];
     for (i=0;i<entities.length;i++) {
         var entity = entities[i];
@@ -272,11 +272,12 @@ function _flattenElements(entities, primStatus) {
             }
         }
     }
+    // Convert parent instances to groups since instances can not point to groups
     for (i=0;i<entities.length;i++) {
         entity = entities[i];
         if (!entity || !entity.primitive) continue;
-        if (entity.primitive === constants.SCENE_PRIMITIVES.instance && entity.entity && convertedIds.indexOf(entity.entity) !== -1) {
-            entity.primitive = constants.SCENE_PRIMITIVES.group;
+        if (entity.primitive === modelingScene.SCENE_PRIMITIVES.instance && entity.entity && convertedIds.indexOf(entity.entity) !== -1) {
+            entity.primitive = modelingScene.SCENE_PRIMITIVES.group;
             entity.children = [entity.entity];
         }
     }
@@ -287,11 +288,28 @@ function _flattenElements(entities, primStatus) {
  * @param  {Array} entities Array of Flux JSON
  */
 function _explodeRevit(entities) {
+    var convertedIds = [];
+    var isScene = modelingScene.isScene(entities);
     for (var i=0;i<entities.length;i++) {
         var entity = entities[i];
         if (!entity || !entity.primitive) continue;
         if (entity.primitive === 'revitElement') {
-            entities[i] = revitUtils.extractGeom(entity);
+            if (entity.id && isScene) {
+                var children = revitUtils.extractGeom(entity);
+                entities[i] = _replaceElementScene(entities, entity, children);
+                convertedIds.push(entity.id);
+            } else {
+                entities[i] = revitUtils.extractGeom(entity);
+            }
+        }
+    }
+    // Convert parent instances to groups since instances can not point to groups
+    for (i=0;i<entities.length;i++) {
+        entity = entities[i];
+        if (!entity || !entity.primitive) continue;
+        if (entity.primitive === modelingScene.SCENE_PRIMITIVES.instance && entity.entity && convertedIds.indexOf(entity.entity) !== -1) {
+            entity.primitive = modelingScene.SCENE_PRIMITIVES.group;
+            entity.children = [entity.entity];
         }
     }
 }
@@ -326,11 +344,31 @@ export default function cleanElement(entity, primStatus) {
     // If they remain these properties will fail schema validation.
     entityClone = _removeNulls(entityClone, changed);
 
-    if (schema.checkSchema(entityClone, primStatus)) {
+    if (modelingScene.checkSchema(entityClone, primStatus)) {
         return null;
     }
 
     _convertUnits(entityClone, primStatus);
 
+    return entityClone;
+}
+
+
+/**
+ * Extract only the geometry entities to render for scenes that are invalid due to errors
+ * @param  {Object} entity Flux JSON data.
+ * @return {Array}        Flux JSON data list of geometry entities.
+ */
+export function cleanEntities(entity) {
+    var entityClone = _flattenArray([entity], []);
+    for (var i=0;i<entityClone.length;i++) {
+        var e = entityClone[i];
+        if (e != null && typeof e === 'object' && typeof e.primitive === 'string') {
+            if (e.primitive in modelingScene.SCENE_PRIMITIVES) {
+                entityClone[i] = null;
+            }
+
+        }
+    }
     return entityClone;
 }

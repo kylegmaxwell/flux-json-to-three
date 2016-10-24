@@ -10,7 +10,7 @@ import GeometryBuilder from './geometryBuilder.js';
 import {scene} from 'flux-modelingjs';
 import * as constants from './constants.js';
 import * as sceneEdit from './sceneEdit.js';
-import cleanElement from './utils/entityPrep.js';
+import {default as cleanElement, cleanEntities} from './utils/entityPrep.js';
 import * as materials from './utils/materials.js';
 
 /**
@@ -78,7 +78,7 @@ SceneBuilder.prototype._convertScene = function(entities, sceneBuilderData) {
         var element = array[i];
         if (element == null) continue;
         sceneBuilderData.setEntityData(element);
-        if (element.primitive && element.primitive === constants.SCENE_PRIMITIVES.layer) {
+        if (element.primitive && element.primitive === scene.SCENE_PRIMITIVES.layer) {
             sceneBuilderData.addLayer(element);
         }
         // Currently JSON data that is unreferenced by layers will be ignored
@@ -158,11 +158,11 @@ SceneBuilder.prototype._createSceneElement = function(elementId, sceneBuilderDat
     if (!element) {
         return Promise.resolve(sceneBuilderData);
     }
-    if (element.primitive === constants.SCENE_PRIMITIVES.instance) {
+    if (element.primitive === scene.SCENE_PRIMITIVES.instance) {
         return this._createInstance(element, sceneBuilderData);
-    } else if (element.primitive === constants.SCENE_PRIMITIVES.group) {
+    } else if (element.primitive === scene.SCENE_PRIMITIVES.group) {
         return this._createGroup(element, sceneBuilderData);
-    } else if (element.primitive === constants.SCENE_PRIMITIVES.geometry) {
+    } else if (element.primitive === scene.SCENE_PRIMITIVES.geometry) {
         return this._createGeometryContainer(element);
     } else { // entity
         return this._createEntityFromData(element, sceneBuilderData);
@@ -298,7 +298,8 @@ SceneBuilder.prototype._createEntityFromData = function(entityData, sceneBuilder
  * @return {Promise}            Promise to return SceneBuilderData
  */
 SceneBuilder.prototype._createEntity = function(entityData) {
-    return this._geometryBuilder.convert(entityData).then(function(geometryResults) {
+    var dataClean = cleanEntities(entityData);
+    return this._geometryBuilder.convert(dataClean).then(function(geometryResults) {
         var sceneBuilderData = new SceneBuilderData();
         sceneBuilderData.object = geometryResults.object;
         sceneBuilderData.primStatus = geometryResults.primStatus;

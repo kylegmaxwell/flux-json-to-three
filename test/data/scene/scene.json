@@ -24,19 +24,29 @@
         "matrix": [1, 0, 0, 20, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
     },
     {
-        "id":"ground",
+        "id":"groundShape",
         "origin": [0,0,0],
         "dimensions": [80,80],
         "materialProperties": {"color": [0.67,0.33,0.13]},
         "primitive": "rectangle"
     },
     {
-        "id":"building",
+        "id": "ground",
+        "primitive": "instance",
+        "entity": "groundShape"
+    },
+    {
+        "id":"buildingShape",
         "origin":[-50,50,40],
         "dimensions":[40,40,80],
         "axis":[0,0,1],
         "reference":[0,1,0],
         "primitive":"block"
+    },
+    {
+        "id": "building",
+        "primitive": "instance",
+        "entity": "buildingShape"
     },
     {
         "id": "plants",

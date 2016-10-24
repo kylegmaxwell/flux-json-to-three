@@ -27,14 +27,6 @@ export var NURBS_SURFACE_QUALITY = 2.5;
 var degreesFlatLimit = 1.0;
 export var NURBS_FLAT_LIMIT = degreesFlatLimit/180.0;
 
-// Enumeration of strings used as primitive types in scenes
-export var SCENE_PRIMITIVES = {
-    layer: 'layer',
-    group: 'group',
-    instance: 'instance',
-    geometry: 'geometryList'
-};
-
 // Container primitives contain other entities
 export var CONTAINER_PRIM_MAP = {
     polycurve: 'curves',
