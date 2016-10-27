@@ -41,7 +41,9 @@ test('should create a scene with geometry elements', function (t) {
             t.ok(obj,'Object exists '+result.getErrorSummary());
             t.equal(obj.children.length,1,'One layer');
             t.equal(obj.children[0].children.length,1,'Merged spheres');
-            t.equal(obj.children[0].children[0].geometry.attributes.position.count,count*2,'Two spheres');
+            // layer / instance / mesh / geometry
+            t.equal(obj.children[0].children[0].children[0].geometry.attributes.position.count,
+                count*2,'Two spheres');
             t.end();
         }).catch(printError(t));
     }).catch(printError(t));
@@ -61,9 +63,10 @@ test('should create a scene with curves, meshes and instances', function (t) {
         t.ok(types.indexOf('Mesh')!==-1,'Has a mesh');
 
         var plants = result._getObjectById('plants');
-        var id = plants.children[0].geometry.id;
+        // layer / instance / mesh / geometry
+        var id = plants.children[0].children[0].geometry.id;
         for (var i=0;i<plants.children.length;i++) {
-            t.equal(plants.children[i].geometry.id, id, 'Should share same geometry');
+            t.equal(plants.children[i].children[0].geometry.id, id, 'Should share same geometry');
         }
         t.equal(result.getErrorSummary(),'','No errors');
         t.end();
@@ -187,7 +190,8 @@ test('Sphere with origin', function (t) {
         var scene = result.getObject();
         var errors = result.getErrorSummary();
         t.ok(scene,'Object exist '+errors);
-        var mesh = scene.children[0].children[0];
+        // layer / instance / mesh / geometry
+        var mesh = scene.children[0].children[0].children[0];
         var pos = mesh.geometry.attributes.position.array;
         var tmpV = new THREE.Vector3(0,0,0);
         var expectedV = new THREE.Vector3(-50.48976135253906,19.15716552734375,0);
@@ -197,6 +201,7 @@ test('Sphere with origin', function (t) {
             tmpV.z += pos[i+2];
         }
         tmpV.multiplyScalar(3.0/pos.length);
+        mesh.updateMatrixWorld(true);
         tmpV.applyMatrix4(mesh.matrixWorld);
         t.ok(tmpV.sub(expectedV).length() < TOLERANCE, 'Center should have expected value');
         t.end();
@@ -208,7 +213,7 @@ test('Sphere with matrix', function (t) {
         var scene = result.getObject();
         var errors = result.getErrorSummary();
         t.ok(scene,'Object exist '+errors);
-        var mesh = scene.children[0].children[0];
+        var mesh = scene.children[0].children[0].children[0];
         var pos = mesh.geometry.attributes.position.array;
         var tmpV = new THREE.Vector3(0,0,0);
         var expectedV = new THREE.Vector3(-50.48976135253906,19.15716552734375,0);
@@ -218,6 +223,7 @@ test('Sphere with matrix', function (t) {
             tmpV.z += pos[i+2];
         }
         tmpV.multiplyScalar(3.0/pos.length);
+        mesh.updateMatrixWorld(true);
         tmpV.applyMatrix4(mesh.matrixWorld);
         t.ok(tmpV.sub(expectedV).length() < TOLERANCE, 'Center should have expected value');
         t.end();
@@ -241,14 +247,14 @@ var materialScenes = [{
         results: [[1,0,0]]
     },{
         scene: 'materialPolyCurveScene',
-        results: [[1,0,0],[1,0,0]]
+        results: [[1,0,0]]
     },{
         scene: 'materialGroupScene',
-        results: [[0,1,0],[0,1,0],[0,1,0]]
+        results: [[0,1,0]]
     },{
         scene: 'materialNesting',
         // TODO(Kyle) This depends on order, but it is not guaranteed
-        results: [[0,1,0],[0,1,0],[0,1,0],[1,0,1],[1,0,1]]
+        results: [[0,1,0],[1,0,1]]
     }
 ];
 materialScenes.forEach(function (sceneData) {
@@ -258,8 +264,26 @@ materialScenes.forEach(function (sceneData) {
             var scene = result.getObject();
             var errors = result.getErrorSummary();
             t.ok(scene,'Object exist '+errors);
-            for (var i=0;i<sceneData.results.length;i++) {
-                t.deepEqual(scene.children[0].children[i].material.color.toArray(), sceneData.results[i], 'Should have color material');
+            var colors = [];
+            var i;
+            for (i=0;i<sceneData.results.length;i++) {
+                colors.push(0);
+            }
+            scene.traverse(function (child) {
+                if (child.material) {
+                    var c1 = child.material.color.toArray();
+                    // for each result check if that color is present
+                    for (i=0;i<sceneData.results.length;i++) {
+                        var c2 = sceneData.results[i];
+                        if (c1[0]===c2[0]&&c1[1]===c2[1]&&c1[2]===c2[2]) {
+                            colors[i]++;
+                        }
+                    }
+                }
+            });
+            // expect all colors present
+            for (i=0;i<sceneData.results.length;i++) {
+                t.ok(colors[i]>0,'Color '+sceneData.results[i]+' must be found');
             }
             t.end();
         }).catch(printError(t));
@@ -272,9 +296,9 @@ test('Layer with color', function (t) {
         var errors = result.getErrorSummary();
         t.ok(scene,'Object exist '+errors);
         var layer = scene.children[0];
-        t.deepEqual(layer.children[0].material.color.toArray(),
+        t.deepEqual(layer.children[0].children[0].material.color.toArray(),
             [1,0.5,0], 'Should have orange color material');
-        var color = layer.children[0].geometry.attributes.color.array;
+        var color = layer.children[0].children[0].geometry.attributes.color.array;
         var white = true;
         for (var i=0;i<color.length;i++) {
             if (color[i] !== 1) {

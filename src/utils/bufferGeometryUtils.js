@@ -73,7 +73,7 @@ function _ensureIndex(geom) {
             index.push(i);
         }
         geom.setIndex(new THREE.BufferAttribute(new Uint32Array(index), 1));
-    } else if (!geom.index.array.constructor instanceof Uint32Array) {
+    } else if (!(geom.index.array.constructor instanceof Uint32Array)) {
         geom.index.array = Uint32Array.from(geom.index.array);
     }
 }

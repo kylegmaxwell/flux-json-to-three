@@ -53,16 +53,18 @@ SceneBuilder.prototype.convert = function(data) {
     var dataClean = cleanElement(data, sceneBuilderData.primStatus);
     var _this = this;
     return materials.prepIBL(dataClean).then(function () {
-        var builderPromise;
+        // Render as a scene if possible
         if (scene.isScene(dataClean) && _checkScene(dataClean, sceneBuilderData.primStatus)) {
-            builderPromise = _this._convertScene(dataClean, sceneBuilderData);
-        } else {
-            builderPromise = _this._createEntity(dataClean);
+            return _this._convertScene(dataClean, sceneBuilderData).then(function() {
+                return sceneBuilderData.getResults();
+            });
         }
-        return builderPromise.then(function(newBuilderData) {
-            sceneBuilderData.mergeScenes(newBuilderData);
-            return sceneBuilderData.getResults();
+        // Render the entities if there is no scene
+        return _this._createEntity(dataClean).then(function (results) {
+            results.primStatus.merge(sceneBuilderData.primStatus);
+            return results.getResults();
         });
+
     });
 };
 
@@ -73,110 +75,134 @@ SceneBuilder.prototype.convert = function(data) {
  * @return {Promise}                            Promise for SceneBuilderData
  */
 SceneBuilder.prototype._convertScene = function(entities, sceneBuilderData) {
-    var array = entities;
-    for (var i=0;i<array.length;i++) {
-        var element = array[i];
+    var elementPromises = [];
+    var i;
+    // Create a promise for the Object3D result of creating each element in the scene
+    for (i=0;i<entities.length;i++) {
+        var element = entities[i];
         if (element == null) continue;
         sceneBuilderData.setEntityData(element);
         if (element.primitive && element.primitive === scene.SCENE_PRIMITIVES.layer) {
             sceneBuilderData.addLayer(element);
         }
-        // Currently JSON data that is unreferenced by layers will be ignored
+        if (element.id) {
+            if (element.primitive === scene.SCENE_PRIMITIVES.material) {
+                // skip, create on demand (but put a placeholder)
+                elementPromises.push(Promise.resolve({"object":null}));
+            } else if (element.primitive === scene.SCENE_PRIMITIVES.geometry) {
+                elementPromises.push(this._createEntity(element.entities));
+            } else if (element.primitive in scene.SCENE_PRIMITIVES) {
+                elementPromises.push(Promise.resolve(new SceneBuilderData()));
+            } else {
+                elementPromises.push(this._createEntity(element));
+            }
+        }
     }
+    var _this = this;
+    // Attach user data to correlate each object with it's data and then link up the scene graph
+    return Promise.all(elementPromises).then(function (results) {
+        var objects = results.map(function (item) { return item.object; });
+        for (i=0;i<objects.length;i++) {
+            if (!objects[i]) continue;
+            objects[i].name = entities[i].primitive+':'+entities[i].id;
+            objects[i].userData.id = entities[i].id;
+            objects[i].userData.primitive = entities[i].primitive;
+            objects[i].userData.data = entities[i];
+            sceneBuilderData.cacheObject(objects[i].userData.id, objects[i]);
+        }
+        _this._linkElements(entities, sceneBuilderData);
+        return Promise.resolve(sceneBuilderData);
+    });
 
-    return this._createLayers(entities, sceneBuilderData);
+};
+
+
+/**
+ * Create the parenting relationships of the final scene render tree
+ * @param  {Object} data             Flux JSON
+ * @param  {SceneBuilderData} sceneBuilderData Result
+ */
+SceneBuilder.prototype._linkElements = function(data, sceneBuilderData) {
+    var objMap = sceneBuilderData.getObjectMap();
+    var object = sceneBuilderData.object;
+    for (var i=0;i<data.length;i++) {
+        var entity = data[i];
+        if (entity == null || typeof entity !== 'object' || entity.id == null) continue;
+        var obj = objMap[entity.id];
+        if (entity.primitive === scene.SCENE_PRIMITIVES.layer) {
+            this._createLayer(entity, obj, sceneBuilderData);
+            object.add(obj);
+        } else if (entity.primitive === scene.SCENE_PRIMITIVES.group) {
+            this._createGroup(entity, obj, sceneBuilderData);
+        } else if (entity.primitive === scene.SCENE_PRIMITIVES.instance) {
+            this._createInstance(entity, obj, sceneBuilderData);
+        }
+    }
+    _applyLayerColors(object);
+    _applyMaterials(object, sceneBuilderData);
 };
 
 /**
- * Create a all the layers in the scene as unique instances of THREE.Object3D
- * @param  {Object} data                        JSON Object with layer parameters
- * @param  {SceneBuilderData} sceneBuilderData  Container for result and per query storage
- * @return {Promise}                            Promise for SceneBuilderData
+ * Apply the layer color onto their children's materials
+ * @param  {THREE.Object3D} object Root object containing layers
  */
-SceneBuilder.prototype._createLayers = function(data, sceneBuilderData) {
-    var promises = [];
-    var layers = sceneBuilderData.getLayers();
-    for (var l=0;l<layers.length;l++) {
-        var layer = layers[l];
-        promises.push(this._createLayer(layer, sceneBuilderData));
-    }
-    return Promise.all(promises).then(function (results) {
-        if (results.length===0) return sceneBuilderData;
-        var combo = new SceneBuilderData();
-        for (var r=0;r<results.length;r++) {
-            combo.mergeLayers(results[r]);
+function _applyLayerColors(object) {
+    for (var i=0;i<object.children.length;i++) {
+        var child = object.children[i];
+        if (child.userData.data.color) {
+            sceneEdit.setObjectColor(child, child.userData.data.color);
         }
-        return combo;
+    }
+}
+
+/**
+ * Apply materials to groups and their children
+ * @param  {THREE.Object3D} object           Root object containing scene
+ * @param  {SceneBuilderData} sceneBuilderData The container
+ */
+function _applyMaterials(object, sceneBuilderData) {
+    object.traverse(function (child) {
+        var data = child.userData.data;
+        if (data && data.material) {
+            _assignMaterial(data.material, child, sceneBuilderData);
+        }
     });
-};
+}
+
+
+/**
+ * Rebuild geometry container because Object3D can only be referenced by one object at a time
+ * @param  {THREE.Object3D} child Object3D with type Mesh or Line
+ * @return {THREE.Object3d}       The new instance
+ */
+function _rebuildChild(child) {
+    // Build a completely new object containing new meshes, since three.js
+    // does not allow multiple parents for the same object
+    var func = THREE[child.type];
+    var obj = new func(child.geometry, child.material.clone());
+    child.updateMatrixWorld();
+    obj.applyMatrix(child.matrixWorld);
+    for (var p in child.userData) {
+        obj.userData[p] = child.userData[p];
+    }
+    return obj;
+}
 
 /**
  * Create a layer in three.js from the given data
  * @param  {Object} data                        JSON Object with layer parameters
+ * @param  {THREE.Object3D} obj                 Geometry container object
  * @param  {SceneBuilderData} sceneBuilderData  Container for result and per query storage
- * @return {Promise}                            Promise for SceneBuilderData
  */
-SceneBuilder.prototype._createLayer = function(data, sceneBuilderData) {
-    var promises = [];
+SceneBuilder.prototype._createLayer = function(data, obj, sceneBuilderData) {
+    var objMap = sceneBuilderData.getObjectMap();
     for (var c=0;c<data.elements.length;c++) {
-        var child = data.elements[c];
-        promises.push(this._createSceneElement(child, sceneBuilderData));
+        var childId = data.elements[c];
+        obj.add(objMap[childId]);
     }
-    var layerPromise = Promise.all(promises).then(function (results) { // merge elements
-        if (results.length===0) return sceneBuilderData;
-        var combo = new SceneBuilderData();
-        for (var r=0;r<results.length;r++) {
-            combo.mergeInstances(results[r]);
-        }
-        return combo;
-    }).then(function(result) { // apply layer overrides
-        sceneEdit.setObjectColor(result.object, data.color);
-        if (data.visible != null) {
-            result.object.visible = !!data.visible;
-        }
-        return result;
-    });
-    return layerPromise.then(function(result) {
-        // cache the layer
-        var id = data.id;
-        if (id) {
-            sceneBuilderData.cacheObject(id, result.object);
-        }
-        return result;
-    });
-};
-
-/**
- * Create any scene element
- * @param  {Object} elementId                   JSON Object with element parameters
- * @param  {SceneBuilderData} sceneBuilderData  Container for result and per query storage
- * @return {Promise}                            Promise for SceneBuilderData
- */
-SceneBuilder.prototype._createSceneElement = function(elementId, sceneBuilderData) {
-    var element = sceneBuilderData.getEntityData(elementId);
-    // There might be a missing link if the element was removed due to an invalid schema
-    if (!element) {
-        return Promise.resolve(sceneBuilderData);
+    if (data.visible != null) {
+        obj.visible = !!data.visible;
     }
-    if (element.primitive === scene.SCENE_PRIMITIVES.instance) {
-        return this._createInstance(element, sceneBuilderData);
-    } else if (element.primitive === scene.SCENE_PRIMITIVES.group) {
-        return this._createGroup(element, sceneBuilderData);
-    } else if (element.primitive === scene.SCENE_PRIMITIVES.geometry) {
-        return this._createGeometryContainer(element);
-    } else { // entity
-        return this._createEntityFromData(element, sceneBuilderData);
-    }
-};
-
-/**
- * Create any scene geometry.
- * This is used to store arrays of entities with an associated id.
- * @param  {Object} element                   JSON Object with geometry parameters
- * @return {Promise}                            Promise for SceneBuilderData
- */
-SceneBuilder.prototype._createGeometryContainer = function(element) {
-    return this._createEntity(element.entities);
 };
 
 /**
@@ -215,7 +241,6 @@ function _assignMaterial(materialId, object, sceneBuilderData) {
         material = materials.create(constants.MATERIAL_TYPES.ALL, materialData);
         sceneBuilderData.cacheObject(materialId, material);
     }
-
     // Recursively override material
     // Does not need to reset vertex colors since scene materials dont have vertex
     // color enabled, as scene elements are created after the merging in geometry builder
@@ -224,72 +249,39 @@ function _assignMaterial(materialId, object, sceneBuilderData) {
 
 /**
  * Instances are special and reuse their entities
- * @param  {Object} element                     JSON data for group
+ * @param  {Object} data                     JSON data for group
+ * @param  {THREE.Object3D} obj   The object with a material
  * @param  {SceneBuilderData} sceneBuilderData  Container for results and errors
- * @return {Promise}                            Promise for SceneBuilderData
  */
-SceneBuilder.prototype._createInstance = function(element, sceneBuilderData) {
-    return this._createSceneElement(element.entity, sceneBuilderData).then(function (results) {
-        var instanceResults = new SceneBuilderData();
-        _applyTransform(element.matrix, instanceResults.object);
-        instanceResults.mergeInstances(results);
-        _assignMaterial(element.material, instanceResults.object, sceneBuilderData);
-        return instanceResults;
-    }).catch(function (err) {
-        print.log(err);
-    });
-};
-/**
- * Create an group collection of elements with a transform
- * @param  {Object} element                     JSON data for group
- * @param  {SceneBuilderData} sceneBuilderData  Container for results and errors
- * @return {Promise}                            Promise for SceneBuilderData
- */
-SceneBuilder.prototype._createGroup = function(element, sceneBuilderData) {
-    var promises = [];
-    for (var c=0;c<element.children.length;c++) {
-        var child = element.children[c];
-        promises.push(this._createSceneElement(child, sceneBuilderData));
-    }
-    var groupPromise = Promise.all(promises).then(function (results) { // merge elements
-        if (results.length===0) return sceneBuilderData;
-        var combo = new SceneBuilderData();
-        _applyTransform(element.matrix, combo.object);
-        for (var r=0;r<results.length;r++) {
-            combo.mergeInstances(results[r]);
+SceneBuilder.prototype._createInstance = function(data, obj, sceneBuilderData) {
+    // debugger
+    var objMap = sceneBuilderData.getObjectMap();
+    _applyTransform(data.matrix, obj);
+    var childId = data.entity;
+    var child = objMap[childId];
+    // Extract the geometry from the previous result into the new instance
+    child.traverse(function (c) {
+        if (c.type === "Mesh" || c.type ==="Line") {
+            obj.add(_rebuildChild(c));
         }
-        _assignMaterial(element.material, combo.object, sceneBuilderData);
-        return combo;
     });
-    return groupPromise.then(function(result) {
-        // cache the layer
-        var id = element.id;
-        if (id) {
-            sceneBuilderData.cacheObject(id, result.object);
-        }
-        return result;
-    });
+    // material is applied after linking
 };
 
 /**
- * Leaf node of scene that calls into geometry builder to create entities.
- * @param  {Object} entityData                  JSON data for entity description
- * @param  {SceneBuilderData} sceneBuilderData  Container for results and errors.
- * @return {Promise}                            Promise for SceneBuilderData
+ * Create an group collection of elements with a transform
+ * @param  {Object} data                     JSON data for group
+ * @param  {THREE.Object3D} obj   The object with a material
+ * @param  {SceneBuilderData} sceneBuilderData  Container for results and errors
  */
-SceneBuilder.prototype._createEntityFromData = function(entityData, sceneBuilderData) {
-    var entityId = entityData.id;
-    if (entityId) {
-        var cachedResults = sceneBuilderData.getCachedPromise(entityId);
-        if (cachedResults) {
-            return Promise.resolve(cachedResults);
-        } else {
-            var convertPromise = this._createEntity(entityData);
-            sceneBuilderData.cachePromise(entityId, convertPromise);
-            return convertPromise;
-        }
+SceneBuilder.prototype._createGroup = function(data, obj, sceneBuilderData) {
+    var objMap = sceneBuilderData.getObjectMap();
+    _applyTransform(data.matrix, obj);
+    for (var c=0;c<data.children.length;c++) {
+        var childId = data.children[c];
+        obj.add(objMap[childId]);
     }
-    return this._createEntity(entityData);
+    // material is handled after linking
 };
 
 /**

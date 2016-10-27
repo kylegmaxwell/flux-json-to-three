@@ -29,9 +29,6 @@ export default function SceneBuilderData() {
     // Map from id to scene element JSON object
     this._sceneDataMap = {};
 
-    // Map from id to Promise for geometry reuse
-    this._scenePromiseMap = {};
-
     // Map from id to THREE.Object3D
     this._sceneObjectMap = {};
 }
@@ -107,103 +104,9 @@ SceneBuilderData.prototype.cacheObject = function(entityId, entity) {
 };
 
 /**
- * Store a promise for geometry reuse.
- * This allows geometry instances to share results before those results
- * are asynchronously computed.
- * @param  {String} entityId      The unique identifier
- * @param  {Promise} entityPromise Promise for GeometryResults
- */
-SceneBuilderData.prototype.cachePromise = function(entityId, entityPromise) {
-    this._scenePromiseMap[entityId] = entityPromise;
-};
-
-/**
- * Lookup an existing promise if its element has already started being converted
- * @param  {String} entityId The unique identifier
- * @return {Promise}          Promise for GeometryResults
- */
-SceneBuilderData.prototype.getCachedPromise = function(entityId) {
-    return this._scenePromiseMap[entityId];
-};
-
-/**
- * Merge in the layers from another scene
- * @param  {SceneBuilderData} other Other data containing a finished scene
- */
-SceneBuilderData.prototype.mergeScenes = function(other) {
-    if (!other) return;
-
-    var children = other.object.children;
-    if (children.length>0) {
-        while(children.length>0) {
-            this.object.add(children[children.length-1]);
-        }
-    }
-    this._finishMerge(other);
-};
-
-/**
- * Merge these layers with those from another query
- * @param  {SceneBuilderData} other The other one containing a layer
- */
-SceneBuilderData.prototype.mergeLayers = function(other) {
-    if (!other) return;
-    this.object.add(other.object);
-    this._finishMerge(other);
-};
-
-/**
- * Merge these results with those form another query
- * @param  {SceneBuilderData} other The other one containing an instance
- */
-SceneBuilderData.prototype.mergeInstances = function(other) {
-    if (!other) return;
-    var _this = this;
-    for (var i=0;i<other.object.children.length; i++) {
-        var child = other.object.children[i];
-        if (child.type === "Mesh" || child.type ==="Line") {
-            // Build a completely new object containing new meshes, since three.js
-            // does not allow multiple parents for the same object
-            var func = THREE[child.type];
-            var obj = new func(child.geometry, child.material);
-            child.updateMatrixWorld();
-            obj.applyMatrix(child.matrixWorld);
-            _this.object.add(obj);
-        } else {
-            // You can not instance other wacky things like text objects
-            _this.object.add(child);
-        }
-    }
-    this._finishMerge(other);
-};
-
-/**
- * Common merge functionality that needs to be done after merging different object types
- * @param  {SceneBuilderData} other The other builder instance
- */
-SceneBuilderData.prototype._finishMerge = function(other) {
-    // Update the matrix on this object and its new children
-    this.object.updateMatrixWorld(true);
-
-    this.primStatus.merge(other.primStatus);
-    this._mergeCache(other);
-};
-
-/**
  * Return an object containing just the user facing results of the geometry construction
  * @return {SceneResults} The user info
  */
 SceneBuilderData.prototype.getResults = function() {
     return new SceneResults(this);
-};
-
-/**
- * Combine this data object with the constructed geometry of another.
- * Merges other into this.
- * @param  {SceneBuilderData} other The other scene data container
- */
-SceneBuilderData.prototype._mergeCache = function(other) {
-    for (var key in other._sceneObjectMap) {
-        this._sceneObjectMap[key] = other._sceneObjectMap[key];
-    }
 };
