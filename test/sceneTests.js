@@ -310,13 +310,29 @@ test('Layer with color', function (t) {
     }).catch(printError(t));
 });
 
-
 test('dvp scene', function (t) {
     builder.convert(_getScene('dvpScene')).then(function (result) {
         var scene = result.getObject();
         var errors = result.getErrorSummary();
         t.ok(scene,'Object exist');
         t.equal('',errors, 'No errors');
+        t.end();
+    }).catch(printError(t));
+});
+
+test('Non rigid transform', function (t) {
+    builder.convert(_getScene('nonRigidBox')).then(function (result) {
+        var scene = result.getObject();
+        var errors = result.getErrorSummary();
+        t.ok(scene,'Object exist');
+        t.equal('',errors, 'No errors');
+        var instance = scene.children[0].children[0];
+        t.deepEqual(instance.matrix.elements, Float32Array.from([
+            1, 0, 0, 0,
+            0, 2.5762698650360107, -0.5232527852058411, 0,
+            0, 1.581878423690796, 0.8521774411201477, 0,
+            -21.286401748657227, 14.147518157958984, 20.4000244140625, 1
+        ]),'Should not corrupt matrix');
         t.end();
     }).catch(printError(t));
 });

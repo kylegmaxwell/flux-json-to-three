@@ -57,7 +57,7 @@ fixtures.tests.forEach(function (elem) {
         builder.convert(prim).then(function (result) {
             // If an object is expected for the result
             if (elem.result) {
-                t.ok(result.getObject(), 'Should create an object');
+                t.ok(result.getObject(), 'Should create an object: '+result.getErrorSummary());
                 // Check that the object has the right type
                 var obj = result.getObject().children[0];
                 t.equal(obj.type, elem.result.type, 'Created object has type '+elem.result.type);

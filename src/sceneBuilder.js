@@ -181,6 +181,7 @@ function _rebuildChild(child) {
     var func = THREE[child.type];
     var obj = new func(child.geometry, child.material.clone());
     child.updateMatrixWorld();
+    // These transforms are always rigid so applyMatrix is ok
     obj.applyMatrix(child.matrixWorld);
     for (var p in child.userData) {
         obj.userData[p] = child.userData[p];
@@ -217,7 +218,10 @@ function _applyTransform(matrix, object) {
             mat.elements[i] = matrix[i];
         }
         mat.transpose();
-        object.applyMatrix(mat);
+        // Can not use applyMatrix, because the matrix from the JSON might have shear
+        // which would be removed by three.js converting to translate, rotate and scale
+        object.matrixAutoUpdate = false;
+        object.matrix.copy(mat);
         object.updateMatrixWorld(true);
     }
 }
