@@ -13,6 +13,7 @@
   "license": "ISC",
   "scripts": {
     "test": "npm run init; npm run lint && npm run tests",
+    "test-headless": "xvfb-run -s \"-ac -screen 0 200x200x24\" npm test",
     "tests": "npm run build-common-test && npm run run-test",
     "init": "mkdir -p build",
     "run-test": "colortape test/test.js",
@@ -44,6 +45,9 @@
   },
   "devDependencies": {
     "colortape": "^0.1.2",
+    "datauri": "^1.0.4",
+    "gl": "^4.0.2",
+    "pngjs": "^3.0.0",
     "tape-catch": "^1.0.6"
   }
 }

@@ -19,3 +19,15 @@ chmod +x `git rev-parse --git-dir`/hooks/commit-msg
 
 If you are working in Flux genie follow the instructions here:
 https://docs.google.com/document/d/1qf6PGJN54buSGFcrcRCZnruY4yTAsNRzoMtEpyE2VFY/edit#heading=h.owqmh4p4ruch
+
+# Testing
+You can run tests locally on any computer that has a graphics card and OpenGL drivers.
+For other headless systems like cloud machines or CI you will need to use npm run-headless which
+relies on xvfb-run. This can be installed on linux using apt-get.
+For more information see https://github.com/stackgl/headless-gl#how-can-headless-gl-be-used-on-a-headless-linux-machine
+and apt-get these packages.
+    - mesa-utils
+    - xvfb
+    - libgl1-mesa-dri
+    - libglapi-mesa
+    - libosmesa6

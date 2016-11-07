@@ -4,6 +4,7 @@
 require('./globals.js');
 
 require('./basicTests.js');
+require('./renderTests.js');
 require('./geometryBuilderTest.js');
 require('./geometryMaterialTests.js');
 require('./nurbsTests.js');
