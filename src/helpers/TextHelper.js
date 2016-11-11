@@ -7,7 +7,7 @@
  * @param options.align text alignment ('left' | 'right' | 'center')
  */
 'use strict';
-import THREE from 'three';
+import * as THREE from 'three';
 import * as compatibility from '../compatibility.js';
 
 export default function TextHelper ( label, options ) {

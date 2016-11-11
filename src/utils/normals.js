@@ -7,7 +7,7 @@
 /*
  * imports
  */
-import THREE from 'three';
+import * as THREE from 'three';
 import * as constants from '../constants.js';
 import * as bufferUtils from './bufferGeometryUtils.js';
 

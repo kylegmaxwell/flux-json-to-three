@@ -1,4 +1,4 @@
-{
+var unitRegistry = {
     "dimensions": {
         "length": {
             "units": [
@@ -128,4 +128,5 @@
         {"from":"light years", "to":"meters", "factor":9.461e+15},
         {"from":"parsecs", "to":"meters", "factor":3.086e+16}
     ]
-}
+};
+export default unitRegistry;

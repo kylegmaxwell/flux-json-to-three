@@ -4,7 +4,7 @@
 
 'use strict';
 
-import THREE from 'three';
+import * as THREE from 'three';
 import * as constants from '../constants.js';
 export {scene} from 'flux-modelingjs';
 import * as print from './debugPrint.js';

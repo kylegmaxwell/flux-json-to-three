@@ -4,7 +4,7 @@
 
 'use strict';
 
-import THREE from 'three';
+import * as THREE from 'three';
 import * as createPrimitive from './createPrimitive.js';
 import * as constants from './constants.js';
 import GeometryResults from './geometryResults.js';

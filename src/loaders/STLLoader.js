@@ -28,7 +28,7 @@
  *  var mesh = new THREE.Mesh( geometry, material );
  */
 'use strict';
-import THREE from 'three';
+import * as THREE from 'three';
 
 export default function STLLoader ( manager ) {
 

@@ -3,7 +3,7 @@
  */
 'use strict';
 
-import THREE from 'three';
+import * as THREE from 'three';
 import SceneBuilderData from './sceneBuilderData.js';
 import * as print from './utils/debugPrint.js';
 import GeometryBuilder from './geometryBuilder.js';

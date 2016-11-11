@@ -3,7 +3,7 @@
  */
 'use strict';
 
-import THREE from 'three';
+import * as THREE from 'three';
 import FluxGeometryError from './geometryError.js';
 import SceneResults from './sceneResults.js';
 import {scene} from 'flux-modelingjs';

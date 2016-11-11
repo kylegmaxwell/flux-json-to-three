@@ -4,7 +4,7 @@
 
 'use strict';
 
-import THREE from 'three';
+import * as THREE from 'three';
 import * as wirePrimitives from './primitives/wirePrimitives.js';
 import * as sheetPrimitives from './primitives/sheetPrimitives.js';
 import * as solidPrimitives from './primitives/solidPrimitives.js';

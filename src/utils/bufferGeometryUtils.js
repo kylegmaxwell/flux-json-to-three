@@ -4,7 +4,7 @@
 
 'use strict';
 
-import THREE from 'three';
+import * as THREE from 'three';
 import FluxGeometryError from '../geometryError.js';
 import computeNormals from './normals.js';
 

@@ -7,7 +7,7 @@
 /*
  * imports
  */
-import THREE from 'three';
+import * as THREE from 'three';
 import VectorManager from '../vectorManager.js';
 import * as constants from '../constants.js';
 import FluxGeometryError from '../geometryError.js';

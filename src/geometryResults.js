@@ -1,6 +1,6 @@
 'use strict';
 
-import THREE from 'three';
+import * as THREE from 'three';
 import {scene} from 'flux-modelingjs';
 var StatusMap = scene.StatusMap;
 

@@ -5,7 +5,7 @@
 
 import FluxGeometryError from '../geometryError.js';
 // Source for registry: genie/backend/src/bitbucket.org/vannevartech/flux-measure/measure/src/measure.cpp
-import * as unitRegistryData from '../../data/unitRegistry.json';
+import unitRegistryData from './unitRegistryData.js';
 
 export default function UnitRegistry() {
     // Dimension (string) -> bool

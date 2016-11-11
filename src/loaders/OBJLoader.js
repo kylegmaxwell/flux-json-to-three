@@ -4,7 +4,7 @@
  * @author mrdoob / http://mrdoob.com/
  */
 'use strict';
-import THREE from 'three';
+import * as THREE from 'three';
 
 export default function OBJLoader ( manager ) {
 

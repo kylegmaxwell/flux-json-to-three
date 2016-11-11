@@ -1,7 +1,7 @@
 'use strict';
 
 import * as materials from './utils/materials.js';
-import THREE from 'three';
+import * as THREE from 'three';
 
 /**
  * Replace the color of an object and its children with the given color

@@ -9,7 +9,7 @@
  **/
 'use strict';
 
-import THREE from 'three';
+import * as THREE from 'three';
 import * as NURBSUtils from './NURBSUtils.js';
 
 
