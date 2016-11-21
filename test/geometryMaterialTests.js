@@ -4,6 +4,7 @@ var test = require('tape-catch');
 var index = require('../build/index-test.common.js');
 var SceneBuilder = index.SceneBuilder;
 var builder = new SceneBuilder('parasolid','ibl');
+var THREE = require('three');
 
 var printError = require('./printError.js').init('geometry material');
 
@@ -227,25 +228,51 @@ test('should not merge material parameters with falsy value', function (t) {
 
 
 test('should default to double sided', function (t) {
+    var mesh = {"vertices": [[-1,0,0],[0,1,2],[1,0,0],[0,-1,2]],"faces":[[0,3,1],[1,3,2]], "primitive":"mesh"};
+    // When value is set it should be parsed, and model will be updated
+    builder.convert(mesh).then(function (result) {
+        var summary = result.getErrorSummary();
+        var obj = result.getObject();
+        t.ok(obj,'Create a mesh '+summary);
+        t.equal(THREE.DoubleSide, obj.children[0].material.side, 'Default to double side');
+        t.end();
+    }).catch(printError(t));
+});
+
+test('should be able to set side to front', function (t) {
+    var sphere = {"materialProperties":{"side":THREE.FrontSide},
+        "origin":[0,0,0],"primitive":"sphere","radius":10};
+    // When value is set it should be parsed, and model will be updated
+    builder.convert(sphere).then(function (result) {
+        var summary = result.getErrorSummary();
+        var obj = result.getObject();
+        t.ok(obj,'Create a mesh '+summary);
+        t.equal(obj.children[0].material.side, THREE.FrontSide, 'Set to zero');
+        t.end();
+    }).catch(printError(t));
+});
+
+test('Solid objects should render front side only', function (t) {
     var sphere = {"origin":[0,0,0],"primitive":"sphere","radius":10};
     // When value is set it should be parsed, and model will be updated
     builder.convert(sphere).then(function (result) {
         var summary = result.getErrorSummary();
         var obj = result.getObject();
         t.ok(obj,'Create a mesh '+summary);
-        t.equal(obj.children[0].material.side, 2, 'Default to double side');
+        t.equal(THREE.FrontSide, obj.children[0].material.side, 'Is front side');
         t.end();
     }).catch(printError(t));
 });
 
-test('should be able to set side to 0', function (t) {
-    var sphere = {"materialProperties":{"side":0},"origin":[0,0,0],"primitive":"sphere","radius":10};
+test('Solid flagged objects should render front side only', function (t) {
+    var mesh = {"isSolid":true,"vertices": [[-1,0,0],[0,1,2],[1,0,0],[0,-1,2]],
+        "faces":[[0,3,1],[1,3,2]], "primitive":"mesh"};
     // When value is set it should be parsed, and model will be updated
-    builder.convert(sphere).then(function (result) {
+    builder.convert(mesh).then(function (result) {
         var summary = result.getErrorSummary();
         var obj = result.getObject();
         t.ok(obj,'Create a mesh '+summary);
-        t.equal(obj.children[0].material.side, 0, 'Set to zero');
+        t.equal(THREE.FrontSide, obj.children[0].material.side, 'Is double side');
         t.end();
     }).catch(printError(t));
 });

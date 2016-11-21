@@ -282,11 +282,22 @@ export function cleanupMesh(mesh, data) {
  * @param { Object } data The data used to construct the primitive
  */
 function _findMaterialProperties ( data ) {
-    if ( data.attributes && data.attributes.materialProperties ) return data.attributes.materialProperties;
-    else if ( data.materialProperties ) return data.materialProperties;
-    else return {
-        side: THREE.DoubleSide
-    };
+    if ( data.attributes && data.attributes.materialProperties ) {
+        return data.attributes.materialProperties;
+    } else if ( data.materialProperties ) {
+        return data.materialProperties;
+    }
+    else {
+        var renderSide = THREE.DoubleSide;
+        // This assumes that the mesh with "isSolid" flag does not have flipped faces.
+        // If it has flipped face(s) they will not render when viewed from the outside.
+        if (data.primitive === 'sphere' || data.primitive === 'block' || data.isSolid) {
+            renderSide = THREE.FrontSide;
+        }
+        return {
+            side: renderSide
+        };
+    }
 }
 
 /**
