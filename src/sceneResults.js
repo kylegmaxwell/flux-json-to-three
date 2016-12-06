@@ -30,6 +30,14 @@ SceneResults.prototype._objectIsEmpty = function () {
 };
 
 /**
+ * Return the map for getting an Object3D by it's id from Flux JSON
+ * @return {Object}  Map from string to Object3D
+ */
+SceneResults.prototype.getObjectMap = function () {
+    return this._sceneObjectMap;
+};
+
+/**
  * Get a layer object that allows manipulating its properties
  * @param  {String} id The unique identifier for the scene element
  * @return {THREE.Object3D}    The layer to render

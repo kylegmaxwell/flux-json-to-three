@@ -276,3 +276,16 @@ test('Solid flagged objects should render front side only', function (t) {
         t.end();
     }).catch(printError(t));
 });
+
+test('Test material creation', function (t) {
+    var data = {
+        color: 'black',
+        emissionColor: 'yellow',
+        side:THREE.DoubleSide
+    };
+    var material = index.createMaterial(index.MATERIAL_TYPES.SURFACE, data);
+    t.ok(material.isMaterial,'Made a material');
+    t.deepEqual(material.color, { r: 0, g: 0, b: 0 }, "Color is black");
+    t.deepEqual(material.emissive, { r: 1, g: 1, b: 0 }, "Emissive is yellow");
+    t.end();
+});

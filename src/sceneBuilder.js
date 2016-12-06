@@ -20,6 +20,7 @@ import * as materials from './utils/materials.js';
  */
 export default function SceneBuilder(tessUrl, token) {
     this._geometryBuilder = new GeometryBuilder(tessUrl, token);
+    this._allowMerge = true;
 }
 
 /**
@@ -38,6 +39,17 @@ function _checkScene(data, primStatus) {
     return true;
 }
 
+/**
+ * Set whether geometry with same material is allowed to merge.
+ * This affects performance when rendering many surfaces.
+ * Too many Sheet or Solid primitives, leads to many draw calls if allowMerge is false.
+ * Alternatively selection logic does not work well with merging allowed. This is because
+ * selection applies to the entire merged mesh, and not the original primitive.
+ * @param  {Boolean} allowMerge Whether any merging can happen
+ */
+SceneBuilder.prototype.setAllowMerge = function(allowMerge) {
+    this._allowMerge = allowMerge;
+};
 /**
  * Convert JSON data to a tree of three.js geometry
  * Conversion is asynchronous, so results are returned in promises.
@@ -113,9 +125,7 @@ SceneBuilder.prototype._convertScene = function(entities, sceneBuilderData) {
         _this._linkElements(entities, sceneBuilderData);
         return Promise.resolve(sceneBuilderData);
     });
-
 };
-
 
 /**
  * Create the parenting relationships of the final scene render tree
@@ -173,19 +183,22 @@ function _applyMaterials(object, sceneBuilderData) {
 /**
  * Rebuild geometry container because Object3D can only be referenced by one object at a time
  * @param  {THREE.Object3D} child Object3D with type Mesh or Line
+ * @param  {SceneBuilderData} sceneBuilderData The container
  * @return {THREE.Object3d}       The new instance
  */
-function _rebuildChild(child) {
+function _rebuildChild(child, sceneBuilderData) {
     // Build a completely new object containing new meshes, since three.js
     // does not allow multiple parents for the same object
     var func = THREE[child.type];
     var obj = new func(child.geometry, child.material.clone());
     child.updateMatrixWorld();
     // These transforms are always rigid so applyMatrix is ok
-    obj.applyMatrix(child.matrixWorld);
+    obj.applyMatrix(child.matrix);//TODO UNIT TEST (only want local transform, not parent)
     for (var p in child.userData) {
         obj.userData[p] = child.userData[p];
     }
+    obj.name = child.name;
+    sceneBuilderData.cacheObject(obj.userData.id, obj);
     return obj;
 }
 
@@ -266,7 +279,8 @@ SceneBuilder.prototype._createInstance = function(data, obj, sceneBuilderData) {
     // Extract the geometry from the previous result into the new instance
     child.traverse(function (c) {
         if (c.type === "Mesh" || c.type ==="Line") {
-            obj.add(_rebuildChild(c));
+            var newChild = _rebuildChild(c, sceneBuilderData);
+            obj.add(newChild);
         }
     });
     // material is applied after linking
@@ -295,9 +309,15 @@ SceneBuilder.prototype._createGroup = function(data, obj, sceneBuilderData) {
  */
 SceneBuilder.prototype._createEntity = function(entityData) {
     var dataClean = cleanEntities(entityData);
-    return this._geometryBuilder.convert(dataClean).then(function(geometryResults) {
+    return this._geometryBuilder.convert(dataClean, this._allowMerge).then(function(geometryResults) {
         var sceneBuilderData = new SceneBuilderData();
         sceneBuilderData.object = geometryResults.object;
+        // Cache the constructed objects into the scene map
+        geometryResults.object.traverse(function (child) {
+            if (child.userData.id != null) {
+                sceneBuilderData.cacheObject(child.userData.id, child);
+            }
+        });
         sceneBuilderData.primStatus = geometryResults.primStatus;
         return sceneBuilderData;
     }).catch(function (err) {

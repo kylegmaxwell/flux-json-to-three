@@ -20,10 +20,11 @@ var StatusMap = scene.StatusMap;
  *
  * @function createObject
  *
- * @param { Object }  data        Parasolid Data from the flux json representation
- * @param { Object } geomResult Object containing properties for categorizing primitives
+ * @param {Object}  data        Parasolid Data from the flux json representation
+ * @param {Object}  geomResult  Object containing properties for categorizing primitives
+ * @param {Boolean} allowMerge  Whether to allow merging meshes
  */
-export function createObject ( data, geomResult ) {
+export function createObject (data, geomResult, allowMerge) {
     if (!geomResult || geomResult.constructor !== GeometryResults) {
         throw new Error('Second argument must have class GeometryResults');
     }
@@ -34,7 +35,7 @@ export function createObject ( data, geomResult ) {
 
     if (data && Object.keys(data).length > 0) {
         _flattenData(data, geomResult);
-        _createObject(geomResult);
+        _createObject(geomResult, allowMerge);
     }
 }
 
@@ -79,12 +80,13 @@ function _flattenData(data, geomResult) {
 /**
  * Create the objects for each geometry type.
  * @param {GeometryResult} geomResult The results container
+ * @param {Boolean} allowMerge  Whether to allow merging meshes
  * @private
  */
-function _createObject ( geomResult ) {
+function _createObject (geomResult, allowMerge) {
     _handlePoints(geomResult);
     _handleLines(geomResult);
-    _handleSurfaces(geomResult);
+    _handleSurfaces(geomResult, allowMerge);
 }
 
 /**
@@ -112,12 +114,13 @@ function _handleLines(geomResult) {
 /**
  * Create all geometry that will be surface shaded.
  * @param {GeometryResult} geomResult The results container
+ * @param {Boolean} allowMerge  Whether to allow merging meshes
  * @private
  */
-function _handleSurfaces(geomResult) {
+function _handleSurfaces(geomResult, allowMerge) {
     var prims = geomResult.surfacePrims;
     if (prims.length === 0) return;
-    _handlePrimitives(prims, geomResult);
+    _handlePrimitives(prims, geomResult, allowMerge);
 }
 
 /**
@@ -133,8 +136,9 @@ function _handleSurfaces(geomResult) {
  *
  * @param {Array.<Object>} prims Array of Flux JSON primitive data
  * @param {GeometryResult} geomResult The results container
+ * @param {Boolean} allowMerge  Whether to allow merging meshes
  */
-function _handlePrimitives( prims, geomResult ) {
+function _handlePrimitives(prims, geomResult, allowMerge) {
     var primMeshes = [];
     var i;
     var mesh;
@@ -151,7 +155,7 @@ function _handlePrimitives( prims, geomResult ) {
     var materialToMeshes = {};
     for (i=0;i<primMeshes.length;i++) {
         mesh = primMeshes[i];
-        if (_objectCanMerge(mesh)) {
+        if (allowMerge && _objectCanMerge(mesh)) {
             var name = mesh.material.name;
             var sameMeshList = materialToMeshes[name];
             if (!sameMeshList) {

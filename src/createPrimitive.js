@@ -267,6 +267,11 @@ export function cleanupMesh(mesh, data) {
     if (data.attributes && data.attributes.tag) {
         mesh.userData.tag = data.attributes.tag;
     }
+    var id = data.id ? data.id : mesh.uuid;
+    mesh.name = data.primitive+':'+id;
+    mesh.userData.id = id;
+    mesh.userData.primitive = data.primitive;
+    mesh.userData.data = data;
 
     return mesh;
 }

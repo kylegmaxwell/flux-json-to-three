@@ -1,6 +1,6 @@
 {
   "name": "flux-json-to-three",
-  "version": "0.26.0",
+  "version": "0.27.0",
   "description": "A module that takes parasolid data and produces Three.js objects",
   "main": "build/index.common.js",
   "module": "src/index.js",
@@ -15,7 +15,7 @@
     "test": "npm run init; npm run lint && npm run tests",
     "tests": "npm run build-common-fixtures-units && npm run build-common-test && npm run run-test",
     "init": "mkdir -p build",
-    "run-test": "tape test/test.js | colortape",
+    "run-test": "colortape test/test.js",
     "lint": "eslint src/**;",
     "build": "npm run clean; npm run init; npm run build-globals; npm run rollup-fix; npm run assemble",
     "build-common-fixtures-units": "rollup -i test/data/fixturesUnits.js -f=cjs -o=./build/fixturesUnits.common.js;",
@@ -44,7 +44,7 @@
     "three": "^0.82.1"
   },
   "devDependencies": {
-    "colortape": "^0.1.1",
+    "colortape": "^0.1.2",
     "tape-catch": "^1.0.6"
   }
 }

@@ -181,12 +181,7 @@ export function create(type, materialProperties) {
     var masterMaterial = {};
     // Create a material of the appropriate type
     if ( type === constants.MATERIAL_TYPES.SURFACE || type === constants.MATERIAL_TYPES.ALL ) {
-        // Add material properties related to shadows. This is an offset
-        // to prevent z-fighting with stencil buffer shadows and their host object
-        // TODO(Kyle): Only set these when shadows are on.
-        props.polygonOffset = true;
-        props.polygonOffsetFactor = 1;
-        props.polygonOffsetUnits = 1;
+
         if (type !== constants.MATERIAL_TYPES.ALL) {
             props.vertexColors = THREE.VertexColors;
         }

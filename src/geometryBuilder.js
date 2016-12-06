@@ -30,9 +30,10 @@ export default function GeometryBuilder(tessUrl, token) {
 * Create a new model for the given entities.
 *
 * @param {Object} entities Array of entities or arrays
+* @param  {Boolean} allowMerge  Whether to allow merging meshes
 * @return {Promise} A promise object that sets the model when it completes
 */
-GeometryBuilder.prototype.convert = function(entities) {
+GeometryBuilder.prototype.convert = function(entities, allowMerge) {
     var geometryResults = new GeometryResults();
 
     if (entities == null || typeof entities != 'object') {
@@ -40,7 +41,7 @@ GeometryBuilder.prototype.convert = function(entities) {
     }
 
     // sync - process geometric primitives
-    this._parasolidCreateObject(entities, geometryResults);
+    this._parasolidCreateObject(entities, geometryResults, allowMerge);
 
     // async - tessellate breps on the server
     return Promise.resolve(this._handleAsyncGeom(geometryResults).then(function (results) { // resolve
@@ -64,10 +65,11 @@ GeometryBuilder.prototype.convert = function(entities) {
  * https://bitbucket.org/vannevartech/flux-modelingjs/src/master/schema/flux-entity.json
  * @param    {Object}    data    The geometry data as objects
  * @param    {GeometryResults}    geometryResults    Geometry and errors object
+ * @param    {Boolean} allowMerge  Whether to allow merging meshes
  */
-GeometryBuilder.prototype._parasolidCreateObject = function(data, geometryResults) {
+GeometryBuilder.prototype._parasolidCreateObject = function(data, geometryResults, allowMerge) {
     try {
-        Create.createObject(data, geometryResults);
+        Create.createObject(data, geometryResults, allowMerge);
     }
     catch(err) {
         this._handleInvalidPrims(data, err, geometryResults);

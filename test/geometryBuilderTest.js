@@ -10,6 +10,8 @@ var sphereSurface = require('./data/sphere-surface.json');
 var TOLERANCE = 0.000001;
 
 var builder = new SceneBuilder('parasolid','ibl');
+var builder2 = new SceneBuilder('parasolid','ibl');
+builder2.setAllowMerge(false);
 var printError = require('./printError.js').init('geometry builder');
 
 test('should create a model when value is changed', function (t) {
@@ -293,6 +295,23 @@ test('mixed value same prim', function (t) {
     builder.convert(data).then(function (result) {
         t.ok(result.getErrorSummary().indexOf("sphere")!==-1,'Errors for mixed value');
         t.ok(result.getObject(), 'Result exists in spite of errors');
+        t.end();
+    }).catch(printError(t));
+});
+
+test('metadata tests for selection', function (t) {
+    var sphere = {"origin":[0,0,0],"primitive":"sphere","radius":1,"id":"ABCD"};
+    var block = {"origin":[0,0,0],"dimensions":[1,2,3],"axis":[0,0,1],"reference":[0,1,0],
+    "primitive":"block","id":"1234"};
+    var data = [sphere,block];
+    // When value is set it should be parsed, and model will be updated
+    builder2.convert(data).then(function (result) {
+        var map = result.getObjectMap();
+        t.equal(map.ABCD.userData.data, sphere, "Has JSON data for sphere");
+        t.equal(map.ABCD.userData.id, sphere.id, "Has id");
+        t.equal(map.ABCD.userData.primitive, sphere.primitive, "Has primitive");
+        console.log(Object.keys(map));
+        t.equal(map["1234"].userData.data, block, "Has JSON for block");
         t.end();
     }).catch(printError(t));
 });
