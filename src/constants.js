@@ -27,13 +27,6 @@ export var NURBS_SURFACE_QUALITY = 2.5;
 var degreesFlatLimit = 1.0;
 export var NURBS_FLAT_LIMIT = degreesFlatLimit/180.0;
 
-// Container primitives contain other entities
-export var CONTAINER_PRIM_MAP = {
-    polycurve: 'curves',
-    polysurface: 'surfaces'
-};
-export var CONTAINER_PRIMS = Object.keys(CONTAINER_PRIM_MAP);
-
 // For a face compare the angle between it's normals and those of
 // it's neighbors. If all the angles are smaller than the limit,
 // the face will be rendered smooth.
@@ -46,8 +39,8 @@ export var POINT_PIXEL_SIZE = 2.0;
 // These properties cause image based lighting maps to be loaded
 export var IBL_PROPERTIES = ['glossiness', 'roughness', 'reflectivity'];
 
-// These properties were renamed, and the old names are the complement (1 - new value)
-export var LEGACY_INVERSE_PROPERTIES = {
+// These values in three.js are the complement of flux (1 - value)
+export var THREE_INVERSE_PROPERTIES = {
     opacity: 'transparency',
     roughness: 'glossiness'
 };
@@ -94,8 +87,6 @@ export var DEFAULT_MATERIAL_PROPERTIES = {
         linewidth: 1.0
     }
 };
-
-export var DEFAULT_UNITS = 'meters';
 
 // Path to static assets of images used for image based lighting.
 var imagesUrl = 'https://object-library.storage.googleapis.com/Park2/';

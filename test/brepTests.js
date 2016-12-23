@@ -1,7 +1,6 @@
 'use strict';
 
 var test = require('tape-catch');
-var THREE = require('three');
 var GeometryBuilder = require('../build/index-test.common.js').GeometryBuilder;
 
 var builder = new GeometryBuilder('parasolid','ibl','token');
@@ -18,7 +17,7 @@ global.fluxFetchStub = function (url, opts) {
         opts.reject = reject;
         requests.push(new FetchStub(url, opts));
     });
-}
+};
 
 function FetchStub(url, opts) {
     this.method = opts.method;
@@ -27,7 +26,7 @@ function FetchStub(url, opts) {
     this.resolve = opts.resolve;
     this.reject = opts.reject;
     this.status = 102;
-};
+}
 
 FetchStub.prototype.respond = function (status, responseBody) {
     this.status = status;
@@ -94,7 +93,7 @@ test('should handle errored servers', function (t) {
 });
 
 var stlResponse = {"Output":{"Results":{"type":"PARASOLID/ResultSet","value":{"result0":{"attributes":{"materialProperties":{"color":[1,0,0],"wireframe":false}},"faces":[[0,1,2]],"primitive":"mesh","units":{"vertices":"meters"},"vertices":[[-30,0,-10],[-29.0,-2.4,-9.9],[-29.0,-0.1,-9.9]]}}}},"Errors":null};
-var stlQuery = {"attributes":{"materialProperties":{"color":"red","wireframe":false}},"content":"some base64 encoded stuff","format":"x_b","primitive":"brep"}
+var stlQuery = {"attributes":{"materialProperties":{"color":"red","wireframe":false}},"content":"some base64 encoded stuff","format":"x_b","primitive":"brep"};
 
 test('render breps with materials', function (t) {
     requests = [];

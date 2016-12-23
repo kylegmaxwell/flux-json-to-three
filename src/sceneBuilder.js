@@ -10,7 +10,7 @@ import GeometryBuilder from './geometryBuilder.js';
 import {scene} from 'flux-modelingjs';
 import * as constants from './constants.js';
 import * as sceneEdit from './sceneEdit.js';
-import {default as cleanElement, cleanEntities} from './utils/entityPrep.js';
+import cleanEntities from './utils/entityPrep.js';
 import * as materials from './utils/materials.js';
 
 /**
@@ -62,7 +62,7 @@ SceneBuilder.prototype.convert = function(data) {
     if (!data || !(data.constructor === Array || data.primitive)) {
         return Promise.resolve(sceneBuilderData.getResults());
     }
-    var dataClean = cleanElement(data, sceneBuilderData.primStatus);
+    var dataClean = scene.prep(data, sceneBuilderData.primStatus);
     var _this = this;
     return materials.prepIBL(dataClean).then(function () {
         // Render as a scene if possible

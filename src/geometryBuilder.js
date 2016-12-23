@@ -84,7 +84,7 @@ GeometryBuilder.prototype._parasolidCreateObject = function(data, geometryResult
  */
 GeometryBuilder.prototype._handleInvalidPrims = function(data, err, geometryResults) {
     var errorMessage = 'Unknown error';
-    if (err.name !== 'FluxGeometryError') {
+    if (err.name !== 'FluxGeometryError' && err.name !== 'FluxModelingError') {
         // An unknown error occurred
         throw err;
     } else {

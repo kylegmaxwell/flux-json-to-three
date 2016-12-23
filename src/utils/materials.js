@@ -6,7 +6,6 @@
 
 import * as THREE from 'three';
 import * as constants from '../constants.js';
-export {scene} from 'flux-modelingjs';
 import * as print from './debugPrint.js';
 
 // Environment texture for image-based lighting.
@@ -139,7 +138,7 @@ function _applyPhysicalProperties(propsSource, propsDest) {
     var props = constants.FLUX_MATERIAL_TO_THREE;
     for (var p in props) {
         var destName = props[p];
-        var complement = destName in constants.LEGACY_INVERSE_PROPERTIES;
+        var complement = destName in constants.THREE_INVERSE_PROPERTIES;
         _getPropertyValue(propsSource, p, propsDest, destName, complement);
     }
 

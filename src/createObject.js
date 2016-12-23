@@ -188,7 +188,7 @@ function _tryCreatePrimitive(data, geomResult) {
         mesh = createPrimitive.createPrimitive(data);
     }
     catch(err) {
-        if (err.name !== "FluxGeometryError") {
+        if (err.name !== 'FluxGeometryError' && err.name !== 'FluxModelingError') {
             throw err;
         } else {
             errorMessage = err.message;
