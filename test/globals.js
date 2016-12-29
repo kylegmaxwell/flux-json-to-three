@@ -6,13 +6,27 @@ global.document = global;
 
 // Stub createElement for THREE.ImageLoader
 global.createElement = function () {
-    return {
+    var el = {
         addEventListener: function (name, cb) {
             cb();
+        },
+        // Imitate <img> tag src and onload properties
+        set onload (loadFn) {
+            this.loadFn = loadFn;
+        },
+        set src (x) {
+            if (this.loadFn) {
+                this.loadFn();
+            }
         }
     };
+    return el;
 };
 global.createElementNS = global.createElement;
+
+global.URL = {
+    revokeObjectURL: function () {}
+};
 
 // Stub XHR for THREE.ImageLoader
 global.XMLHttpRequest = function () {

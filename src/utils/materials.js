@@ -7,6 +7,7 @@
 import * as THREE from 'three';
 import * as constants from '../constants.js';
 import * as print from './debugPrint.js';
+import {scene} from 'flux-modelingjs';
 
 // Environment texture for image-based lighting.
 var iblCube = null;
@@ -16,9 +17,23 @@ function loadImages() {
     return new Promise(function (resolve) {
         var loader = new THREE.CubeTextureLoader();
         loader.setCrossOrigin(true);
-        iblCube = loader.load(constants.CUBE_URLS, resolve, undefined, function() {
-            print.warn('Unable to load image based lighting.');
+        var count = 0;
+        var errCount = 0;
+        iblCube = loader.load(constants.CUBE_URLS, function () {
+            // This function gets called just once after all the urls get loaded successfully
+            count++;
+            if (errCount > 0) {
+                print.warn('Unable to load image based lighting.');
+            }
             resolve();
+        }, undefined, function() {
+            // This function gets called once for each errored url
+            count++;
+            errCount++;
+            if (count === constants.CUBE_URLS.length) {
+                print.warn('Unable to load image based lighting.');
+                resolve();
+            }
         });
         iblCube.format = THREE.RGBFormat;
     });
@@ -44,21 +59,25 @@ export function prepIBL(entities) {
 
 
 /**
- * Helper function to run a callback on each entity in the nested array
- * TODO this might need to wait until after polySurface is flattened
+ * Helper function to run a callback on each entity in scene for finding attributes
+ * Scene consists of nested arrays and geometryList primitives.
  * @param {Array} arr Array of arrays or entities
  * @param {Function} cb Callbck function returning boolean
  * @returns {boolean} Reduced return value of the callback
  * @private
  */
-function _recursiveReduce (arr, cb) {
+function _findAttr (arr, cb) {
     if (!arr) return false;
     var isValid = false;
     if (arr.primitive) {
-        isValid = cb(arr);
+        if (arr.primitive === scene.SCENE_PRIMITIVES.geometry) {
+            isValid = isValid || _findAttr(arr.entities, cb);
+        } else {
+            isValid = cb(arr);
+        }
     } else if (arr.constructor === Array) {
         isValid = arr.reduce(function(prev, curr) {
-            return prev || _recursiveReduce(curr, cb);
+            return prev || _findAttr(curr, cb);
         }, false);
     }
     return isValid;
@@ -72,7 +91,7 @@ function _recursiveReduce (arr, cb) {
  * @return {Boolean}    Whether the materials have roughness.
  */
 export function _needsIBL(entities) {
-    return _recursiveReduce(entities, function (item) {
+    return _findAttr(entities, function (item) {
         for (var i=0;i<constants.IBL_PROPERTIES.length; i++) {
             var key = constants.IBL_PROPERTIES[i];
             var value = _getEntityData(item, key, undefined);
@@ -181,10 +200,7 @@ export function create(type, materialProperties) {
     // Create a material of the appropriate type
     if ( type === constants.MATERIAL_TYPES.SURFACE || type === constants.MATERIAL_TYPES.ALL ) {
 
-        if (type !== constants.MATERIAL_TYPES.ALL) {
-            props.vertexColors = THREE.VertexColors;
-        }
-
+        props.vertexColors = THREE.VertexColors;
         _applyPhysicalProperties(materialProperties, props);
         material = new THREE.MeshPhysicalMaterial( props );
         masterMaterial.surface = material;
@@ -198,9 +214,7 @@ export function create(type, materialProperties) {
     }
     if ( type === constants.MATERIAL_TYPES.LINE || type === constants.MATERIAL_TYPES.ALL) {
         props = {};
-        if (type !== constants.MATERIAL_TYPES.ALL) {
-            props.vertexColors = THREE.VertexColors;
-        }
+        props.vertexColors = THREE.VertexColors;
         _addKnownProps(constants.DEFAULT_MATERIAL_PROPERTIES.line, materialProperties, props);
         material = new THREE.LineBasicMaterial( props );
         material.color = _convertColor(materialProperties.color||constants.DEFAULT_MATERIAL_PROPERTIES.line.color);

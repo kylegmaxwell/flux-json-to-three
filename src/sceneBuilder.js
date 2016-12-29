@@ -10,7 +10,6 @@ import GeometryBuilder from './geometryBuilder.js';
 import {scene} from 'flux-modelingjs';
 import * as constants from './constants.js';
 import * as sceneEdit from './sceneEdit.js';
-import cleanEntities from './utils/entityPrep.js';
 import * as materials from './utils/materials.js';
 
 /**
@@ -100,7 +99,16 @@ SceneBuilder.prototype._convertScene = function(entities, sceneBuilderData) {
         if (element.id) {
             if (element.primitive === scene.SCENE_PRIMITIVES.material) {
                 // skip, create on demand (but put a placeholder)
-                elementPromises.push(Promise.resolve({"object":null}));
+                elementPromises.push(Promise.resolve(null));
+            } else if (element.primitive === scene.SCENE_PRIMITIVES.texture) {
+                elementPromises.push( new Promise(function(resolve, reject) {
+                    var textureLoader = new THREE.TextureLoader();
+                    textureLoader.load(element.image, function (texture){
+                        resolve(texture);
+                    }, undefined, function (err) {
+                        reject(err);
+                    });
+                }));
             } else if (element.primitive === scene.SCENE_PRIMITIVES.geometry) {
                 elementPromises.push(this._createEntity(element.entities));
             } else if (element.primitive in scene.SCENE_PRIMITIVES) {
@@ -113,14 +121,19 @@ SceneBuilder.prototype._convertScene = function(entities, sceneBuilderData) {
     var _this = this;
     // Attach user data to correlate each object with it's data and then link up the scene graph
     return Promise.all(elementPromises).then(function (results) {
-        var objects = results.map(function (item) { return item.object; });
-        for (i=0;i<objects.length;i++) {
-            if (!objects[i]) continue;
-            objects[i].name = entities[i].primitive+':'+entities[i].id;
-            objects[i].userData.id = entities[i].id;
-            objects[i].userData.primitive = entities[i].primitive;
-            objects[i].userData.data = entities[i];
-            sceneBuilderData.cacheObject(objects[i].userData.id, objects[i]);
+        for (i=0;i<results.length;i++) {
+            var result = results[i];
+            if (!result) continue;
+            if (result.object) {
+                var object = result.object;
+                object.name = entities[i].primitive+':'+entities[i].id;
+                object.userData.id = entities[i].id;
+                object.userData.primitive = entities[i].primitive;
+                object.userData.data = entities[i];
+                sceneBuilderData.cacheObject(object.userData.id, object);
+            } else {
+                sceneBuilderData.cacheObject(entities[i].id, result);
+            }
         }
         _this._linkElements(entities, sceneBuilderData);
         return Promise.resolve(sceneBuilderData);
@@ -220,17 +233,27 @@ SceneBuilder.prototype._createLayer = function(data, obj, sceneBuilderData) {
 };
 
 /**
+ * Get a THREE.Matrix4 from an array of 16 values
+ * @param  {Array.<Number>} matrix Array data
+ * @return {THREE.Matrix4}        Matrix object
+ */
+function _getMatrix(matrix) {
+    var mat = new THREE.Matrix4();
+    for (var i = 0; i < matrix.length; i++) {
+        mat.elements[i] = matrix[i];
+    }
+    mat.transpose();
+    return mat;
+}
+
+/**
  * Apply a transform matrix to a 3D Object
  * @param  {Array.<Number>} matrix Array of 16 values representing a 4x4 transform
  * @param  {THREE.Object3D} object The object to update
  */
 function _applyTransform(matrix, object) {
     if (matrix) {
-        var mat = new THREE.Matrix4();
-        for (var i = 0; i < matrix.length; i++) {
-            mat.elements[i] = matrix[i];
-        }
-        mat.transpose();
+        var mat = _getMatrix(matrix);
         // Can not use applyMatrix, because the matrix from the JSON might have shear
         // which would be removed by three.js converting to translate, rotate and scale
         object.matrixAutoUpdate = false;
@@ -238,6 +261,11 @@ function _applyTransform(matrix, object) {
         object.updateMatrixWorld(true);
     }
 }
+
+// Singleton local variables used as temporary storage
+var position = new THREE.Vector3();
+var quaternion = new THREE.Quaternion();
+var scale = new THREE.Vector3();
 
 /**
  * Assign the material with the given id to an object in the scene
@@ -251,11 +279,33 @@ function _assignMaterial(materialId, object, sceneBuilderData) {
     }
     // get the material json
     var materialData = sceneBuilderData.getEntityData(materialId);
-
+    var textureId;
+    var inst;
+    if (materialData.colorMap != null) {
+        var materialChildData = sceneBuilderData.getEntityData(materialData.colorMap);
+        var textureData;
+        if (materialChildData.primitive === scene.SCENE_PRIMITIVES.instance) {
+            inst = materialChildData;
+            textureData = sceneBuilderData.getEntityData(materialChildData.entity);
+        } else {
+            textureData = materialChildData;
+        }
+        textureId = textureData.id;
+    }
     // get the material object
     var material = sceneBuilderData.getObjectMap()[materialId];
     if (material == null) {
         material = materials.create(constants.MATERIAL_TYPES.ALL, materialData);
+        if (textureId != null) {
+            material.surface.map = sceneBuilderData.getObjectMap()[textureId];
+            if (inst) {
+                _getMatrix(inst.matrix).decompose ( position, quaternion, scale );
+                material.surface.map.offset.set(position.x, position.y);
+                material.surface.map.repeat.set(scale.x, scale.y);
+                material.surface.map.wrapS = THREE.RepeatWrapping;
+                material.surface.map.wrapT = THREE.RepeatWrapping;
+            }
+        }
         sceneBuilderData.cacheObject(materialId, material);
     }
     // Recursively override material
@@ -271,11 +321,14 @@ function _assignMaterial(materialId, object, sceneBuilderData) {
  * @param  {SceneBuilderData} sceneBuilderData  Container for results and errors
  */
 SceneBuilder.prototype._createInstance = function(data, obj, sceneBuilderData) {
-    // debugger
     var objMap = sceneBuilderData.getObjectMap();
     _applyTransform(data.matrix, obj);
     var childId = data.entity;
     var child = objMap[childId];
+    var childData = sceneBuilderData.getEntityData(childId);
+    if (childData == null || childData.primitive === scene.SCENE_PRIMITIVES.texture) {
+        return;
+    }
     // Extract the geometry from the previous result into the new instance
     child.traverse(function (c) {
         if (c.type === "Mesh" || c.type ==="Line") {
@@ -303,12 +356,30 @@ SceneBuilder.prototype._createGroup = function(data, obj, sceneBuilderData) {
 };
 
 /**
+ * Extract only the geometry entities to render for scenes that are invalid due to errors
+ * @param  {Object} entity Flux JSON data.
+ * @return {Array}        Flux JSON data list of geometry entities.
+ */
+function _removeScene(entity) {
+    // entity is already a flat array after prep
+    for (var i=0;i<entity.length;i++) {
+        var e = entity[i];
+        if (e != null && e.primitive != null && e.primitive.constructor === String) {
+            if (e.primitive in scene.SCENE_PRIMITIVES) {
+                entity[i] = null;
+            }
+        }
+    }
+    return entity;
+}
+
+/**
  * Create the geometry and convert the results to scene results
  * @param  {Object} entityData  The geometry to convert
  * @return {Promise}            Promise to return SceneBuilderData
  */
 SceneBuilder.prototype._createEntity = function(entityData) {
-    var dataClean = cleanEntities(entityData);
+    var dataClean = _removeScene(entityData);
     return this._geometryBuilder.convert(dataClean, this._allowMerge).then(function(geometryResults) {
         var sceneBuilderData = new SceneBuilderData();
         sceneBuilderData.object = geometryResults.object;

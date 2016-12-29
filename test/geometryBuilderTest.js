@@ -109,7 +109,7 @@ test('should handle lists of curves', function (t) {
     builder.convert(data).then(function(result) {
         t.ok(result.getObject(), 'Object exists');
         if (result.getObject().children[0].geometry.type.indexOf('BufferGeometry') !== -1) {
-            t.ok(result.getObject().children[0].geometry.attributes.position.length !== 0, 'Should have positions');
+            t.ok(result.getObject().children[0].geometry.attributes.position.array.length !== 0, 'Should have positions');
         } else {
             t.ok(result.getObject().children[0].geometry.vertices.length !== 0, 'Should have vertices');
         }
@@ -307,11 +307,30 @@ test('metadata tests for selection', function (t) {
     // When value is set it should be parsed, and model will be updated
     builder2.convert(data).then(function (result) {
         var map = result.getObjectMap();
-        t.equal(map.ABCD.userData.data, sphere, "Has JSON data for sphere");
+        t.deepEqual(map.ABCD.userData.data, sphere, "Has JSON data for sphere");
         t.equal(map.ABCD.userData.id, sphere.id, "Has id");
         t.equal(map.ABCD.userData.primitive, sphere.primitive, "Has primitive");
-        console.log(Object.keys(map));
-        t.equal(map["1234"].userData.data, block, "Has JSON for block");
+        t.deepEqual(map["1234"].userData.data, block, "Has JSON for block");
+        t.end();
+    }).catch(printError(t));
+});
+
+test('Mesh with color and normal', function (t) {
+    var data = {
+      "vertices": [ [-1,1,2], [1,1,2], [1,-1,2], [-1,-1,2]],
+      "color": [ [0,1,0], [1,1,1], [0,0,1], [1,0,0]],
+      "normal": [ [[1,1,1], [1,1,1], [1,1,1], [1,1,1]]],
+      "faces": [[0,1,2,3]],
+      "primitive":"mesh",
+      "id": "3DF1D7DC-61C7-43D1-857D-F6CA76E5862A"
+    };
+    // When value is set it should be parsed, and model will be updated
+    builder.convert(data).then(function (result) {
+        t.ok(result.getErrorSummary()==='','No errors');
+        var obj = result.getObject();
+        var colors = Array.from(obj.children[0].geometry.attributes.color.array);
+        // Colors get triangulated and flattened and maintain winding order
+        t.deepEqual(colors, [0,1,0, 1,1,1, 0,0,1, 0,1,0, 0,0,1, 1,0,0]);
         t.end();
     }).catch(printError(t));
 });

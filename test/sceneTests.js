@@ -336,3 +336,41 @@ test('Non rigid transform', function (t) {
         t.end();
     }).catch(printError(t));
 });
+
+test('texture scene', function (t) {
+    builder.convert(_getScene('textureScene')).then(function (result) {
+        var scene = result.getObject();
+        var errors = result.getErrorSummary();
+        t.ok(scene,'Object exist');
+        t.equal('',errors, 'No errors');
+        // scene > layer > instance > mesh > material > map
+        t.ok(scene.children[0].children[0].children[0].material.map, 'Material has map');
+        t.end();
+    }).catch(printError(t));
+});
+
+test('sketchup scene', function (t) {
+    builder.convert(_getScene('sketchupScene')).then(function (result) {
+        var scene = result.getObject();
+        var errors = result.getErrorSummary();
+        t.ok(scene,'Object exist');
+        t.equal('',errors, 'No errors');
+        // scene > layer > instance > mesh > material > map
+        t.ok(scene.children[0].children[0].children[0].material.map, 'Material has map');
+        t.end();
+    }).catch(printError(t));
+});
+
+test('mesh scene', function (t) {
+    builder.convert(_getScene('textureMeshScene')).then(function (result) {
+        var scene = result.getObject();
+        var errors = result.getErrorSummary();
+        t.ok(scene,'Object exist');
+        t.equal('',errors, 'No errors');
+        // scene > layer > instance > mesh > material > map
+        t.ok(scene.children[0].children[0].children[0].material.map, 'Material has map');
+        t.equal(scene.children[0].children[0].children[0].material.map.repeat.x, 2, 'Material has scale');
+        t.equal(scene.children[0].children[0].children[0].material.map.offset.x, 0.5, 'Material has offset');
+        t.end();
+    }).catch(printError(t));
+});

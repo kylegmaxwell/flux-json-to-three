@@ -13,6 +13,7 @@ import FluxGeometryError from '../geometryError.js';
 import OBJLoader from '../loaders/OBJLoader.js';
 import STLLoader from '../loaders/STLLoader.js';
 import computeNormals from '../utils/normals.js';
+import { scene as sceneUtils } from 'flux-modelingjs';
 
 /**
  * Rotates a geometry by a vector
@@ -72,6 +73,24 @@ export function block ( data, material ) {
 
 
 /**
+ * Add an attribute from the input as a buffer attribute for rendering
+ * @param  {THREE.BufferGeometry} geometry  The renderable geometry.
+ * @param  {Object} data                    Flux JSON mesh
+ * @param  {String} attr                    Name of the attribute to add (must be the same in Flux and three.js)
+ * @param  {Number} expectedLength          Expected length of the attribute list (determines
+ *                                          whether this is a per vertex or per face vertex attribute)
+ * @param  {Number} stride                  How many numbers make up a single element
+ */
+function _addMeshAttribute(geometry, data, attr, expectedLength, stride) {
+    // Flatten uvs if they are available per vertex
+    if (data[attr] && data[attr].length === expectedLength) {
+        // for each vertex
+        var as = sceneUtils.flattenArray(data[attr]);
+        geometry.addAttribute( attr, new THREE.BufferAttribute( new Float32Array(as), stride ) );
+    }
+}
+
+/**
  * Creates a THREE.Mesh from parasolid data and a material
  *
  * @precondition The faces in the mesh must be triangles or convex planar polygons.
@@ -86,38 +105,26 @@ export function block ( data, material ) {
 
  */
 export function mesh (data, material) {
-    var positions = [];
-    for ( var i = 0, len = data.vertices.length ; i < len ; i++ ) {
-        positions.push(data.vertices[i][0]);
-        positions.push(data.vertices[i][1]);
-        positions.push(data.vertices[i][2]);
-    }
+    // Flatten the list of vertices
+    var positions = sceneUtils.flattenArray(data.vertices);
 
-    var face;
-    var triangles = [];
-    for ( i = 0, len = data.faces.length ; i < len ; i++ ) {
-        face = data.faces[ i ];
-        if ( face.length === 3 ) {
-            triangles.push(face[0]);
-            triangles.push(face[1]);
-            triangles.push(face[2]);
-        } else if ( face.length > 3 ) {
-            for ( var j=0; j+2<face.length; j++) {
-                triangles.push(face[0]);
-                triangles.push(face[j+1]);
-                triangles.push(face[j+2]);
-            }
-        }
-
-    }
+    // Flatten faces (and assume already triangulated)
+    var triangles = sceneUtils.flattenArray(data.faces);
 
     var geometry = new THREE.BufferGeometry();
+
+    _addMeshAttribute(geometry, data, 'color', data.vertices.length, 3);
     geometry.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array(positions), 3 ) );
     geometry.setIndex( new THREE.BufferAttribute( new Uint32Array( triangles ), 1 ) );
 
     geometry.computeBoundingSphere();
     geometry = computeNormals(geometry);
-    return new THREE.Mesh( geometry, material );
+    // After compute normals the mesh has been converted to non indexed buffer geometry
+    // Then the mesh has attributes at the per face vertex rate instead of per point
+    _addMeshAttribute(geometry, data, 'uv', data.faces.length, 2);
+    //TODO(Kyle) This is inefficient, should not compute normal if it's going to be replaced
+    _addMeshAttribute(geometry, data, 'normal', data.faces.length, 3);
+    return new THREE.Mesh(geometry, material);
   }
 
 // Singleton loader object

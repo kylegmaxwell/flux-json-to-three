@@ -50,6 +50,7 @@ export default function computeNormals ( geometry ) {
         newGeom = _unmergeVertices(newGeom);
 
     } else {
+        //TODO(Kyle) This code path is no longer needed
         geometry.mergeVertices();
         geometry.computeFaceNormals();
         _computeCuspNormals(geometry, constants.NORMALS_SMOOTH_LIMIT);
@@ -67,6 +68,12 @@ function _unmergeVertices(geom) {
             if (isNaN(n[i])) {
                 n[i] = 0;
             }
+        }
+        if (geom.attributes.uv) {
+            geometry.addAttribute( 'uv', geom.attributes.uv);
+        }
+        if (geom.attributes.color) {
+            geometry.addAttribute( 'color', geom.attributes.color);
         }
     } else {
         geometry.addAttribute( 'normal', geom.attributes.faceNormal);

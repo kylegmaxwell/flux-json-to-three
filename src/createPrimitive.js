@@ -186,15 +186,17 @@ function _moveMaterialColorToGeom(mesh) {
     var color2 = color.clone();
     if (geom) {
         if (geom.type.indexOf('BufferGeometry') !== -1) {
-            // Set the color as a buffer attribute
-            var attrLen = geom.attributes.position.array.length;
-            var colors = [];
-            for (var i=0;i<attrLen;i+=3) {
-                colors.push(color.r);
-                colors.push(color.g);
-                colors.push(color.b);
+            if (!geom.attributes.color) {
+                // Set the color as a buffer attribute
+                var attrLen = geom.attributes.position.array.length;
+                var colors = [];
+                for (var i=0;i<attrLen;i+=3) {
+                    colors.push(color.r);
+                    colors.push(color.g);
+                    colors.push(color.b);
+                }
+                geom.addAttribute( 'color', new THREE.BufferAttribute( new Float32Array(colors), 3 ) );
             }
-            geom.addAttribute( 'color', new THREE.BufferAttribute( new Float32Array(colors), 3 ) );
         } else if (geom.faces.length > 0) {
             // Set the color per face
             for (var f=0;f<geom.faces.length;f++) {
