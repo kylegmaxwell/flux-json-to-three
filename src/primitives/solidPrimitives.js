@@ -77,13 +77,11 @@ export function block ( data, material ) {
  * @param  {THREE.BufferGeometry} geometry  The renderable geometry.
  * @param  {Object} data                    Flux JSON mesh
  * @param  {String} attr                    Name of the attribute to add (must be the same in Flux and three.js)
- * @param  {Number} expectedLength          Expected length of the attribute list (determines
- *                                          whether this is a per vertex or per face vertex attribute)
  * @param  {Number} stride                  How many numbers make up a single element
  */
-function _addMeshAttribute(geometry, data, attr, expectedLength, stride) {
+function _addMeshAttribute(geometry, data, attr, stride) {
     // Flatten uvs if they are available per vertex
-    if (data[attr] && data[attr].length === expectedLength) {
+    if (data[attr] && data[attr].length === data.vertices.length) {
         // for each vertex
         var as = sceneUtils.flattenArray(data[attr]);
         geometry.addAttribute( attr, new THREE.BufferAttribute( new Float32Array(as), stride ) );
@@ -113,17 +111,14 @@ export function mesh (data, material) {
 
     var geometry = new THREE.BufferGeometry();
 
-    _addMeshAttribute(geometry, data, 'color', data.vertices.length, 3);
+    _addMeshAttribute(geometry, data, 'color', 3);
+    _addMeshAttribute(geometry, data, 'uv', 2);
+    _addMeshAttribute(geometry, data, 'normal', 3);
     geometry.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array(positions), 3 ) );
     geometry.setIndex( new THREE.BufferAttribute( new Uint32Array( triangles ), 1 ) );
 
     geometry.computeBoundingSphere();
     geometry = computeNormals(geometry);
-    // After compute normals the mesh has been converted to non indexed buffer geometry
-    // Then the mesh has attributes at the per face vertex rate instead of per point
-    _addMeshAttribute(geometry, data, 'uv', data.faces.length, 2);
-    //TODO(Kyle) This is inefficient, should not compute normal if it's going to be replaced
-    _addMeshAttribute(geometry, data, 'normal', data.faces.length, 3);
     return new THREE.Mesh(geometry, material);
   }
 

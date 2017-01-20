@@ -31,24 +31,26 @@ export default function computeNormals ( geometry ) {
             newGeom = newGeom.toNonIndexed();
         }
 
-        // Just get the normals per triangle to be used in the cusp calculation
-        // This function actually generates face normals for non indexed geometry
-        newGeom.computeVertexNormals();
+        // Compute smart normals only if needed
+        if (!newGeom.attributes.normal) {
+            // Just get the normals per triangle to be used in the cusp calculation
+            // This function actually generates face normals for non indexed geometry
+            newGeom.computeVertexNormals();
 
-        // Re-index the geometry merging triangles that have shared vertices.
-        // I know we just blew them away, but now we have the full list of triangles
-        // so we can store normals per triangle, but also have the connectivity information
-        // implicitly by the indexing scheme
-        bufferUtils.mergeVertices(newGeom);
+            // Re-index the geometry merging triangles that have shared vertices.
+            // I know we just blew them away, but now we have the full list of triangles
+            // so we can store normals per triangle, but also have the connectivity information
+            // implicitly by the indexing scheme
+            bufferUtils.mergeVertices(newGeom);
 
-        // Calculate vertex normals from a weighted average of neighboring faces' normals
-        _computeBufferCuspNormals(newGeom, constants.NORMALS_SMOOTH_LIMIT);
+            // Calculate vertex normals from a weighted average of neighboring faces' normals
+            _computeBufferCuspNormals(newGeom, constants.NORMALS_SMOOTH_LIMIT);
 
-        // Now we want to render as un-indexed geometry, and we already have the
-        // points split, so we can just drop the index attribute, and keep our
-        // newly calculated connectivity aware normals
-        newGeom = _unmergeVertices(newGeom);
-
+            // Now we want to render as un-indexed geometry, and we already have the
+            // points split, so we can just drop the index attribute, and keep our
+            // newly calculated connectivity aware normals
+            newGeom = _unmergeVertices(newGeom);
+        }
     } else {
         //TODO(Kyle) This code path is no longer needed
         geometry.mergeVertices();

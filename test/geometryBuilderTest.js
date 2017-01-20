@@ -319,7 +319,7 @@ test('Mesh with color and normal', function (t) {
     var data = {
       "vertices": [ [-1,1,2], [1,1,2], [1,-1,2], [-1,-1,2]],
       "color": [ [0,1,0], [1,1,1], [0,0,1], [1,0,0]],
-      "normal": [ [[1,1,1], [1,1,1], [1,1,1], [1,1,1]]],
+      "normal": [ [1,1,1], [1,1,1], [1,1,1], [1,1,1]],
       "faces": [[0,1,2,3]],
       "primitive":"mesh",
       "id": "3DF1D7DC-61C7-43D1-857D-F6CA76E5862A"
