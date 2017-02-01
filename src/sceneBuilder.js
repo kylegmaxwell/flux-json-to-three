@@ -298,12 +298,12 @@ function _assignMaterial(materialId, object, sceneBuilderData) {
         material = materials.create(constants.MATERIAL_TYPES.ALL, materialData);
         if (textureId != null) {
             material.surface.map = sceneBuilderData.getObjectMap()[textureId];
+            material.surface.map.wrapS = THREE.RepeatWrapping;
+            material.surface.map.wrapT = THREE.RepeatWrapping;
             if (inst) {
                 _getMatrix(inst.matrix).decompose ( position, quaternion, scale );
                 material.surface.map.offset.set(position.x, position.y);
                 material.surface.map.repeat.set(scale.x, scale.y);
-                material.surface.map.wrapS = THREE.RepeatWrapping;
-                material.surface.map.wrapT = THREE.RepeatWrapping;
             }
         }
         sceneBuilderData.cacheObject(materialId, material);

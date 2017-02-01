@@ -357,6 +357,7 @@ test('sketchup scene', function (t) {
         t.equal('',errors, 'No errors');
         // scene > layer > instance > mesh > material > map
         t.ok(scene.children[0].children[0].children[0].material.map, 'Material has map');
+        t.equal(scene.children[0].children[0].children[0].material.map.wrapS,THREE.RepeatWrapping, 'Material is set to repeat');
         t.end();
     }).catch(printError(t));
 });
