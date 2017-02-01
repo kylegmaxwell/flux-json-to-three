@@ -98,3 +98,18 @@ export var CUBE_URLS = [
     imagesUrl + 'posy2.jpg',
     imagesUrl + 'negy2.jpg'
 ];
+
+// Diagonal length of film (Flux Constant shared with plugins)
+export var CAMERA_DEFAULTS = {
+    SENSOR_DIAGONAL: 43.0,
+    PERSP: {
+        FOV: 30, // degrees
+        NEAR: 0.1,
+        FAR: 100000,
+        ASPECT: 1.0
+    },
+    ORTHO: {
+        NEAR: -1000,
+        FAR: 1000
+    }
+};

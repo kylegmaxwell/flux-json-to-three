@@ -111,6 +111,8 @@ SceneBuilder.prototype._convertScene = function(entities, sceneBuilderData) {
                 }));
             } else if (element.primitive === scene.SCENE_PRIMITIVES.geometry) {
                 elementPromises.push(this._createEntity(element.entities));
+            } else if (element.primitive === scene.SCENE_PRIMITIVES.camera) {
+                elementPromises.push(this._createCamera(element));
             } else if (element.primitive in scene.SCENE_PRIMITIVES) {
                 elementPromises.push(Promise.resolve(new SceneBuilderData()));
             } else {
@@ -329,14 +331,18 @@ SceneBuilder.prototype._createInstance = function(data, obj, sceneBuilderData) {
     if (childData == null || childData.primitive === scene.SCENE_PRIMITIVES.texture) {
         return;
     }
-    // Extract the geometry from the previous result into the new instance
-    child.traverse(function (c) {
-        if (c.type === "Mesh" || c.type ==="Line") {
-            var newChild = _rebuildChild(c, sceneBuilderData);
-            obj.add(newChild);
-        }
-    });
-    // material is applied after linking
+    if (childData.primitive === scene.SCENE_PRIMITIVES.camera) {
+        obj.add(child);
+    } else {
+        // Extract the geometry from the previous result into the new instance
+        child.traverse(function (c) {
+            if (c.type === "Mesh" || c.type ==="Line") {
+                var newChild = _rebuildChild(c, sceneBuilderData);
+                obj.add(newChild);
+            }
+        });
+        // material is applied after linking
+    }
 };
 
 /**
@@ -372,6 +378,57 @@ function _removeScene(entity) {
     }
     return entity;
 }
+
+/**
+ * Calculate the field of view in degrees from focal length
+ * Implementation based on http://www.bdimitrov.de/kmp/technology/fov.html
+ * @param  {Number} focalLength Length in mm (must be > 0)
+ * @return {Number}             Field of view (how wide the camera can see in degrees)
+ */
+function _calcFov(focalLength) {
+    return (2 * Math.atan(constants.CAMERA_DEFAULTS.SENSOR_DIAGONAL / (2 * focalLength)) * 180 / Math.PI);
+}
+
+/**
+ * Create a camera from its JSON description
+ * @param  {Object} entityData Flux JSON parameters
+ * @return {Promise}            Promise for a THREE.Camera
+ */
+SceneBuilder.prototype._createCamera = function(entityData) {
+    var camera, near, far;
+    if (entityData.type === 'perspective') {
+        var fov = constants.CAMERA_DEFAULTS.PERSP.FOV;
+        if (entityData.focalLength) {
+            fov = _calcFov(entityData.focalLength);
+        }
+        near = constants.CAMERA_DEFAULTS.PERSP.NEAR;
+        if (entityData.nearClip) {
+            near = entityData.nearClip;
+        }
+        far = constants.CAMERA_DEFAULTS.PERSP.FAR;
+        if (entityData.farClip) {
+            far = entityData.farClip;
+        }
+        var aspect = constants.CAMERA_DEFAULTS.PERSP.ASPECT;
+        camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+        camera.up = new THREE.Vector3( 0, 0, 1 ); // Flux is Z up
+    } else {
+        near = constants.CAMERA_DEFAULTS.ORTHO.NEAR;
+        if (entityData.nearClip) {
+            near = entityData.nearClip;
+        }
+        far = constants.CAMERA_DEFAULTS.ORTHO.FAR;
+        if (entityData.farClip) {
+            far = entityData.farClip;
+        }
+        camera = new THREE.OrthographicCamera(100, -100, 100, -100, near, far);
+    }
+    camera.name = entityData.primitive+':'+entityData.id;
+    camera.userData.id = entityData.id;
+    camera.userData.primitive = entityData.primitive;
+    camera.userData.data = entityData;
+    return Promise.resolve(camera);
+};
 
 /**
  * Create the geometry and convert the results to scene results

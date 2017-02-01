@@ -375,3 +375,21 @@ test('mesh scene', function (t) {
         t.end();
     }).catch(printError(t));
 });
+
+test('scene with camera', function (t) {
+    builder.convert(_getScene('cameraLightBox')).then(function (result) {
+        var scene = result.getObject();
+        var errors = result.getErrorSummary();
+        t.ok(scene,'Object exist');
+        t.equal('',errors, 'No errors');
+        var camera;
+        scene.traverse(function (child) {
+            if (child.userData.primitive === 'camera') {
+                camera = child;
+            }
+        });
+        t.ok(camera != null, 'Scene has camera');
+        t.equal(camera.type, 'PerspectiveCamera', 'Camera is a camera');
+        t.end();
+    }).catch(printError(t));
+});
