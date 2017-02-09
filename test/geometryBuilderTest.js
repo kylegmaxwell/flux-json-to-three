@@ -334,3 +334,19 @@ test('Mesh with color and normal', function (t) {
         t.end();
     }).catch(printError(t));
 });
+
+// This covers a case where the two surfaces should be merged, but were conflicting due to
+// mismatched attributes, but now they shoudl always be created the same.
+test('Mesh and surface', function (t) {
+    var data = [{"controlPoints":[[[-8,8,0],[8,8,0]],[[-8,-8,0],[8,-8,0]]],
+        "primitive":"surface","uDegree":1,"uKnots":[0,0,1,1],
+        "vDegree":1,"vKnots":[0,0,1,1]},
+        {"vertices": [[-1,0,0],[0,1,2],[1,0,0],[0,-1,2]],"faces":[[0,3,1],[1,3,2]],
+        "primitive":"mesh"}];
+    // When value is set it should be parsed, and model will be updated
+    builder.convert(data).then(function (result) {
+        t.equal(result.getErrorSummary(),'','No errors');
+        t.ok(result.getObject(), "has a mesh");
+        t.end();
+    }).catch(printError(t));
+});

@@ -15,9 +15,10 @@ import * as bufferUtils from './bufferGeometryUtils.js';
  * Compute good looking normal vectors for geometry.
  * Preserve sharp creases, but allow smoothing in low curvature areas.
  * @param  {THREE.Geometry|THREE.BufferGeometry} geometry The geometry in need of normals.
+ * @param  {Object} data The original JSON from which the geometry was generated
  * @return {THREE.Geometry|THREE.BufferGeometry}          The geometry, or a clone if the original was replaced
  */
-export default function computeNormals ( geometry ) {
+export default function computeNormals ( geometry, data ) {
     var newGeom = geometry;
     // Buffer geometry needs to be treated differently
     // with a lot of custom functions that are missing from THREE.js
@@ -32,7 +33,7 @@ export default function computeNormals ( geometry ) {
         }
 
         // Compute smart normals only if needed
-        if (!newGeom.attributes.normal) {
+        if (!data.normal) {
             // Just get the normals per triangle to be used in the cusp calculation
             // This function actually generates face normals for non indexed geometry
             newGeom.computeVertexNormals();

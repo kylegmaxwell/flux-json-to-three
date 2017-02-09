@@ -184,18 +184,27 @@ function _moveMaterialColorToGeom(mesh) {
     var geom = mesh.geometry;
     var color = mesh.material.color;
     var color2 = color.clone();
+    var attrLen, i;
     if (geom) {
         if (geom.type.indexOf('BufferGeometry') !== -1) {
             if (!geom.attributes.color) {
                 // Set the color as a buffer attribute
-                var attrLen = geom.attributes.position.array.length;
+                attrLen = geom.attributes.position.array.length;
                 var colors = [];
-                for (var i=0;i<attrLen;i+=3) {
+                for (i=0;i<attrLen;i+=3) {
                     colors.push(color.r);
                     colors.push(color.g);
                     colors.push(color.b);
                 }
                 geom.addAttribute( 'color', new THREE.BufferAttribute( new Float32Array(colors), 3 ) );
+            } else {
+                // Set the color as a buffer attribute
+                attrLen = geom.attributes.color.array.length;
+                for (i=0;i<attrLen;i+=3) {
+                    geom.attributes.color.array[i] = color.r;
+                    geom.attributes.color.array[i+1] = color.g;
+                    geom.attributes.color.array[i+2] = color.b;
+                }
             }
         } else if (geom.faces.length > 0) {
             // Set the color per face
@@ -230,8 +239,8 @@ export function cleanupMesh(mesh, data) {
     if (mesh.type !== "textHelper") {
         // Convert all geometry in the object tree
         mesh.traverse(function (child) {
-            // Only convert the color for objects with material
-            if (child.material) {
+            // Only convert the color for objects with material and no per vertex color
+            if (child.material && !data.color) {
                 _moveMaterialColorToGeom(child);
             }
         });

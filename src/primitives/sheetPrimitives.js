@@ -167,7 +167,7 @@ export function surface ( data, material ) {
     var minSlices = nsControlPoints.length-1;
     var minStacks = nsControlPoints[0].length-1;
     var geometry = new THREE.ParametricGeometry(getPointFunction, minSlices, minStacks);
-    computeNormals(geometry);
+    geometry = computeNormals(geometry, data);
 
     // Determine the appropriate resolution for the surface based on the curvature of the control hull
     var curvature = _calcMaxCurvature(geometry);
@@ -187,7 +187,7 @@ export function surface ( data, material ) {
         // Build the final geometry using the dynamic resolution
         geometry.dispose();
         geometry = new THREE.ParametricGeometry(getPointFunction, slices, stacks);
-        computeNormals(geometry);
+        geometry = computeNormals(geometry, data);
     }
     var bufferGeometry = new THREE.BufferGeometry().fromGeometry(geometry);
     geometry.dispose();

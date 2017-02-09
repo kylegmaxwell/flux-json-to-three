@@ -393,3 +393,22 @@ test('scene with camera', function (t) {
         t.end();
     }).catch(printError(t));
 });
+
+test('geometryList with texture', function (t) {
+    builder.convert(_getScene('tree')).then(function (result) {
+        var scene = result.getObject();
+        var errors = result.getErrorSummary();
+        t.ok(scene,'Object exist');
+        t.equal('',errors, 'No errors');
+        var meshCount = 0;
+        scene.traverse(function (child) {
+            if (child.userData.primitive === 'mesh') {
+                t.ok(child.geometry.attributes.uv, 'it has uv');
+                meshCount++;
+            }
+        });
+        // Make sure traverse found something to test
+        t.ok(meshCount > 0, 'Scene has mesh');
+        t.end();
+    }).catch(printError(t));
+});

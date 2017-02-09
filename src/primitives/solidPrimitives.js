@@ -50,7 +50,7 @@ export function sphere ( data, material ) {
     }
 
     geometry = new THREE.SphereBufferGeometry( data.radius, 24, 24 );
-    geometry = computeNormals(geometry);
+    geometry = computeNormals(geometry, data);
     mesh = new THREE.Mesh( geometry, material );
     rotateGeometry( mesh, constants.DEFAULT_ROTATION );
     return mesh;
@@ -83,8 +83,10 @@ function _addMeshAttribute(geometry, data, attr, stride) {
     // Flatten uvs if they are available per vertex
     if (data[attr] && data[attr].length === data.vertices.length) {
         // for each vertex
-        var as = sceneUtils.flattenArray(data[attr]);
-        geometry.addAttribute( attr, new THREE.BufferAttribute( new Float32Array(as), stride ) );
+        var attrs = sceneUtils.flattenArray(data[attr]);
+        geometry.addAttribute( attr, new THREE.BufferAttribute( new Float32Array(attrs), stride ) );
+    } else {
+        geometry.addAttribute( attr, new THREE.BufferAttribute( new Float32Array(data.vertices.length*stride), stride ) );        
     }
 }
 
@@ -118,7 +120,7 @@ export function mesh (data, material) {
     geometry.setIndex( new THREE.BufferAttribute( new Uint32Array( triangles ), 1 ) );
 
     geometry.computeBoundingSphere();
-    geometry = computeNormals(geometry);
+    geometry = computeNormals(geometry, data);
     return new THREE.Mesh(geometry, material);
   }
 
@@ -146,7 +148,7 @@ export function stl (data, material) {
     var geometry = stlLoader.parseASCII(data.data);
 
     geometry.computeBoundingSphere();
-    computeNormals(geometry);
+    geometry = computeNormals(geometry, data);
     var bufferGeometry = new THREE.BufferGeometry().fromGeometry(geometry);
     geometry.dispose();
     return new THREE.Mesh( bufferGeometry, material );

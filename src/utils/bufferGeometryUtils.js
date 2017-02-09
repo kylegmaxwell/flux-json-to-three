@@ -34,8 +34,8 @@ export function mergeBufferGeom(meshes) {
 
     // for each attribute
     for ( var key in geom1.attributes ) {
-        // Don't care about uv and other stuff
-        if (key !== 'color' && key !== 'position' && key !== 'normal') continue;
+        // Don't care about other stuff
+        if (key !== 'color' && key !== 'position' && key !== 'normal' && key !== 'uv') continue;
 
         var data = [];
         // for each geometry
