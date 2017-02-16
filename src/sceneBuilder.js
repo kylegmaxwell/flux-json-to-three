@@ -65,10 +65,21 @@ SceneBuilder.prototype.convert = function(data) {
     var _this = this;
     return materials.prepIBL(dataClean).then(function () {
         // Render as a scene if possible
-        if (scene.isScene(dataClean) && _checkScene(dataClean, sceneBuilderData.primStatus)) {
-            return _this._convertScene(dataClean, sceneBuilderData).then(function() {
-                return sceneBuilderData.getResults();
-            });
+        if (scene.isScene(dataClean)) {
+            if (_checkScene(dataClean, sceneBuilderData.primStatus)) {
+                return _this._convertScene(dataClean, sceneBuilderData).then(function() {
+                    return sceneBuilderData.getResults();
+                });
+            } else { // it is a scene but the scene is invalid
+
+                // Render the entities as if there is no scene
+                return _this._createEntity(dataClean).then(function (results) {
+                    // Remove errors from entities, since the scene errors are more relevant
+                    results.primStatus.clear();
+                    results.primStatus.merge(sceneBuilderData.primStatus);
+                    return results.getResults();
+                });
+            }
         }
         // Render the entities if there is no scene
         return _this._createEntity(dataClean).then(function (results) {
