@@ -240,6 +240,8 @@ GeometryBuilder.prototype._tessellateValues = function (geometryResults) {
             } else {
                 reject(new Error('Server error '+tessHeaderResponse.status+' '+tessHeaderResponse.body ));
             }
+        }).catch(function (err) {
+            reject(new Error('Server error '+err ));
         });
     });
 };
