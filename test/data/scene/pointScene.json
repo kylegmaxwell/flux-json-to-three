@@ -1,0 +1,31 @@
+[
+    {
+        "id":"point",
+        "point":[0,0,10],
+        "primitive":"point"
+    },
+    {
+        "id": "inst1",
+        "primitive": "instance",
+        "entity": "point",
+        "matrix": [1, 0, 0, -20, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+    },
+    {
+        "id": "inst2",
+        "primitive": "instance",
+        "entity": "point",
+        "matrix": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+    },
+    {
+        "id": "inst3",
+        "primitive": "instance",
+        "entity": "point",
+        "matrix": [1, 0, 0, 20, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+    },
+    {
+        "id": "layer1",
+        "primitive": "layer",
+        "color": "green",
+        "elements": ["inst1", "inst2", "inst3"]
+    }
+]

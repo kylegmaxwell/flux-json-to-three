@@ -30,6 +30,20 @@ test('should create a scene with instanced geometry', function (t) {
     }).catch(printError(t));
 });
 
+test('should create a scene with instanced points', function (t) {
+    builder.convert(_getScene('pointScene')).then(function (result) {
+        var obj = result.getObject();
+        t.ok(obj,'Object exists '+result.getErrorSummary());
+        t.equal(obj.children.length,1,'One layer');
+        t.equal(obj.children[0].children.length,3,'Three instances');
+        // Check if geometry exists - layer / instance / points
+        t.ok(obj.children[0].children[0].children[0],'Instance 1 geometry exists '+result.getErrorSummary());
+        t.ok(obj.children[0].children[1].children[0],'Instance 2 geometry exists '+result.getErrorSummary());
+        t.ok(obj.children[0].children[2].children[0],'Instance 3 geometry exists '+result.getErrorSummary());
+        t.end();
+    }).catch(printError(t));
+});
+
 test('should create a scene with geometry elements', function (t) {
     // When value is set it should be parsed, and model will be updated
     var sphere = {"origin":[0,0,0],"primitive":"sphere","radius":10};

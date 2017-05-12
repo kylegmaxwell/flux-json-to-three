@@ -347,7 +347,7 @@ SceneBuilder.prototype._createInstance = function(data, obj, sceneBuilderData) {
     } else {
         // Extract the geometry from the previous result into the new instance
         child.traverse(function (c) {
-            if (c.type === "Mesh" || c.type ==="Line") {
+            if (c.type === "Mesh" || c.type === "Line" || c.type === "Points") {
                 var newChild = _rebuildChild(c, sceneBuilderData);
                 obj.add(newChild);
             }
