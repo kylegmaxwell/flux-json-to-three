@@ -1,6 +1,6 @@
 {
   "name": "flux-json-to-three",
-  "version": "0.31.4",
+  "version": "0.31.5",
   "description": "A module that takes parasolid data and produces Three.js objects",
   "main": "build/index.common.js",
   "module": "src/index.js",
@@ -28,10 +28,10 @@
     "clean": "rm -rf build"
   },
   "dependencies": {
-    "ajv": "^3.8.10",
+    "ajv": "^5.1.1",
     "eslint": "^3.5.0",
     "flux-fetch": "^0.1.1",
-    "flux-modelingjs": "0.9.4",
+    "flux-modelingjs": "0.9.7",
     "json-pointer": "^0.5.0",
     "rollup": "^0.35.10",
     "rollup-plugin-commonjs": "^4.1.0",
