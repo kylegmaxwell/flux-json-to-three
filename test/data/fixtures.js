@@ -87,7 +87,7 @@ exports.tests = [
     {
         "input": {"align":[0,0,0],"direction":[0,-1,100],"origin":[0,-7,1],
             "primitive":"text","size":8,"color":"black","text":"Text!"},
-        "result": {"type": "textHelper"},
+        "result": {"type": "TextHelper"},
     },
     {
         "input": {"info": "Not supported", "primitive": "test"},

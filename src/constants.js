@@ -45,6 +45,9 @@ export var THREE_INVERSE_PROPERTIES = {
     roughness: 'glossiness'
 };
 
+// Name of special text primitive
+export var TEXT_PRIMITIVE = "TextHelper";
+
 // These are properties defined on three.js materials that are used to differentiate
 // them by the viewer's merging logic
 export var THREE_MATERIAL_PROPERTIES = [

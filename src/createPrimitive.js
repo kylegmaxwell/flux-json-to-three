@@ -236,7 +236,7 @@ function _moveMaterialColorToGeom(mesh) {
  */
 export function cleanupMesh(mesh, data) {
     // Text helper is ignored, due to it's own special materials.
-    if (mesh.type !== "textHelper") {
+    if (mesh.type !== constants.TEXT_PRIMITIVE) {
         // Convert all geometry in the object tree
         mesh.traverse(function (child) {
             // Only convert the color for objects with material and no per vertex color

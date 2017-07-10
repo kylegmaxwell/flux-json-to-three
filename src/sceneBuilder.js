@@ -213,9 +213,14 @@ function _applyMaterials(object, sceneBuilderData) {
  * @return {THREE.Object3d}       The new instance
  */
 function _rebuildChild(child, sceneBuilderData) {
+    var func;
     // Build a completely new object containing new meshes, since three.js
     // does not allow multiple parents for the same object
-    var func = THREE[child.type];
+    if (child.type === constants.TEXT_PRIMITIVE) {
+        func = THREE.Mesh;
+    } else {
+        func = THREE[child.type];
+    }
     var obj = new func(child.geometry, child.material.clone());
     child.updateMatrixWorld();
     // These transforms are always rigid so applyMatrix is ok
@@ -347,7 +352,8 @@ SceneBuilder.prototype._createInstance = function(data, obj, sceneBuilderData) {
     } else {
         // Extract the geometry from the previous result into the new instance
         child.traverse(function (c) {
-            if (c.type === "Mesh" || c.type === "Line" || c.type === "Points") {
+            if (c.type === "Mesh" || c.type === "Line" || c.type === "Points"
+                    || c.type === constants.TEXT_PRIMITIVE) {
                 var newChild = _rebuildChild(c, sceneBuilderData);
                 obj.add(newChild);
             }
